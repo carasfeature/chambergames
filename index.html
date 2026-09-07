@@ -233,6 +233,12 @@
     box-shadow:inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.04);
   }
   .tournament-option.locked{opacity:.55; cursor:default;}
+  .tournament-option.coming-soon{
+    opacity:1; border-color:#9ADB2E;
+    box-shadow:0 0 0 2px #9ADB2E, 0 0 16px 4px rgba(154,219,46,0.4),
+      inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.04);
+  }
+  .tournament-option.coming-soon .tournament-option-status{color:#9ADB2E;}
   .tournament-option-lock{font-size:28px; margin-bottom:16px;}
   .tournament-option-title{font-family:'Press Start 2P', monospace; font-size:13px; text-transform:uppercase; line-height:1.6; margin-bottom:12px; color:var(--ink);}
   .tournament-option-status{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);}
@@ -563,10 +569,10 @@
         <div class="tournament-option-title">Fortnite Tournament</div>
         <div class="tournament-option-status">Locked</div>
       </div>
-      <div class="tournament-option locked">
+      <div class="tournament-option locked coming-soon">
         <div class="tournament-option-lock">🔒</div>
         <div class="tournament-option-title">FC26 Tournament</div>
-        <div class="tournament-option-status">Locked</div>
+        <div class="tournament-option-status">Coming Soon</div>
       </div>
       <div class="tournament-option locked">
         <div class="tournament-option-lock">🔒</div>
