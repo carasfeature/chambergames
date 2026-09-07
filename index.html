@@ -106,11 +106,19 @@
 
   .nav{
     display:flex; align-items:center; justify-content:space-between;
-    padding:22px 32px; border-bottom:3px solid var(--border);
+    padding:18px 28px; border-bottom:3px solid var(--border);
   }
   .nav .brand{
     font-family:'Press Start 2P', monospace; font-size:13px; letter-spacing:0.02em; color:var(--ink);
   }
+  .nav-icon-btn{
+    width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:15px; border:none; cursor:pointer; transition:transform .15s ease;
+  }
+  .nav-icon-btn:hover{transform:scale(1.1);}
+  .nav-icon-btn.magenta{background:#E0339B;}
+  .nav-icon-btn.lime{background:#9ADB2E;}
+  .nav-right{display:flex; gap:10px; align-items:center;}
 
   .ticker{
     border-bottom:3px solid var(--border);
@@ -204,6 +212,12 @@
   .menu-header{text-align:center; margin-bottom:28px;}
   .menu-header p{font-size:12px; color:var(--ink-soft);}
   .menu-header b{color:var(--ink);}
+  .feature-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; max-width:820px; margin:0 auto 24px;}
+  @media (max-width:640px){ .feature-row{grid-template-columns:1fr 1fr;} }
+  .feature-item{display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px;}
+  .feature-icon{width:38px; height:38px; border-radius:50%; background:var(--card); border:2px solid var(--blue); display:flex; align-items:center; justify-content:center; font-size:15px;}
+  .feature-label{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:12px; color:var(--ink);}
+  .feature-sub{font-family:'IBM Plex Mono', monospace; font-size:10px; color:var(--ink-soft);}
   .menu-wrap{max-width:820px; margin:0 auto;}
 
   .menu-info-row{display:flex; gap:14px; max-width:820px; margin:0 auto 20px; flex-wrap:wrap;}
@@ -224,7 +238,7 @@
     padding:54px 48px; margin-bottom:16px; transition:transform .15s ease, box-shadow .15s ease;
     box-shadow:inset -4px -4px 0 rgba(0,0,0,0.4), inset 4px 4px 0 rgba(255,255,255,0.05);
   }
-  .menu-featured:hover{transform:translateY(-3px); box-shadow:0 0 0 2px #9ADB2E, 0 0 20px 4px rgba(154,219,46,0.45), inset -4px -4px 0 rgba(0,0,0,0.4), inset 4px 4px 0 rgba(255,255,255,0.05);}
+  .menu-featured:hover{transform:translate(-3px,-3px); box-shadow:6px 6px 0 #9ADB2E, inset -4px -4px 0 rgba(0,0,0,0.4), inset 4px 4px 0 rgba(255,255,255,0.05);}
   .featured-badge{
     display:inline-flex; align-items:center; gap:6px; background:#9ADB2E; color:var(--card);
     font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:13px; letter-spacing:0.1em;
@@ -254,8 +268,8 @@
   .tab-desc{font-size:14px; color:var(--ink-soft); margin:0 0 18px; max-width:560px; line-height:1.6;}
   .tab-highlights{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
   .tab-highlights span{background:var(--bg); border:1px solid var(--border-soft); padding:6px 14px; font-size:11px; color:var(--ink-soft); font-family:'Space Grotesk', sans-serif; font-weight:600;}
-  .tab-link{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:13px; letter-spacing:0.05em; text-transform:uppercase; color:#4D7FFF; cursor:pointer;}
-  .tab-link:hover{color:#9ADB2E;}
+  .tab-link{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:13px; letter-spacing:0.05em; text-transform:uppercase; color:#4D7FFF; cursor:pointer; transition:transform .15s ease, text-shadow .15s ease;}
+  .tab-link:hover{color:#9ADB2E; transform:translate(-2px,-2px); text-shadow:3px 3px 0 rgba(154,219,46,0.35);}
   @media (max-width:700px){
     .tab-panel-left{padding:26px 24px;}
   }
@@ -443,7 +457,12 @@
 
 
 <div class="nav">
+  <button class="nav-icon-btn" style="background:transparent; color:var(--ink); font-size:18px;" onclick="showMainMenu()" title="Menu">☰</button>
   <div class="brand">CHAMBER</div>
+  <div class="nav-right">
+    <a class="nav-icon-btn magenta" href="https://discord.com/invite/christinaandamber" target="_blank" rel="noopener" title="Discord" style="color:#fff;">💬</a>
+    <a class="nav-icon-btn lime" href="https://www.twitch.tv/christinaandamber" target="_blank" rel="noopener" title="Twitch" style="color:var(--card);">📺</a>
+  </div>
 </div>
 
 <div class="ticker">
@@ -477,6 +496,13 @@
   <div id="mainMenu">
     <div class="menu-header"><p>Logged in as <b id="menuUserName"></b></p></div>
 
+    <div class="feature-row">
+      <div class="feature-item"><div class="feature-icon">🏆</div><div class="feature-label">Live Tournaments</div><div class="feature-sub">New rounds weekly</div></div>
+      <div class="feature-item"><div class="feature-icon">🎮</div><div class="feature-label">Real Prizes</div><div class="feature-sub">No entry fees</div></div>
+      <div class="feature-item"><div class="feature-icon">💬</div><div class="feature-label">Discord Community</div><div class="feature-sub">Always active</div></div>
+      <div class="feature-item"><div class="feature-icon">📺</div><div class="feature-label">Weekly Streams</div><div class="feature-sub">Never miss out</div></div>
+    </div>
+
     <div class="menu-info-row">
       <a class="discord-link-panel" href="https://discord.com/invite/christinaandamber" target="_blank" rel="noopener">
         <div class="countdown-label">Community</div>
@@ -504,7 +530,7 @@
         <div class="tab-bar">
           <button class="tab-btn" data-tab="stream" onclick="switchTab('stream')">Stream</button>
           <button class="tab-btn" data-tab="merch" onclick="switchTab('merch')">Merch</button>
-          <button class="tab-btn" data-tab="krispysgames" onclick="switchTab('krispysgames')">Krispy's Games</button>
+          <button class="tab-btn" data-tab="krispysgames" onclick="switchTab('krispysgames')">Games</button>
           <button class="tab-btn" data-tab="social" onclick="switchTab('social')">Social Media</button>
         </div>
         <div class="tab-panel">
