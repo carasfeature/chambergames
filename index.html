@@ -398,10 +398,13 @@
 
   .round-card{background:var(--card); border:3px solid var(--border); padding:16px; position:relative; z-index:1;
     box-shadow:inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.04);}
-  .fc26-bracket-wrap{display:flex; gap:18px; overflow-x:auto; padding:10px 0 20px; margin-bottom:30px;}
-  .fc26-round-col{display:flex; flex-direction:column; justify-content:space-around; flex:1 1 200px; min-width:200px; height:820px;}
-  .fc26-round-label{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); text-align:center; margin-bottom:8px;}
-  .fc26-match{background:var(--card); border:2px solid var(--border); padding:8px 10px;}
+  .fc26-bracket-labels{display:grid; grid-template-columns:repeat(4,1fr); gap:18px; max-width:1180px; margin:0 auto 10px; min-width:900px; overflow-x:auto;}
+  .fc26-bracket-labels div{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); text-align:center;}
+  .fc26-bracket-wrap{
+    display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(8,84px);
+    gap:18px; max-width:1180px; margin:0 auto 30px; min-width:900px; overflow-x:auto; padding-bottom:10px;
+  }
+  .fc26-match{background:var(--card); border:2px solid var(--border); padding:8px 10px; align-self:center;}
   .fc26-match.glow{border-color:#6DB8FA; box-shadow:0 0 0 2px #6DB8FA, 0 0 14px 3px rgba(109,184,250,0.55);}
   .fc26-slot{font-family:'Space Grotesk', sans-serif; font-size:12px; padding:4px 2px; color:var(--ink-soft);}
   .fc26-slot.winner{color:var(--ink); font-weight:700;}
@@ -611,6 +614,9 @@
     <button class="back-btn" onclick="showSection('tournaments-menu')">← Back to Tournaments</button>
     <div class="section-title">FC26 Tournament</div>
 
+    <div class="fc26-bracket-labels">
+      <div>Round of 16</div><div>Quarterfinals</div><div>Semifinals</div><div>Final</div>
+    </div>
     <div class="fc26-bracket-wrap" id="fc26PublicBracket"></div>
 
     <div class="fc26-faq-wide">
@@ -997,27 +1003,28 @@ function startListening(){
   });
 }
 
-const FC26_ROUND_LABELS_PUBLIC = ['Round of 16','Quarterfinals','Semifinals','Final'];
 function renderFc26Bracket(){
   const container = document.getElementById('fc26PublicBracket');
   if(!container || !tournamentData || !tournamentData.fc26) return;
   const data = tournamentData.fc26;
   const matches = data.matches || [];
   const active = data.activeMatch;
+  const leafCount = matches.length ? matches[0].length : 8;
 
-  container.innerHTML = matches.map((round, r) => `
-    <div class="fc26-round-col">
-      <div class="fc26-round-label">${FC26_ROUND_LABELS_PUBLIC[r] || ''}</div>
-      ${round.map((m, i) => {
-        const isGlow = active && active.r === r && active.i === i;
-        return `
-        <div class="fc26-match ${isGlow ? 'glow' : ''}">
+  let html = '';
+  matches.forEach((round, r) => {
+    const spanSize = leafCount / round.length;
+    round.forEach((m, i) => {
+      const isGlow = active && active.r === r && active.i === i;
+      const rowStart = i * spanSize + 1;
+      html += `
+        <div class="fc26-match ${isGlow ? 'glow' : ''}" style="grid-column:${r+1}; grid-row:${rowStart} / span ${spanSize};">
           <div class="fc26-slot ${m.winner==='p1'?'winner':''}">${escapeHtml(m.p1 || 'TBD')}</div>
           <div class="fc26-slot ${m.winner==='p2'?'winner':''}">${escapeHtml(m.p2 || 'TBD')}</div>
         </div>`;
-      }).join('')}
-    </div>
-  `).join('');
+    });
+  });
+  container.innerHTML = html;
 
   const podium = data.podium || {};
   const winnerEl = document.getElementById('fc26PodiumWinner');
