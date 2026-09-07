@@ -1048,7 +1048,7 @@ function updateTournamentSelectCards(){
     const isOpen = !!(tournamentData.fc26 && tournamentData.fc26.open);
     fc26Card.className = 'tournament-option ' + (isOpen ? 'unlocked' : 'locked');
     fc26Card.querySelector('.tournament-option-lock').textContent = isOpen ? '⚽' : '🔒';
-    fc26Card.querySelector('.tournament-option-status').textContent = isOpen ? 'Enter →' : 'Locked';
+    fc26Card.querySelector('.tournament-option-status').textContent = isOpen ? 'Enter →' : 'Coming Soon';
   }
 }
 
