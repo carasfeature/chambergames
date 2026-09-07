@@ -226,6 +226,17 @@
   .discord-link-title{font-family:'Press Start 2P', monospace; font-size:12px; text-transform:uppercase; margin-top:8px; line-height:1.6;}
   .placeholder-mini-panel{opacity:.4;}
 
+  .tournament-select-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; max-width:900px; margin:0 auto;}
+  @media (max-width:700px){ .tournament-select-grid{grid-template-columns:1fr;} }
+  .tournament-option{
+    background:var(--card); border:3px solid var(--border); padding:36px 24px; text-align:center;
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.04);
+  }
+  .tournament-option.locked{opacity:.55; cursor:default;}
+  .tournament-option-lock{font-size:28px; margin-bottom:16px;}
+  .tournament-option-title{font-family:'Press Start 2P', monospace; font-size:13px; text-transform:uppercase; line-height:1.6; margin-bottom:12px; color:var(--ink);}
+  .tournament-option-status{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft);}
+
   .menu-featured{
     display:block; width:100%; text-align:left; cursor:pointer;
     background:var(--card); color:var(--ink); border:3px solid var(--border);
@@ -507,7 +518,7 @@
     </div>
 
     <div class="menu-wrap">
-      <button class="menu-featured" onclick="showSection('tournaments')">
+      <button class="menu-featured" onclick="showSection('tournaments-menu')">
         <div class="featured-badge">🏆 Main Event</div>
         <div class="featured-title">Tournaments</div>
         <div class="featured-sub">Claim your round, check who's qualified, see the results.</div>
@@ -543,9 +554,31 @@
     </div>
   </div>
 
-  <div class="app-section" id="section-tournaments">
+  <div class="app-section" id="section-tournaments-menu">
     <button class="back-btn" onclick="showMainMenu()">← Back to menu</button>
     <div class="section-title">Tournaments</div>
+    <div class="tournament-select-grid">
+      <div class="tournament-option locked">
+        <div class="tournament-option-lock">🔒</div>
+        <div class="tournament-option-title">Fortnite Tournament</div>
+        <div class="tournament-option-status">Locked</div>
+      </div>
+      <div class="tournament-option locked">
+        <div class="tournament-option-lock">🔒</div>
+        <div class="tournament-option-title">FC26 Tournament</div>
+        <div class="tournament-option-status">Locked</div>
+      </div>
+      <div class="tournament-option locked">
+        <div class="tournament-option-lock">🔒</div>
+        <div class="tournament-option-title">COD: Modern Warfare 4</div>
+        <div class="tournament-option-status">Locked</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-section" id="section-fortnite-tournament">
+    <button class="back-btn" onclick="showSection('tournaments-menu')">← Back to Tournaments</button>
+    <div class="section-title">Fortnite Tournament</div>
 
     <div class="nametag-panel">
       <div class="nametag-heading">⚠️ Enter Your Fortnite Name</div>
@@ -802,7 +835,7 @@ function showSection(name){
   }
   window.location.hash = 'section=' + name;
   window.scrollTo(0, 0);
-  if(name === 'tournaments'){
+  if(name === 'fortnite-tournament'){
     drawTrace();
     setTimeout(drawTrace, 200);
     if(tournamentData) render();
