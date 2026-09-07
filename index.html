@@ -233,6 +233,9 @@
     box-shadow:inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.04);
   }
   .tournament-option.locked{opacity:.55; cursor:default;}
+  .tournament-option.unlocked{opacity:1; cursor:pointer; border-color:#4D7FFF; transition:transform .15s ease, box-shadow .15s ease;}
+  .tournament-option.unlocked:hover{transform:translateY(-3px); box-shadow:6px 6px 0 #4D7FFF;}
+  .tournament-option.unlocked .tournament-option-status{color:#4D7FFF;}
   .tournament-option.coming-soon{
     opacity:1; border-color:#9ADB2E;
     box-shadow:0 0 0 2px #9ADB2E, 0 0 16px 4px rgba(154,219,46,0.4),
@@ -395,6 +398,28 @@
 
   .round-card{background:var(--card); border:3px solid var(--border); padding:16px; position:relative; z-index:1;
     box-shadow:inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.04);}
+  .fc26-bracket-wrap{display:flex; gap:18px; overflow-x:auto; padding:10px 0 20px; margin-bottom:30px;}
+  .fc26-round-col{display:flex; flex-direction:column; justify-content:space-around; flex:1 1 200px; min-width:200px; height:820px;}
+  .fc26-round-label{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); text-align:center; margin-bottom:8px;}
+  .fc26-match{background:var(--card); border:2px solid var(--border); padding:8px 10px;}
+  .fc26-match.glow{border-color:#6DB8FA; box-shadow:0 0 0 2px #6DB8FA, 0 0 14px 3px rgba(109,184,250,0.55);}
+  .fc26-slot{font-family:'Space Grotesk', sans-serif; font-size:12px; padding:4px 2px; color:var(--ink-soft);}
+  .fc26-slot.winner{color:var(--ink); font-weight:700;}
+
+  .fc26-faq-wide{max-width:1180px; margin:0 auto 30px;}
+  .fc26-faq-heading{font-family:'Press Start 2P', monospace; font-size:16px; text-transform:uppercase; color:var(--red); margin-bottom:16px;}
+  .fc26-faq-row{display:flex; gap:14px; flex-wrap:wrap;}
+  .fc26-faq-row .faq-item{flex:1 1 260px; min-width:240px; background:var(--card); border:2px solid var(--border-soft); border-top:2px solid var(--border-soft); padding:0 14px;}
+
+  .fc26-podium-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; max-width:900px; margin:0 auto;}
+  @media (max-width:700px){ .fc26-podium-row{grid-template-columns:1fr;} }
+  .fc26-podium-card{background:var(--card); border:3px solid var(--border); padding:26px; text-align:center;}
+  .fc26-podium-card.winner{border-color:#9ADB2E; box-shadow:0 0 0 2px #9ADB2E, 0 0 16px 3px rgba(154,219,46,0.4);}
+  .fc26-podium-card.second{border-color:#A8A6BC;}
+  .fc26-podium-card.third{border-color:#B8511F;}
+  .fc26-podium-label{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:10px;}
+  .fc26-podium-name{font-family:'Press Start 2P', monospace; font-size:14px; color:var(--ink); line-height:1.6;}
+
   .round-card.live-now{animation:live-glow 1.6s ease-in-out infinite;}
   @keyframes live-glow{
     0%,100%{box-shadow:0 0 0 2px #E0339B, 0 0 4px 2px rgba(224,51,155,0.45); border-color:#E0339B;}
@@ -564,21 +589,56 @@
     <button class="back-btn" onclick="showMainMenu()">← Back to menu</button>
     <div class="section-title">Tournaments</div>
     <div class="tournament-select-grid">
-      <div class="tournament-option locked">
+      <div class="tournament-option locked" id="tournamentCardFortnite" onclick="if(tournamentData && tournamentData.fortniteOpen) showSection('fortnite-tournament');">
         <div class="tournament-option-lock">🔒</div>
         <div class="tournament-option-title">Fortnite Tournament</div>
         <div class="tournament-option-status">Locked</div>
       </div>
-      <div class="tournament-option locked coming-soon">
+      <div class="tournament-option locked" id="tournamentCardFc26" onclick="if(tournamentData && tournamentData.fc26 && tournamentData.fc26.open) showSection('fc26-tournament');">
         <div class="tournament-option-lock">🔒</div>
         <div class="tournament-option-title">FC26 Tournament</div>
-        <div class="tournament-option-status">Coming Soon</div>
+        <div class="tournament-option-status">Locked</div>
       </div>
       <div class="tournament-option locked">
         <div class="tournament-option-lock">🔒</div>
         <div class="tournament-option-title">COD: Modern Warfare 4</div>
         <div class="tournament-option-status">Locked</div>
       </div>
+    </div>
+  </div>
+
+  <div class="app-section" id="section-fc26-tournament">
+    <button class="back-btn" onclick="showSection('tournaments-menu')">← Back to Tournaments</button>
+    <div class="section-title">FC26 Tournament</div>
+
+    <div class="fc26-bracket-wrap" id="fc26PublicBracket"></div>
+
+    <div class="fc26-faq-wide">
+      <h3 class="fc26-faq-heading">FAQ</h3>
+      <div class="fc26-faq-row">
+        <div class="faq-item open">
+          <button class="faq-q"><span class="num">1</span><span>How do I join?</span><span class="chev">+</span></button>
+          <div class="faq-a"><p>Entries are managed directly by admins — check Discord and stream announcements for how sign-ups work.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span class="num">2</span><span>How does the bracket work?</span><span class="chev">+</span></button>
+          <div class="faq-a"><p>Single elimination, 16 players. Lose once and you're out — win and you move on to the next round.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span class="num">3</span><span>Where do I watch?</span><span class="chev">+</span></button>
+          <div class="faq-a"><p>Matches happen live on stream — check the Stream tab to follow along.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q"><span class="num">4</span><span>How are winners decided?</span><span class="chev">+</span></button>
+          <div class="faq-a"><p>Winners advance automatically as each match wraps up — the bracket above always reflects the current results.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fc26-podium-row">
+      <div class="fc26-podium-card third"><div class="fc26-podium-label">3rd Place</div><div class="fc26-podium-name" id="fc26PodiumThird">—</div></div>
+      <div class="fc26-podium-card second"><div class="fc26-podium-label">2nd Place</div><div class="fc26-podium-name" id="fc26PodiumSecond">—</div></div>
+      <div class="fc26-podium-card winner"><div class="fc26-podium-label">Winner</div><div class="fc26-podium-name" id="fc26PodiumWinner">—</div></div>
     </div>
   </div>
 
@@ -929,10 +989,60 @@ function startListening(){
     if(!tournamentData) return;
     updateLiveBanner();
     updateRoundLiveIndicators();
+    updateTournamentSelectCards();
+    renderFc26Bracket();
     if(currentUser) render();
   }, (error) => {
     console.error('Firebase read error:', error);
   });
+}
+
+const FC26_ROUND_LABELS_PUBLIC = ['Round of 16','Quarterfinals','Semifinals','Final'];
+function renderFc26Bracket(){
+  const container = document.getElementById('fc26PublicBracket');
+  if(!container || !tournamentData || !tournamentData.fc26) return;
+  const data = tournamentData.fc26;
+  const matches = data.matches || [];
+  const active = data.activeMatch;
+
+  container.innerHTML = matches.map((round, r) => `
+    <div class="fc26-round-col">
+      <div class="fc26-round-label">${FC26_ROUND_LABELS_PUBLIC[r] || ''}</div>
+      ${round.map((m, i) => {
+        const isGlow = active && active.r === r && active.i === i;
+        return `
+        <div class="fc26-match ${isGlow ? 'glow' : ''}">
+          <div class="fc26-slot ${m.winner==='p1'?'winner':''}">${escapeHtml(m.p1 || 'TBD')}</div>
+          <div class="fc26-slot ${m.winner==='p2'?'winner':''}">${escapeHtml(m.p2 || 'TBD')}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+
+  const podium = data.podium || {};
+  const winnerEl = document.getElementById('fc26PodiumWinner');
+  const secondEl = document.getElementById('fc26PodiumSecond');
+  const thirdEl = document.getElementById('fc26PodiumThird');
+  if(winnerEl) winnerEl.textContent = podium.winner || '—';
+  if(secondEl) secondEl.textContent = podium.second || '—';
+  if(thirdEl) thirdEl.textContent = podium.third || '—';
+}
+
+function updateTournamentSelectCards(){
+  const fortCard = document.getElementById('tournamentCardFortnite');
+  if(fortCard){
+    const isOpen = !!tournamentData.fortniteOpen;
+    fortCard.className = 'tournament-option ' + (isOpen ? 'unlocked' : 'locked');
+    fortCard.querySelector('.tournament-option-lock').textContent = isOpen ? '🏆' : '🔒';
+    fortCard.querySelector('.tournament-option-status').textContent = isOpen ? 'Enter →' : 'Locked';
+  }
+  const fc26Card = document.getElementById('tournamentCardFc26');
+  if(fc26Card){
+    const isOpen = !!(tournamentData.fc26 && tournamentData.fc26.open);
+    fc26Card.className = 'tournament-option ' + (isOpen ? 'unlocked' : 'locked');
+    fc26Card.querySelector('.tournament-option-lock').textContent = isOpen ? '⚽' : '🔒';
+    fc26Card.querySelector('.tournament-option-status').textContent = isOpen ? 'Enter →' : 'Locked';
+  }
 }
 
 let nextStreamTimer = null;
