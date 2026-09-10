@@ -292,6 +292,43 @@
     .tab-panel-left{padding:26px 24px;}
   }
 
+  .games-tab-menu{max-width:1000px; margin:0 auto; background:var(--card); border:3px solid var(--border-soft); overflow:hidden;}
+  .games-tab-bar{display:flex; background:#0d0e16; padding:10px; gap:8px; flex-wrap:wrap;}
+  .games-tab-btn{
+    flex:1; min-width:160px; padding:20px 18px; background:transparent; border:2px solid transparent;
+    font-family:'Press Start 2P', monospace; font-size:13px; letter-spacing:0.02em; line-height:1.6;
+    color:var(--ink-soft); cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .games-tab-btn.active{background:var(--ink); color:var(--card); border-color:#9ADB2E;}
+  .games-tab-btn:hover:not(.active){color:var(--ink);}
+  .games-tab-panel{padding:40px; min-height:340px;}
+  .games-coming-soon{
+    font-family:'Press Start 2P', monospace; font-size:clamp(22px,4vw,44px); text-align:center;
+    color:#9ADB2E; line-height:1.6; padding:70px 20px;
+    text-shadow:0 0 18px rgba(154,219,46,0.45);
+  }
+  .games-list{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:640px){ .games-list{grid-template-columns:1fr;} }
+  .game-card{
+    background:var(--bg); border:3px solid var(--border); padding:24px; cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,0.4), inset 3px 3px 0 rgba(255,255,255,0.04);
+  }
+  .game-card:hover{transform:translate(-3px,-3px); box-shadow:6px 6px 0 #4D7FFF;}
+  .game-card-title{font-family:'Press Start 2P', monospace; font-size:14px; color:var(--ink); line-height:1.6; margin-bottom:12px;}
+  .game-card-desc{font-size:13px; color:var(--ink-soft); line-height:1.5;}
+  .game-card-badge{
+    align-self:flex-start; margin-top:14px; display:inline-block;
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px;
+    letter-spacing:0.1em; text-transform:uppercase;
+    background:#9ADB2E; color:var(--card); padding:5px 12px;
+  }
+  .game-card.soon{
+    pointer-events:none; opacity:.45; border-style:dashed; box-shadow:none;
+  }
+  .game-card.soon .game-card-badge{background:var(--border-soft); color:var(--ink-soft);}
+  .games-empty{text-align:center; color:var(--ink-soft); font-size:14px; padding:60px 20px;}
+
   .app-section{display:none;}
   .back-btn{
     display:inline-flex; align-items:center; gap:6px; margin-bottom:24px; padding:9px 16px;
@@ -789,7 +826,18 @@
   <div class="app-section" id="section-krispysgames">
     <button class="back-btn" onclick="showMainMenu()">← Back to menu</button>
     <div class="section-title">Games</div>
-    <div class="placeholder-panel"><p>Coming soon.</p></div>
+    <div class="games-tab-menu">
+      <div class="games-tab-bar">
+        <button class="games-tab-btn active" data-gtab="caroline" onclick="switchGamesTab('caroline')">Caroline's Games</button>
+        <button class="games-tab-btn" data-gtab="krispy" onclick="switchGamesTab('krispy')">Krispy's Games</button>
+      </div>
+      <div class="games-tab-panel" id="gamesPanelCaroline">
+        <div class="games-list" id="carolineGamesList"></div>
+      </div>
+      <div class="games-tab-panel" id="gamesPanelKrispy" style="display:none;">
+        <div class="games-coming-soon">Coming Soon</div>
+      </div>
+    </div>
   </div>
 
   <div class="app-section" id="section-merch">
@@ -895,6 +943,50 @@ const TAB_DATA = {
     linkText:'Enter →', section:'social'
   }
 };
+// Caroline's games — add entries here as they're built.
+// `href` is relative to the site root. Omit it to show a greyed-out "Soon" card.
+const CAROLINE_GAMES = [
+  { title:'Reactions Test', desc:'Reflexes, aim and memory. Three quick tests, leaderboards on all of them.', href:'games/reactions/index.html' },
+  { title:'Stream Bingo',   desc:'Everyone gets a different card. Mark them off live during the subathon.' },
+  { title:'Wordle',         desc:'Five letters, six guesses, one shared word a day.' },
+  { title:'This or That',   desc:'Two options, chat votes in real time, results revealed on stream.' },
+  { title:'Skribbl',        desc:'One person draws, everyone else guesses. Room codes and scoring.' },
+  { title:'Tier List',      desc:'Drag things into tiers, argue about it, export the result as an image.' }
+];
+
+function renderCarolineGames(){
+  const el = document.getElementById('carolineGamesList');
+  if(!el) return;
+  if(!CAROLINE_GAMES.length){
+    el.className = '';
+    el.innerHTML = '<div class="games-empty">No games added yet — check back soon.</div>';
+    return;
+  }
+  el.className = 'games-list';
+  el.innerHTML = CAROLINE_GAMES.map(g => {
+    const body = `
+      <div class="game-card-title">${escapeHtml(g.title)}</div>
+      <div class="game-card-desc">${escapeHtml(g.desc || '')}</div>
+      <div class="game-card-badge">${g.href ? 'Play →' : 'Soon'}</div>`;
+    return g.href
+      ? `<a class="game-card" href="${escapeHtml(g.href)}">${body}</a>`
+      : `<div class="game-card soon">${body}</div>`;
+  }).join('');
+}
+
+function switchGamesTab(key){
+  document.querySelectorAll('.games-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.gtab === key));
+  const carolinePanel = document.getElementById('gamesPanelCaroline');
+  const krispyPanel = document.getElementById('gamesPanelKrispy');
+  const showEl = key === 'caroline' ? carolinePanel : krispyPanel;
+  const hideEl = key === 'caroline' ? krispyPanel : carolinePanel;
+  hideEl.style.display = 'none';
+  showEl.style.display = 'block';
+  if(window.gsap){
+    gsap.fromTo(showEl, { opacity:0, x:10 }, { opacity:1, x:0, duration:0.35, ease:'back.out(1.7)' });
+  }
+}
+
 function switchTab(key){
   const d = TAB_DATA[key];
   if(!d) return;
@@ -1005,6 +1097,7 @@ function initScrollAnimations(){
 async function init(){
   buildRoundGrid();
   switchTab('stream');
+  renderCarolineGames();
   initScrollAnimations();
 
   document.querySelectorAll('.faq-item').forEach(item=>{
@@ -1038,6 +1131,14 @@ async function fetchUser(token){
     if(data.data && data.data[0]){
       currentUser = data.data[0].login.toLowerCase();
       currentDisplay = data.data[0].display_name;
+      // Game pages under /games live on their own URLs and can't see these
+      // variables, so hand the identity over via localStorage.
+      try{
+        localStorage.setItem('twitchUser', JSON.stringify({
+          login: currentUser,
+          display_name: currentDisplay
+        }));
+      }catch(e){ console.warn('Could not persist Twitch user:', e); }
       document.getElementById('loginWrap').style.display = 'none';
       document.getElementById('wrap').style.display = 'block';
       if(window.ScrollTrigger) setTimeout(() => ScrollTrigger.refresh(), 100);
