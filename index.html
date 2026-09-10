@@ -216,6 +216,8 @@
   .menu-header{text-align:center; margin-bottom:28px;}
   .menu-header p{font-size:12px; color:var(--ink-soft);}
   .menu-header b{color:var(--ink);}
+  .logout-link{color:var(--ink-soft); text-decoration:underline;}
+  .logout-link:hover{color:#E0339B;}
   .menu-wrap{max-width:820px; margin:0 auto;}
 
   .menu-info-row{display:flex; gap:14px; max-width:820px; margin:0 auto 20px; flex-wrap:wrap;}
@@ -601,7 +603,7 @@
 <div class="wrap" id="wrap">
 
   <div id="mainMenu">
-    <div class="menu-header"><p>Logged in as <b id="menuUserName"></b></p></div>
+    <div class="menu-header"><p>Logged in as <b id="menuUserName"></b> · <a href="#" class="logout-link" onclick="event.preventDefault(); logout();">Log out</a></p></div>
 
     <div class="menu-info-row">
       <a class="discord-link-panel" href="https://discord.com/invite/christinaandamber" target="_blank" rel="noopener">
@@ -1119,10 +1121,16 @@ async function init(){
       await fetchUser(token);
       history.replaceState(null, '', window.location.pathname);
     }
+  } else {
+    // No fresh token in the URL — try the saved one so coming back from a
+    // game page (or a plain revisit) doesn't dump you on the login screen.
+    let saved = null;
+    try{ saved = localStorage.getItem('twitchToken'); }catch(e){}
+    if(saved) await fetchUser(saved, true);
   }
 }
 
-async function fetchUser(token){
+async function fetchUser(token, silent){
   try{
     const res = await fetch('https://api.twitch.tv/helix/users', {
       headers: { 'Authorization': 'Bearer ' + token, 'Client-Id': CLIENT_ID }
@@ -1132,23 +1140,46 @@ async function fetchUser(token){
       currentUser = data.data[0].login.toLowerCase();
       currentDisplay = data.data[0].display_name;
       // Game pages under /games live on their own URLs and can't see these
-      // variables, so hand the identity over via localStorage.
+      // variables, so hand the identity over via localStorage. The token is
+      // kept too, so coming back from a game doesn't dump you on the login gate.
       try{
         localStorage.setItem('twitchUser', JSON.stringify({
           login: currentUser,
           display_name: currentDisplay
         }));
-      }catch(e){ console.warn('Could not persist Twitch user:', e); }
+        localStorage.setItem('twitchToken', token);
+      }catch(e){ console.warn('Could not persist Twitch session:', e); }
       document.getElementById('loginWrap').style.display = 'none';
       document.getElementById('wrap').style.display = 'block';
       if(window.ScrollTrigger) setTimeout(() => ScrollTrigger.refresh(), 100);
       document.getElementById('menuUserName').textContent = currentDisplay;
       loadNametag();
       if(tournamentData) render();
+      return true;
     }
+    // Token was rejected (expired or revoked) — bin it and fall back to login.
+    clearSession();
+    if(!silent) alert('Login failed, try again.');
+    return false;
   }catch(e){
-    alert('Login failed, try again.');
+    clearSession();
+    if(!silent) alert('Login failed, try again.');
+    return false;
   }
+}
+
+function clearSession(){
+  try{
+    localStorage.removeItem('twitchToken');
+    localStorage.removeItem('twitchUser');
+  }catch(e){}
+}
+
+function logout(){
+  clearSession();
+  currentUser = null;
+  currentDisplay = null;
+  window.location.href = window.location.pathname;
 }
 
 function loadNametag(){
