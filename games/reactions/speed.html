@@ -71,6 +71,10 @@ svg.fx{pointer-events:none}
 .steps{list-style:none; margin:0 0 2.4cqw; padding:0; text-align:left; display:grid; gap:1.1cqw}
 .steps li{font-size:1.8cqw; line-height:1.45; display:grid; grid-template-columns:auto 1fr; gap:1cqw}
 .steps b{font-family:Bungee,cursive; font-weight:400; color:var(--taxi)}
+.whoami{font-size:1.5cqw; margin:1.4cqw 0 0; line-height:1.5}
+.whoami.ok{color:#9BD98A}
+.whoami.warn{color:var(--taxi)}
+.whoami a{color:var(--taxi); font-weight:900}
 .btn{ font-family:Bungee,cursive; font-size:1.9cqw; background:var(--taxi); color:var(--ink);
       border:.26cqw solid var(--ink); border-radius:1cqw; padding:1cqw 3cqw; cursor:pointer;
       box-shadow:0 .5cqw 0 rgba(0,0,0,.55); transition:transform .08s, box-shadow .08s; }
@@ -142,6 +146,7 @@ svg.fx{pointer-events:none}
         <li><b>3</b><span>You have five tries.</span></li>
         <li><b>4</b><span>Your average time from all five tries will show up on the leaderboard.</span></li>
       </ol>
+      <div id="whoami" class="whoami"></div>
       <button class="btn" id="btnOk">OK</button>
     </div>
   </div>
@@ -200,7 +205,20 @@ function getName(){
     return o.display_name || o.displayName || o.login || o.name || o.username || null;
   }catch{ return null; }
 }
-const NAME = getName();
+let NAME = getName();
+
+(function showWhoami(){
+  const el = document.getElementById("whoami");
+  if(!el) return;
+  if(NAME){
+    el.innerHTML = 'Playing as <b>' + NAME.replace(/[<>&]/g,'') + '</b>';
+    el.className = "whoami ok";
+  }else{
+    el.innerHTML = 'Not logged in — your score won\'t save. '
+                 + '<a href="../../index.html">Log in on Chamber</a> first.';
+    el.className = "whoami warn";
+  }
+})();
 
 /* ---------- elements ---------- */
 const $=id=>document.getElementById(id);
@@ -274,7 +292,12 @@ async function endRun(){
 
   // auto-save: only the better run is kept, so a bad one can never cost you
   const { min, max } = RANGES.reaction;
-  if(!NAME){ msg.textContent="No Twitch name found, so this run wasn't saved."; return; }
+  NAME = getName();   // re-read: they may have logged in since the page opened
+  if(!NAME){
+    msg.innerHTML = 'Not logged in, so this run wasn\'t saved. '
+                  + '<a href="../../index.html" style="color:var(--taxi)">Log in on Chamber</a>, then come back.';
+    return;
+  }
   if(avg<min || avg>max){ msg.textContent=`Average of ${avg}ms is outside the range the leaderboard accepts.`; return; }
   msg.textContent="Saving…";
   try{
