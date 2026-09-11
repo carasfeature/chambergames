@@ -166,23 +166,16 @@ svg.fx{pointer-events:none}
 
 <script type="module">
 import { initLeaderboard, watchBoard, submitScore, RANGES } from "../../shared/leaderboard.js";
+import { FIREBASE, USER_KEY, REACTION_TIERS, REACTION_VOID } from "../../shared/config.js";
 
 /* ===========================================================
    CONFIG
    =========================================================== */
-const FIREBASE = { apiKey:"", authDomain:"", databaseURL:"", projectId:"",
-                   storageBucket:"", messagingSenderId:"", appId:"" };
-
-const USER_KEY = "twitchUser";   // whichever key your site's login writes to
+// Firebase config + Twitch key now live in shared/config.js
 
 const TRIES=5, DELAY_MIN=3000, DELAY_MAX=7000, FLOOR=10, FEEDBACK_MS=1400;
 
-// TODO — real tier copy
-const TIERS=[
-  {max:250,      title:"Placeholder Tier 1", body:"Fast. Copy goes here."},
-  {max:350,      title:"Placeholder Tier 2", body:"Average. Copy goes here."},
-  {max:Infinity, title:"Placeholder Tier 3", body:"Slow. Copy goes here."}
-];
+const TIERS = REACTION_TIERS;   // edit the copy in shared/config.js
 
 /* ---------- who's playing (the site logged them in already) ---------- */
 function getName(){
@@ -236,10 +229,10 @@ function nextTry(){
 }
 
 function press(){
-  if(state==="arming"){ cancelAnimationFrame(raf); return voidTry("Too soon","Wait for the sign — that one doesn't count."); }
+  if(state==="arming"){ cancelAnimationFrame(raf); return voidTry(REACTION_VOID.title, REACTION_VOID.early); }
   if(state!=="ready") return;
   const ms=Math.round(performance.now()-signAt);
-  if(ms<FLOOR) return voidTry("Too soon",`Under ${FLOOR}ms isn't a reaction. Round voided.`);
+  if(ms<FLOOR) return voidTry(REACTION_VOID.title, REACTION_VOID.floor);
   times.push(ms); setCounter();
   state="feedback"; driving(false); stopSign.classList.remove("show");
   show(ms+"ms", times.length<TRIES?`Round ${times.length} of ${TRIES}`:"Adding it up…", false);
@@ -304,7 +297,7 @@ function renderBoard(rows){
 (async () => {
   if(!FIREBASE.databaseURL){
     boardList.innerHTML="";
-    boardNote.textContent="Leaderboard goes live once the Firebase config in this file is filled in.";
+    boardNote.textContent="Leaderboard is off: databaseURL is empty in shared/config.js.";
     return;
   }
   try{
