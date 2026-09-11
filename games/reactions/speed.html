@@ -71,10 +71,6 @@ svg.fx{pointer-events:none}
 .steps{list-style:none; margin:0 0 2.4cqw; padding:0; text-align:left; display:grid; gap:1.1cqw}
 .steps li{font-size:1.8cqw; line-height:1.45; display:grid; grid-template-columns:auto 1fr; gap:1cqw}
 .steps b{font-family:Bungee,cursive; font-weight:400; color:var(--taxi)}
-.whoami{font-size:1.5cqw; margin:1.4cqw 0 0; line-height:1.5}
-.whoami.ok{color:#9BD98A}
-.whoami.warn{color:var(--taxi)}
-.whoami a{color:var(--taxi); font-weight:900}
 .btn{ font-family:Bungee,cursive; font-size:1.9cqw; background:var(--taxi); color:var(--ink);
       border:.26cqw solid var(--ink); border-radius:1cqw; padding:1cqw 3cqw; cursor:pointer;
       box-shadow:0 .5cqw 0 rgba(0,0,0,.55); transition:transform .08s, box-shadow .08s; }
@@ -103,7 +99,8 @@ svg.fx{pointer-events:none}
 <body>
 
 <nav class="crumbs">
-  <a href="../../index.html">← Back to Chamber</a><span>/</span>
+  <a href="../../index.html">Home</a><span>/</span>
+  <a href="../index.html">Games</a><span>/</span>
   <a href="index.html">Reactions Test</a><span>/</span>
   <span>Reaction Speed</span>
 </nav>
@@ -142,11 +139,9 @@ svg.fx{pointer-events:none}
       <h1>Before you drive</h1>
       <ol class="steps">
         <li><b>1</b><span>Start the car.</span></li>
-        <li><b>2</b><span>Press anywhere when the "STOP" sign appears on screen.</span></li>
-        <li><b>3</b><span>You have five tries.</span></li>
-        <li><b>4</b><span>Your average time from all five tries will show up on the leaderboard.</span></li>
+        <li><b>2</b><span>You have 5 tries to get the quickest reaction time.</span></li>
+        <li><b>3</b><span>Your average time will show up on the leaderboard.</span></li>
       </ol>
-      <div id="whoami" class="whoami"></div>
       <button class="btn" id="btnOk">OK</button>
     </div>
   </div>
@@ -175,25 +170,18 @@ import { initLeaderboard, watchBoard, submitScore, RANGES } from "../../shared/l
 /* ===========================================================
    CONFIG
    =========================================================== */
-const FIREBASE = {
-  apiKey:"AIzaSyAdx6UIx2mHwqbK4KPKnXolbgmUcCR1Wvg",
-  authDomain:"lobby-claim.firebaseapp.com",
-  databaseURL:"https://lobby-claim-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:"lobby-claim",
-  storageBucket:"lobby-claim.firebasestorage.app",
-  messagingSenderId:"41913061647",
-  appId:"1:41913061647:web:4eac52a2ddbb5ec2696e7a"
-};
+const FIREBASE = { apiKey:"", authDomain:"", databaseURL:"", projectId:"",
+                   storageBucket:"", messagingSenderId:"", appId:"" };
 
-// The main site writes this on Twitch login (see fetchUser() in /index.html)
-const USER_KEY = "twitchUser";
+const USER_KEY = "twitchUser";   // whichever key your site's login writes to
 
 const TRIES=5, DELAY_MIN=3000, DELAY_MAX=7000, FLOOR=10, FEEDBACK_MS=1400;
 
+// TODO — real tier copy
 const TIERS=[
-  {max:199,      title:"INSANE",    body:"Good job, you're insane at this!"},
-  {max:299,      title:"NOT BAD",   body:"Not bad, but the reflexes are closer to someone pushing 30"},
-  {max:Infinity, title:"TRY AGAIN", body:"I would just try again..."}
+  {max:250,      title:"Placeholder Tier 1", body:"Fast. Copy goes here."},
+  {max:350,      title:"Placeholder Tier 2", body:"Average. Copy goes here."},
+  {max:Infinity, title:"Placeholder Tier 3", body:"Slow. Copy goes here."}
 ];
 
 /* ---------- who's playing (the site logged them in already) ---------- */
@@ -205,20 +193,7 @@ function getName(){
     return o.display_name || o.displayName || o.login || o.name || o.username || null;
   }catch{ return null; }
 }
-let NAME = getName();
-
-(function showWhoami(){
-  const el = document.getElementById("whoami");
-  if(!el) return;
-  if(NAME){
-    el.innerHTML = 'Playing as <b>' + NAME.replace(/[<>&]/g,'') + '</b>';
-    el.className = "whoami ok";
-  }else{
-    el.innerHTML = 'Not logged in — your score won\'t save. '
-                 + '<a href="../../index.html">Log in on Chamber</a> first.';
-    el.className = "whoami warn";
-  }
-})();
+const NAME = getName();
 
 /* ---------- elements ---------- */
 const $=id=>document.getElementById(id);
@@ -292,12 +267,7 @@ async function endRun(){
 
   // auto-save: only the better run is kept, so a bad one can never cost you
   const { min, max } = RANGES.reaction;
-  NAME = getName();   // re-read: they may have logged in since the page opened
-  if(!NAME){
-    msg.innerHTML = 'Not logged in, so this run wasn\'t saved. '
-                  + '<a href="../../index.html" style="color:var(--taxi)">Log in on Chamber</a>, then come back.';
-    return;
-  }
+  if(!NAME){ msg.textContent="No Twitch name found, so this run wasn't saved."; return; }
   if(avg<min || avg>max){ msg.textContent=`Average of ${avg}ms is outside the range the leaderboard accepts.`; return; }
   msg.textContent="Saving…";
   try{
@@ -339,9 +309,20 @@ function renderBoard(rows){
   }
   try{
     await initLeaderboard(FIREBASE);
-    watchBoard({ game:"reaction", limit:20, onData:renderBoard,
-                 onError:e=>boardNote.textContent="Couldn't load the leaderboard: "+e.message });
-  }catch(e){ boardNote.textContent="Couldn't connect: "+e.message; }
+    console.log("[leaderboard] connected —", FIREBASE.databaseURL, "— watching leaderboards/reaction");
+    watchBoard({
+      game:"reaction", limit:20,
+      onData:rows => { console.log("[leaderboard] received", rows.length, "rows"); renderBoard(rows); },
+      onError:e => {
+        boardList.innerHTML="";
+        boardNote.textContent=`Couldn't read the leaderboard (${e.code||"error"}): ${e.message}`;
+      }
+    });
+  }catch(e){
+    boardList.innerHTML="";
+    boardNote.textContent="Couldn't connect to Firebase: "+e.message;
+    console.error("[leaderboard] init failed:", e);
+  }
 })();
 
 setCounter();
