@@ -1,12 +1,12 @@
 /* ============================================================
    shared/config.js
 
-   Fill this in ONCE. Nothing else on the site holds these values,
-   so replacing a game file can never wipe them again.
+   The only file you edit by hand. Game updates never replace it.
    ============================================================ */
 
-/* Firebase console -> Project settings -> General -> Your apps -> SDK setup.
-   Copy the whole firebaseConfig object over the one below. */
+/* ---- 1. Firebase -------------------------------------------------------
+   Firebase console -> Project settings -> General -> Your apps -> SDK setup.
+   Paste your seven values in here.                                      */
 export const FIREBASE = {
   apiKey:            "",
   authDomain:        "",
@@ -17,29 +17,39 @@ export const FIREBASE = {
   appId:             ""
 };
 
-/* The localStorage key your Twitch login writes the user to.
-   To find it: log in on the live site, open DevTools console,
-   run  Object.keys(localStorage)  and use whichever key holds the user. */
+/* ---- 2. Where the Twitch login stores the user ------------------------ */
 export const USER_KEY = "twitchUser";
 
-/* ============================================================
-   GAME COPY
-   Edit freely — this file is never replaced when a game updates.
-   ============================================================ */
+/* ---- 3. Every game's settings and copy --------------------------------
+   One block per game. The block name (reaction, aim, ...) is also the
+   folder name and the database node name, so it can never clash.
+   To add a game later, add a new block down here.                       */
+export const GAMES = {
 
-/* Reaction Speed result tiers.
-   "max" is the highest average (in ms) that still falls in that tier.
-   Order matters: fastest first, and the last one must stay Infinity. */
-export const REACTION_TIERS = [
-  { max: 220,      title: "WOW!",   body: "Damn, you're fast, congrats!" },
-  { max: 300,      title: "OK",     body: "You did fine, you're right in the middle!" },
-  { max: Infinity, title: "EHM...", body: "So slow... I would just go again." }
-];
+  reaction: {
+    /* "max" is the slowest average that still counts as that tier.
+       Fastest first. The last one must stay Infinity. */
+    tiers: [
+      { max: 220,      title: "WOW!",   body: "Damn, you're fast, congrats!" },
+      { max: 300,      title: "OK",     body: "You did fine, you're right in the middle!" },
+      { max: Infinity, title: "EHM...", body: "So slow... I would just go again." }
+    ],
+    /* Shown when someone clicks before the sign appears. */
+    voided: {
+      title: "Too fast!",
+      early: "The sign wasn't up yet — that round doesn't count.",
+      floor: "Nobody reacts that quickly — that round doesn't count."
+    }
+  },
 
-/* Shown when someone clicks before the sign appears, or under FLOOR ms
-   after it. That round is voided and replayed. */
-export const REACTION_VOID = {
-  title: "Too fast!",
-  early: "The sign wasn't up yet — that round doesn't count.",
-  floor: "Nobody reacts that quickly — that round doesn't count."
+  aim: {
+    targets: 20,
+    title: "Before you order",
+    steps: [
+      "Click Start.",
+      "Click pizza slices as quickly as you can. There are 20, showing up one by one.",
+      "When you finish, the time it took to click all 20 targets will be shown."
+    ]
+  }
+
 };
