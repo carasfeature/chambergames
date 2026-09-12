@@ -16,9 +16,12 @@ let fbdb = null, db = null, boot = null;
 
 /** Lowest-wins for timing games, highest-wins for sequence memory. */
 export const RANGES = {
-  reaction: { min: 100, max: 5000, order: "asc"  },
-  aim:      { min: 100, max: 5000, order: "asc"  },
-  sequence: { min: 1,   max: 100,  order: "desc" }
+  // reaction: average of 5 rounds, in ms
+  reaction: { min: 100,  max: 5000,   order: "asc"  },
+  // aim: total time to clear all 20 targets, in ms (roughly 8-25s in practice)
+  aim:      { min: 3000, max: 300000, order: "asc"  },
+  // sequence: highest level reached
+  sequence: { min: 1,    max: 100,    order: "desc" }
 };
 
 /** Twitch names are a-z 0-9 _ only, so they're already safe as database keys. */
