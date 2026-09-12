@@ -166,7 +166,8 @@ svg.fx{pointer-events:none}
 
 <script type="module">
 import { initLeaderboard, watchBoard, submitScore, RANGES } from "../../shared/leaderboard.js";
-import { FIREBASE, USER_KEY, REACTION_TIERS, REACTION_VOID } from "../../shared/config.js";
+import { FIREBASE, USER_KEY, GAMES } from "../../shared/config.js";
+const CFG = GAMES.reaction;
 
 /* ===========================================================
    CONFIG
@@ -175,7 +176,7 @@ import { FIREBASE, USER_KEY, REACTION_TIERS, REACTION_VOID } from "../../shared/
 
 const TRIES=5, DELAY_MIN=3000, DELAY_MAX=7000, FLOOR=10, FEEDBACK_MS=1400;
 
-const TIERS = REACTION_TIERS;   // edit the copy in shared/config.js
+const TIERS = CFG.tiers;   // edit the copy in shared/config.js
 
 /* ---------- who's playing (the site logged them in already) ---------- */
 function getName(){
@@ -229,10 +230,10 @@ function nextTry(){
 }
 
 function press(){
-  if(state==="arming"){ cancelAnimationFrame(raf); return voidTry(REACTION_VOID.title, REACTION_VOID.early); }
+  if(state==="arming"){ cancelAnimationFrame(raf); return voidTry(CFG.voided.title, CFG.voided.early); }
   if(state!=="ready") return;
   const ms=Math.round(performance.now()-signAt);
-  if(ms<FLOOR) return voidTry(REACTION_VOID.title, REACTION_VOID.floor);
+  if(ms<FLOOR) return voidTry(CFG.voided.title, CFG.voided.floor);
   times.push(ms); setCounter();
   state="feedback"; driving(false); stopSign.classList.remove("show");
   show(ms+"ms", times.length<TRIES?`Round ${times.length} of ${TRIES}`:"Adding it up…", false);
