@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Aim Tester — Pizzeria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/ui.css">
+<style>
+:root{ --ink:#241C30; --paper:#FFF8EC; --taxi:#FFC629; --bad:#FF6B5A; }
+
+.wrap{
+  position:relative; width:100%; max-width:1000px; aspect-ratio:5/3;
+  container-type:inline-size;
+  border-radius:14px; overflow:hidden;
+  box-shadow:0 16px 0 -6px rgba(0,0,0,.5);
+  user-select:none; -webkit-tap-highlight-color:transparent;
+  cursor:crosshair;
+}
+.scene{position:absolute; inset:0; width:100%; height:100%}
+
+/* ---------- HUD ---------- */
+.hud{
+  position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between;
+  padding:1.4cqw 2cqw; pointer-events:none;
+  font-family:Bungee,cursive; font-size:2cqw; color:#4A3427;
+  text-shadow:0 .1cqw 0 rgba(255,255,255,.5);
+}
+
+/* ---------- target ---------- */
+.slice{
+  --spin:0deg;
+  position:absolute; width:8.5%; aspect-ratio:100/105;
+  transform:translate(-50%,-50%) rotate(var(--spin));
+  padding:0; border:0; background:none;
+  cursor:crosshair; display:none;
+  filter:drop-shadow(0 .5cqw .7cqw rgba(0,0,0,.3));
+}
+.slice.on{display:block; animation:pop .08s ease-out}
+@keyframes pop{
+  from{transform:translate(-50%,-50%) rotate(var(--spin)) scale(.7)}
+  to  {transform:translate(-50%,-50%) rotate(var(--spin)) scale(1)}
+}
+.slice:focus-visible{outline:.3cqw solid var(--taxi); outline-offset:.4cqw; border-radius:50%}
+
+/* ---------- overlays ---------- */
+.veil{position:absolute; inset:0; display:none; place-items:center; padding:4cqw;
+      background:rgba(20,15,28,.88); text-align:center; color:var(--paper)}
+.veil.on{display:grid}
+.card{max-width:54ch}
+.card h1{font-family:Bungee,cursive; font-weight:400; font-size:3.4cqw; margin:0 0 2.2cqw; color:var(--taxi)}
+.steps{list-style:none; margin:0 0 2.6cqw; padding:0; text-align:left; display:grid; gap:1.2cqw}
+.steps li{font-size:1.9cqw; line-height:1.45; display:grid; grid-template-columns:auto 1fr; gap:1.1cqw}
+.steps b{font-family:Bungee,cursive; font-weight:400; color:var(--taxi)}
+.btn{ font-family:Bungee,cursive; font-size:2cqw; background:var(--taxi); color:var(--ink);
+      border:.26cqw solid var(--ink); border-radius:1cqw; padding:1.1cqw 3.2cqw; cursor:pointer;
+      box-shadow:0 .5cqw 0 rgba(0,0,0,.55); transition:transform .08s, box-shadow .08s; }
+.btn:hover{transform:translateY(.15cqw); box-shadow:0 .35cqw 0 rgba(0,0,0,.55)}
+.btn:active{transform:translateY(.5cqw); box-shadow:0 0 0 rgba(0,0,0,.55)}
+.final{font-family:Bungee,cursive; font-size:7cqw; color:var(--taxi); line-height:1; margin:.6cqw 0}
+.sub{font-size:1.8cqw; opacity:.85; margin:0}
+.msg{font-size:1.5cqw; margin-top:1.6cqw; min-height:1.9cqw; opacity:.9}
+
+/* ---------- leaderboard ---------- */
+.board{width:100%; max-width:1000px}
+.board h2{font-family:Bungee,cursive; font-weight:400; font-size:19px; margin:0 0 13px; color:var(--taxi)}
+.board ol{list-style:none; margin:0; padding:0; display:grid; gap:6px; grid-template-columns:1fr}
+@media(min-width:760px){.board ol{grid-template-columns:1fr 1fr; grid-template-rows:repeat(10,auto); grid-auto-flow:column; gap:6px 18px}}
+.board li{display:grid; grid-template-columns:32px 1fr auto; gap:12px; align-items:center;
+          background:rgba(255,255,255,.06); border-radius:10px; padding:11px 14px; font-weight:700; font-size:15px}
+.board li.me{background:rgba(255,198,41,.16); box-shadow:inset 0 0 0 2px var(--taxi)}
+.rank{font-family:Bungee,cursive; font-size:13px; opacity:.6}
+.board li:first-child .rank{opacity:1; color:var(--taxi)}
+.ms{font-family:Bungee,cursive; font-size:15px}
+.note{font-size:13px; opacity:.6; margin-top:12px; line-height:1.5}
+@media(prefers-reduced-motion:reduce){.slice.on{animation:none}}
+</style>
+</head>
+<body>
+
+<nav class="crumbs">
+  <a href="../../index.html">Home</a><span>/</span>
+  <a href="../index.html">Games</a><span>/</span>
+  <a href="index.html">Reactions Test</a><span>/</span>
+  <span>Aim Tester</span>
+</nav>
+
+<div class="wrap" id="wrap">
+  <!-- deliberately low-contrast pizzeria so the slices are the only thing that pops -->
+  <svg class="scene" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#F0E2CC"/><stop offset="100%" stop-color="#E2D0B6"/>
+      </linearGradient>
+      <pattern id="tiles" width="50" height="50" patternUnits="userSpaceOnUse">
+        <rect width="50" height="50" fill="#E7D8C0"/>
+        <rect width="25" height="25" fill="#DFCDB1"/>
+        <rect x="25" y="25" width="25" height="25" fill="#DFCDB1"/>
+      </pattern>
+    </defs>
+
+    <rect width="1000" height="600" fill="url(#wall)"/>
+    <rect y="430" width="1000" height="170" fill="url(#tiles)" opacity=".75"/>
+    <rect y="424" width="1000" height="10" fill="#C9B394"/>
+
+    <!-- counter -->
+    <rect y="520" width="1000" height="80" fill="#B9906A"/>
+    <rect y="520" width="1000" height="12" fill="#CBA079"/>
+
+    <!-- faint wall dressing, kept very low contrast -->
+    <g opacity=".28" fill="#C4AE90">
+      <rect x="70"  y="90"  width="120" height="86" rx="6"/>
+      <rect x="240" y="120" width="86"  height="60" rx="6"/>
+      <rect x="810" y="100" width="120" height="80" rx="6"/>
+    </g>
+    <g opacity=".2" stroke="#B49D80" stroke-width="4" fill="none">
+      <circle cx="500" cy="130" r="52"/>
+      <path d="M500 96 v34 l22 14"/>
+    </g>
+  </svg>
+
+  <div class="hud">
+    <span id="hudCount">0/20</span>
+    <span id="hudTime">0.00s</span>
+  </div>
+
+  <button class="slice" id="slice" aria-label="Pizza slice target">
+    <svg viewBox="0 0 100 105">
+      <path d="M15,76 Q50,90 85,76 L88,86 Q50,101 12,86 Z" fill="#D9A05B" stroke="#8A5A2B" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M50,6 L85,76 Q50,90 15,76 Z" fill="#F2C14E" stroke="#8A5A2B" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="50" cy="34" r="6.5" fill="#C5372C"/>
+      <circle cx="37" cy="57" r="7"   fill="#C5372C"/>
+      <circle cx="63" cy="59" r="6.5" fill="#C5372C"/>
+      <circle cx="50" cy="73" r="6"   fill="#C5372C"/>
+      <path d="M50,12 L58,28" stroke="#F7D889" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+    </svg>
+  </button>
+
+  <!-- instructions -->
+  <div class="veil on" id="veilIntro">
+    <div class="card">
+      <h1 id="introTitle">Before you order</h1>
+      <ol class="steps" id="introSteps"></ol>
+      <button class="btn" id="btnStart">Start</button>
+    </div>
+  </div>
+
+  <!-- result -->
+  <div class="veil" id="veilEnd">
+    <div class="card">
+      <h1>All 20 down</h1>
+      <div class="final" id="finalTime">—</div>
+      <p class="sub" id="finalSub">—</p>
+      <p><button class="btn" id="btnAgain">Go again</button></p>
+      <p class="msg" id="msg"></p>
+    </div>
+  </div>
+</div>
+
+<section class="board">
+  <h2>Aim Tester &mdash; Top 20</h2>
+  <ol id="boardList"><li><span class="rank">—</span><span>Loading…</span><span class="ms"></span></li></ol>
+  <p class="note" id="boardNote"></p>
+</section>
+
+<script type="module">
+import { initLeaderboard, watchBoard, submitScore, RANGES } from "../../shared/leaderboard.js";
+import { FIREBASE, USER_KEY, GAMES } from "../../shared/config.js";
+const CFG = GAMES.aim;
+
+const TARGETS = CFG.targets;
+const EDGE    = 9;    // % padding so slices never sit half off-screen
+const MIN_GAP = 28;   // % minimum jump between consecutive spawns
+
+const $=id=>document.getElementById(id);
+const wrap=$("wrap"), slice=$("slice"), hudCount=$("hudCount"), hudTime=$("hudTime"),
+      veilIntro=$("veilIntro"), veilEnd=$("veilEnd"),
+      boardList=$("boardList"), boardNote=$("boardNote"), msg=$("msg");
+
+let state="intro", hits=0, startAt=0, last=null, lastAngle=null, ticker=null;
+
+/* ---------- who's playing ---------- */
+function getName(){
+  try{
+    const raw=localStorage.getItem(USER_KEY);
+    if(!raw) return null;
+    const o=raw.trim().startsWith("{")?JSON.parse(raw):{login:raw};
+    return o.display_name||o.displayName||o.login||o.name||o.username||null;
+  }catch{ return null; }
+}
+const NAME=getName();
+
+/* ---------- instructions from config ---------- */
+$("introTitle").textContent = CFG.title;
+$("introSteps").innerHTML = CFG.steps
+  .map((s,i)=>`<li><b>${i+1}</b><span>${s}</span></li>`).join("");
+
+/* ---------- helpers ---------- */
+const fmt = ms => (ms/1000).toFixed(2) + "s";
+
+function place(){
+  let x, y, tries = 0;
+  do{
+    x = EDGE + Math.random()*(100 - 2*EDGE);
+    y = EDGE + Math.random()*(100 - 2*EDGE);
+    tries++;
+  } while(last && Math.hypot(x-last.x, y-last.y) < MIN_GAP && tries < 60);
+  last = {x,y};
+
+  // face a new direction every spawn, and never repeat the last angle
+  let angle;
+  do { angle = Math.floor(Math.random() * 360); }
+  while (lastAngle !== null && Math.abs(angle - lastAngle) < 40);
+  lastAngle = angle;
+
+  slice.style.left = x + "%";
+  slice.style.top  = y + "%";
+  slice.style.setProperty("--spin", angle + "deg");
+  slice.classList.add("on");
+}
+
+function tick(){
+  hudTime.textContent = fmt(performance.now() - startAt);
+  ticker = requestAnimationFrame(tick);
+}
+
+/* ---------- flow ---------- */
+$("btnStart").addEventListener("click", start);
+$("btnAgain").addEventListener("click", start);
+
+function start(){
+  veilIntro.classList.remove("on");
+  veilEnd.classList.remove("on");
+  hits = 0; last = null; lastAngle = null; msg.textContent = "";
+  hudCount.textContent = `0/${TARGETS}`;
+  state = "playing";
+  startAt = performance.now();     // clock starts the instant Start is clicked
+  tick();
+  place();
+}
+
+slice.addEventListener("pointerdown", e => {
+  if(state !== "playing") return;
+  e.preventDefault(); e.stopPropagation();
+  hits++;
+  hudCount.textContent = `${hits}/${TARGETS}`;
+  slice.classList.remove("on");
+  if(hits >= TARGETS) finish();
+  else place();
+});
+
+async function finish(){
+  const total = Math.round(performance.now() - startAt);
+  state = "done";
+  cancelAnimationFrame(ticker);
+  hudTime.textContent = fmt(total);
+
+  $("finalTime").textContent = fmt(total);
+  $("finalSub").textContent  = `${(total/TARGETS/1000).toFixed(3)}s per slice on average.`;
+  veilEnd.classList.add("on");
+
+  const { min, max } = RANGES.aim;
+  if(!NAME){ msg.textContent="No Twitch name found, so this run wasn't saved."; return; }
+  if(total<min || total>max){ msg.textContent=`${fmt(total)} is outside the range the leaderboard accepts.`; return; }
+  msg.textContent="Saving…";
+  try{
+    const { saved, kept } = await submitScore({ game:"aim", name:NAME, score:total });
+    msg.textContent = saved ? "New personal best — you're on the board."
+                            : `Your best run of ${fmt(kept.score)} still stands.`;
+  }catch(err){ msg.textContent="Couldn't save: "+err.message; }
+}
+
+/* ---------- leaderboard ---------- */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function renderBoard(rows){
+  boardList.innerHTML = rows.length
+    ? rows.map((r,i)=>`<li class="${NAME&&r.name.toLowerCase()===String(NAME).toLowerCase()?"me":""}"><span class="rank">${i+1}</span><span>${esc(r.name)}</span><span class="ms">${fmt(r.score)}</span></li>`).join("")
+    : `<li><span class="rank">—</span><span>Nobody's played yet. Be first.</span><span class="ms"></span></li>`;
+  boardNote.textContent="Fastest time to clear all 20 slices. Only your best run is kept.";
+}
+
+(async () => {
+  if(!FIREBASE.databaseURL){
+    boardList.innerHTML="";
+    boardNote.textContent="Leaderboard is off: databaseURL is empty in shared/config.js.";
+    return;
+  }
+  try{
+    await initLeaderboard(FIREBASE);
+    console.log("[leaderboard] connected — watching leaderboards/aim");
+    watchBoard({
+      game:"aim", limit:20,
+      onData:rows=>{ console.log("[leaderboard] received", rows.length, "rows"); renderBoard(rows); },
+      onError:e=>{ boardList.innerHTML=""; boardNote.textContent=`Couldn't read the leaderboard (${e.code||"error"}): ${e.message}`; }
+    });
+  }catch(e){
+    boardList.innerHTML="";
+    boardNote.textContent="Couldn't connect to Firebase: "+e.message;
+    console.error("[leaderboard] init failed:", e);
+  }
+})();
+</script>
+</body>
+</html>
