@@ -329,6 +329,7 @@
     pointer-events:none; opacity:.45; border-style:dashed; box-shadow:none;
   }
   .game-card.soon .game-card-badge{background:var(--border-soft); color:var(--ink-soft);}
+  .game-card.wide{grid-column:1 / -1;}
   .games-empty{text-align:center; color:var(--ink-soft); font-size:14px; padding:60px 20px;}
 
   .app-section{display:none;}
@@ -588,8 +589,8 @@
   </div>
   <div class="hero-center">
     <div class="eyebrow-line">ChristinaAndAmber</div>
-    <h1 class="title" data-text="IT'S NOT A PHASE">IT'S NOT A PHASE</h1>
-    <div class="game-wordmark"><span>CHAMBER</span> TOURNAMENTS</div>
+    <h1 class="title" data-text="CHAMBER TOURNAMENTS">CHAMBER TOURNAMENTS</h1>
+    <div class="game-wordmark"><span>IT'S NOT</span> A PHASE</div>
   </div>
 </div>
 
@@ -945,15 +946,15 @@ const TAB_DATA = {
     linkText:'Enter →', section:'social'
   }
 };
-// Caroline's games — add entries here as they're built.
-// `href` is relative to the site root. Omit it to show a greyed-out "Soon" card.
+// Caroline's games — order here is the order on screen.
+// `href` = built and playable. No href = greyed-out "Soon" card.
+// `wide: true` = card spans both columns.
 const CAROLINE_GAMES = [
-  { title:'Reactions Test', desc:'Reflexes, aim and memory. Three quick tests, leaderboards on all of them.', href:'games/reactions/index.html' },
-  { title:'Stream Bingo',   desc:'Everyone gets a different card. Mark them off live during the subathon.' },
-  { title:'Wordle',         desc:'Five letters, six guesses, one shared word a day.' },
-  { title:'This or That',   desc:'Two options, chat votes in real time, results revealed on stream.' },
-  { title:'Skribbl',        desc:'One person draws, everyone else guesses. Room codes and scoring.' },
-  { title:'Tier List',      desc:'Drag things into tiers, argue about it, export the result as an image.' }
+  { title:'Subathon Bingo',  desc:'Everyone gets a different card. Mark squares off live during the subathon.', wide:true },
+  { title:'Wordle',          desc:'Five letters, six guesses, one shared word a day.' },
+  { title:'Reactions Test',  desc:'Reflexes, aim and memory. Three quick tests, leaderboards on all of them.', href:'games/reactions/index.html' },
+  { title:'Typing Race',     desc:'Race chat to the end of the paragraph. Words per minute, ranked.' },
+  { title:'This or That',    desc:'Two options, chat votes in real time, results revealed on stream.' }
 ];
 
 function renderCarolineGames(){
@@ -970,9 +971,10 @@ function renderCarolineGames(){
       <div class="game-card-title">${escapeHtml(g.title)}</div>
       <div class="game-card-desc">${escapeHtml(g.desc || '')}</div>
       <div class="game-card-badge">${g.href ? 'Play →' : 'Soon'}</div>`;
+    const wide = g.wide ? ' wide' : '';
     return g.href
-      ? `<a class="game-card" href="${escapeHtml(g.href)}">${body}</a>`
-      : `<div class="game-card soon">${body}</div>`;
+      ? `<a class="game-card${wide}" href="${escapeHtml(g.href)}">${body}</a>`
+      : `<div class="game-card soon${wide}">${body}</div>`;
   }).join('');
 }
 
