@@ -80,12 +80,7 @@
 </head>
 <body>
 
-<nav class="crumbs">
-  <a href="../../index.html">Home</a><span>/</span>
-  <a href="../index.html">Games</a><span>/</span>
-  <a href="index.html">Reactions Test</a><span>/</span>
-  <span>Aim Tester</span>
-</nav>
+<nav class="topbar"><a class="back" href="index.html"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
 
 <div class="wrap" id="wrap">
   <!-- deliberately low-contrast pizzeria so the slices are the only thing that pops -->
@@ -269,7 +264,12 @@ async function finish(){
     const { saved, kept } = await submitScore({ game:"aim", name:NAME, score:total });
     msg.textContent = saved ? "New personal best — you're on the board."
                             : `Your best run of ${fmt(kept.score)} still stands.`;
-  }catch(err){ msg.textContent="Couldn't save: "+err.message; }
+  }catch(err){
+    msg.textContent = /permission/i.test(err.message||"")
+      ? `Firebase rejected ${fmt(total)} (${total}ms). The rules probably still have the old aim range — it needs to allow ${min}-${max}.`
+      : "Couldn't save: " + err.message;
+    console.error("[aim] save failed", { score: total, allowed: [min, max] }, err);
+  }
 }
 
 /* ---------- leaderboard ---------- */
