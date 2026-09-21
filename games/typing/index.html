@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Typing Race — Outback</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/ui.css">
+<style>
+:root{ --ink:#241C30; --paper:#FFF8EC; --taxi:#FFC629; --bad:#FF6B5A; --ok:#7FD39A; --earth:#3A2620; }
+
+.game{
+  position:relative; width:100%; max-width:1000px; min-height:560px;
+  border-radius:14px; overflow:hidden; background:var(--earth);
+  box-shadow:0 16px 0 -6px rgba(0,0,0,.5);
+}
+.banner{display:block; width:100%; height:auto}
+
+/* ---------- HUD ---------- */
+.hud{
+  display:flex; flex-wrap:wrap; gap:10px 26px; align-items:baseline;
+  padding:16px 22px 4px; font-family:Bungee,cursive; font-size:15px; color:#F4D9B8;
+}
+.hud b{font-weight:400; color:var(--taxi); font-size:22px; margin-left:6px}
+.hud .lvl{margin-right:auto; color:var(--paper)}
+
+/* ---------- passage + input ---------- */
+.body{padding:10px 22px 22px; display:grid; gap:14px}
+.passage{
+  background:#2A1B17; border-radius:12px; padding:18px 20px;
+  font:700 clamp(17px,2.1vw,21px)/1.7 Nunito,sans-serif; color:#CDB9A6;
+  letter-spacing:.01em; cursor:text; user-select:none;
+}
+.passage span{border-radius:3px}
+.passage .ok{color:var(--ok)}
+.passage .err{color:#fff; background:var(--bad)}
+.passage .cur{box-shadow:inset 0 -3px 0 var(--taxi); color:var(--paper)}
+
+.typebox{
+  width:100%; background:#FFF8EC; color:var(--ink); border:3px solid transparent; border-radius:12px;
+  padding:13px 16px; font:700 18px Nunito,sans-serif;
+}
+.typebox:focus{outline:none; border-color:var(--taxi)}
+.typebox.bad{border-color:var(--bad)}
+.typebox:disabled{opacity:.5}
+.row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.tip{font-size:13px; color:#D9C1A8; margin:0; flex:1}
+
+.btn{ font-family:Bungee,cursive; font-size:15px; background:var(--taxi); color:var(--ink);
+      border:3px solid var(--ink); border-radius:12px; padding:11px 22px; cursor:pointer;
+      box-shadow:0 5px 0 rgba(0,0,0,.5); transition:transform .08s, box-shadow .08s; }
+.btn:hover{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.5)}
+.btn:active{transform:translateY(5px); box-shadow:0 0 0 rgba(0,0,0,.5)}
+.btn.ghost{background:transparent; color:var(--paper); border-color:var(--paper); box-shadow:none}
+
+/* ---------- overlays ---------- */
+.veil{position:absolute; inset:0; display:none; place-items:center; padding:24px;
+      background:rgba(28,16,12,.9); text-align:center; color:var(--paper); z-index:5}
+.veil.on{display:grid}
+.card{max-width:560px}
+.card h1{font-family:Bungee,cursive; font-weight:400; font-size:clamp(24px,3.6vw,34px); margin:0 0 18px; color:var(--taxi)}
+.steps{list-style:none; margin:0 0 22px; padding:0; text-align:left; display:grid; gap:10px}
+.steps li{font-size:16px; line-height:1.45; display:grid; grid-template-columns:auto 1fr; gap:10px}
+.steps b{font-family:Bungee,cursive; font-weight:400; color:var(--taxi)}
+.levels{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.lvlbtn{
+  display:grid; gap:3px; padding:14px 8px; border-radius:12px; cursor:pointer;
+  background:#3A2620; color:var(--paper); border:3px solid #6B4A3A;
+  font-family:Bungee,cursive; font-size:17px;
+}
+.lvlbtn small{font-family:Nunito,sans-serif; font-weight:700; font-size:12px; opacity:.7}
+.lvlbtn:hover{border-color:var(--taxi)}
+.lvlbtn:focus-visible{outline:3px solid var(--taxi); outline-offset:2px}
+.count{font-family:Bungee,cursive; font-size:120px; color:var(--taxi); line-height:1}
+.final{font-family:Bungee,cursive; font-size:clamp(46px,8vw,76px); color:var(--taxi); line-height:1; margin:4px 0}
+.stats{display:flex; justify-content:center; gap:22px; flex-wrap:wrap; margin:12px 0 20px; font-weight:900; font-size:15px; opacity:.9}
+.msg{font-size:14px; margin-top:16px; min-height:20px; opacity:.9}
+
+/* ---------- three leaderboards ---------- */
+.boards{width:100%; max-width:1000px; display:grid; gap:18px; grid-template-columns:1fr}
+@media(min-width:820px){.boards{grid-template-columns:repeat(3,1fr)}}
+.board{border-radius:14px; padding:14px; background:rgba(255,255,255,.03); border:2px solid transparent}
+.board.current{border-color:var(--taxi)}
+.board h2{font-family:Bungee,cursive; font-weight:400; font-size:16px; margin:0 0 11px; color:var(--taxi)}
+.board ol{list-style:none; margin:0; padding:0; display:grid; gap:5px}
+.board li{display:grid; grid-template-columns:24px 1fr auto; gap:9px; align-items:center;
+          background:rgba(255,255,255,.06); border-radius:9px; padding:9px 11px; font-weight:700; font-size:14px}
+.board li.me{background:rgba(255,198,41,.16); box-shadow:inset 0 0 0 2px var(--taxi)}
+.board li span:nth-child(2){overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rank{font-family:Bungee,cursive; font-size:12px; opacity:.6}
+.board li:first-child .rank{opacity:1; color:var(--taxi)}
+.wpm{font-family:Bungee,cursive; font-size:13px}
+.note{font-size:13px; opacity:.6; margin:0; max-width:1000px; width:100%}
+</style>
+</head>
+<body>
+
+<nav class="topbar"><a class="back" href="../../index.html" onclick="try{if(document.referrer&&new URL(document.referrer).origin===location.origin){history.back();return false;}}catch(e){}"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
+
+<div class="game" id="game">
+
+  <!-- outback banner + race track -->
+  <svg class="banner" viewBox="0 0 1000 250" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#F6B679"/><stop offset="70%" stop-color="#F9D39A"/><stop offset="100%" stop-color="#FBE2B2"/>
+      </linearGradient>
+    </defs>
+    <rect width="1000" height="250" fill="url(#sky)"/>
+    <circle cx="820" cy="118" r="46" fill="#FCE7B8" opacity=".9"/>
+    <!-- Uluru -->
+    <path d="M300 160 C 318 118, 350 108, 420 106 C 500 104, 560 110, 600 124 C 628 134, 642 148, 650 160 Z" fill="#B85A34"/>
+    <path d="M360 160 C 372 136, 384 124, 396 118 M470 160 C 474 134, 480 118, 486 110 M550 160 C 556 140, 566 128, 578 122" stroke="#9C4829" stroke-width="3" fill="none" opacity=".6"/>
+    <!-- red earth -->
+    <rect y="158" width="1000" height="92" fill="#C8642F"/>
+    <g fill="#A9502A" opacity=".6">
+      <ellipse cx="120" cy="176" rx="40" ry="5"/><ellipse cx="700" cy="172" rx="60" ry="6"/><ellipse cx="930" cy="182" rx="36" ry="4"/>
+    </g>
+    <!-- spinifex tufts -->
+    <g fill="#8C8A4A">
+      <path d="M60 170 l6-14 4 14 5-12 3 12z"/><path d="M240 168 l5-12 4 12 5-10 3 10z"/>
+      <path d="M760 170 l6-14 4 14 5-12 3 12z"/><path d="M960 168 l5-12 4 12 5-10 3 10z"/>
+    </g>
+    <!-- ROOS road sign -->
+    <g transform="translate(150 96)">
+      <rect x="-3" y="30" width="6" height="40" fill="#5B4636"/>
+      <rect x="-26" y="-26" width="52" height="52" rx="5" transform="rotate(45)" fill="#FFC629" stroke="#241C30" stroke-width="4"/>
+      <text x="0" y="-2" text-anchor="middle" font-family="Bungee,cursive" font-size="13" fill="#241C30">ROOS</text>
+      <text x="0" y="13" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="900" font-size="9" fill="#241C30">NEXT 20 km</text>
+    </g>
+
+    <!-- race track -->
+    <rect y="200" width="1000" height="36" fill="#8E4524"/>
+    <g fill="#E9C9A0" opacity=".55">
+      <rect x="40" y="216" width="30" height="4" rx="2"/><rect x="130" y="216" width="30" height="4" rx="2"/>
+      <rect x="220" y="216" width="30" height="4" rx="2"/><rect x="310" y="216" width="30" height="4" rx="2"/>
+      <rect x="400" y="216" width="30" height="4" rx="2"/><rect x="490" y="216" width="30" height="4" rx="2"/>
+      <rect x="580" y="216" width="30" height="4" rx="2"/><rect x="670" y="216" width="30" height="4" rx="2"/>
+      <rect x="760" y="216" width="30" height="4" rx="2"/><rect x="850" y="216" width="30" height="4" rx="2"/>
+    </g>
+    <!-- chequered finish -->
+    <g transform="translate(948 186)">
+      <rect x="0" y="0" width="4" height="50" fill="#241C30"/>
+      <g transform="translate(4 0)">
+        <rect width="30" height="20" fill="#fff"/>
+        <rect width="10" height="10" fill="#241C30"/><rect x="20" width="10" height="10" fill="#241C30"/>
+        <rect x="10" y="10" width="10" height="10" fill="#241C30"/>
+      </g>
+    </g>
+    <!-- the ute (moves as you type) -->
+    <g id="ute" transform="translate(20 0)">
+      <g transform="translate(0 178)">
+        <rect x="0" y="16" width="86" height="20" rx="4" fill="#F4EFE6"/>
+        <path d="M44 16 L50 2 L74 2 L84 16 Z" fill="#F4EFE6"/>
+        <path d="M52 5 L72 5 L78 15 L50 15 Z" fill="#7FB3C9"/>
+        <rect x="4" y="12" width="36" height="5" rx="1" fill="#D6CFC2"/>
+        <rect x="80" y="22" width="7" height="5" rx="1" fill="#FFC629"/>
+        <circle cx="20" cy="37" r="8" fill="#241C30"/><circle cx="20" cy="37" r="3" fill="#8A8A8A"/>
+        <circle cx="68" cy="37" r="8" fill="#241C30"/><circle cx="68" cy="37" r="3" fill="#8A8A8A"/>
+      </g>
+    </g>
+  </svg>
+
+  <div class="hud">
+    <span class="lvl" id="hudLevel">Pick a level</span>
+    <span>WPM<b id="hudWpm">0</b></span>
+    <span>Accuracy<b id="hudAcc">100%</b></span>
+    <span>Time<b id="hudTime">0.0s</b></span>
+  </div>
+
+  <div class="body">
+    <div class="passage" id="passage" aria-live="off"></div>
+    <input class="typebox" id="typebox" type="text" autocomplete="off" autocorrect="off"
+           autocapitalize="off" spellcheck="false" aria-label="Type the passage here" disabled>
+    <div class="row">
+      <p class="tip" id="tip">The clock starts on your first key. Mistakes turn red — fix them to finish.</p>
+      <button class="btn ghost" id="btnRestart">Restart</button>
+      <button class="btn ghost" id="btnLevel">Change level</button>
+    </div>
+  </div>
+
+  <!-- instructions + level pick -->
+  <div class="veil on" id="veilIntro">
+    <div class="card">
+      <h1 id="introTitle">Before you race</h1>
+      <ol class="steps" id="introSteps"></ol>
+      <div class="levels" id="levelPick"></div>
+    </div>
+  </div>
+
+  <!-- countdown -->
+  <div class="veil" id="veilCount"><div class="count" id="countNum">3</div></div>
+
+  <!-- result -->
+  <div class="veil" id="veilEnd">
+    <div class="card">
+      <h1 id="endTitle">Finished!</h1>
+      <div class="final" id="finalWpm">—</div>
+      <div class="stats"><span id="finalAcc">—</span><span id="finalTime">—</span><span id="finalLvl">—</span></div>
+      <div class="row" style="justify-content:center">
+        <button class="btn" id="btnAgain">Race again</button>
+        <button class="btn ghost" id="btnPick">Change level</button>
+      </div>
+      <p class="msg" id="msg"></p>
+    </div>
+  </div>
+</div>
+
+<section class="boards" id="boards"></section>
+<p class="note" id="boardNote"></p>
+
+<script type="module">
+import { initLeaderboard, watchBoard, submitScore, RANGES } from "../../shared/leaderboard.js";
+import { FIREBASE, USER_KEY, GAMES } from "../../shared/config.js";
+const CFG = GAMES.typing;
+const LEVELS = ["easy","medium","hard"];
+const MAX_AHEAD = 10;           // how far you can keep typing past an uncorrected mistake
+
+const $ = id => document.getElementById(id);
+const box=$("typebox"), passageEl=$("passage"), ute=$("ute"),
+      veilIntro=$("veilIntro"), veilCount=$("veilCount"), veilEnd=$("veilEnd"), msg=$("msg");
+
+function getName(){
+  try{
+    const raw=localStorage.getItem(USER_KEY);
+    if(!raw) return null;
+    const o=raw.trim().startsWith("{")?JSON.parse(raw):{login:raw};
+    return o.display_name||o.displayName||o.login||o.name||o.username||null;
+  }catch{ return null; }
+}
+const NAME=getName();
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- intro from config ---------- */
+$("introTitle").textContent = CFG.title;
+$("introSteps").innerHTML = CFG.steps.map((s,i)=>`<li><b>${i+1}</b><span>${s}</span></li>`).join("");
+$("levelPick").innerHTML = LEVELS.map(k=>{
+  const words = CFG.levels[k].passages[0].split(/\s+/).length;
+  return `<button class="lvlbtn" data-level="${k}">${CFG.levels[k].label}<small>${words} words</small></button>`;
+}).join("");
+
+/* ---------- state ---------- */
+let level=null, passage="", spans=[], prev="", startAt=0, keys=0, goodKeys=0,
+    state="intro", ticker=null, lastIdx=-1, run=0;
+
+const words = t => t.split(/\s+/).length;
+const firstError = typed => { for(let i=0;i<typed.length;i++) if(typed[i]!==passage[i]) return i; return -1; };
+const fmtT = ms => (ms/1000).toFixed(1)+"s";
+
+function pickPassage(){
+  const list = CFG.levels[level].passages;
+  let i; do { i = Math.floor(Math.random()*list.length); } while(list.length>1 && i===lastIdx);
+  lastIdx = i;
+  return list[i];
+}
+
+function renderPassage(){
+  passageEl.innerHTML = [...passage].map(c=>`<span>${esc(c)}</span>`).join("");
+  spans = [...passageEl.children];
+}
+
+function paint(typed){
+  for(let i=0;i<spans.length;i++){
+    const s=spans[i];
+    s.className = i<typed.length ? (typed[i]===passage[i] ? "ok" : "err")
+                : i===typed.length ? "cur" : "";
+  }
+  const bad = firstError(typed)!==-1;
+  box.classList.toggle("bad", bad);
+  const correct = bad ? firstError(typed) : typed.length;
+  moveUte(correct / passage.length);
+}
+
+function moveUte(p){
+  const x = 20 + Math.max(0,Math.min(1,p)) * (940 - 20 - 86);
+  ute.setAttribute("transform", `translate(${x.toFixed(1)} 0)`);
+}
+
+function hud(){
+  const ms = startAt ? performance.now()-startAt : 0;
+  const typed = box.value;
+  const fe = firstError(typed);
+  const correct = fe===-1 ? typed.length : fe;
+  const wpm = ms>1000 ? Math.round((correct/5)/(ms/60000)) : 0;
+  $("hudWpm").textContent = wpm;
+  $("hudAcc").textContent = (keys ? Math.round(goodKeys/keys*100) : 100) + "%";
+  $("hudTime").textContent = fmtT(ms);
+}
+
+/* ---------- flow ---------- */
+$("levelPick").addEventListener("click", e=>{
+  const b=e.target.closest(".lvlbtn"); if(!b) return;
+  level=b.dataset.level; begin();
+});
+$("btnAgain").addEventListener("click", ()=>begin());
+$("btnRestart").addEventListener("click", ()=>{ if(level) begin(); });
+$("btnPick").addEventListener("click", openPicker);
+$("btnLevel").addEventListener("click", openPicker);
+passageEl.addEventListener("click", ()=>{ if(!box.disabled) box.focus(); });
+
+function openPicker(){
+  run++; stopTicker(); state="intro";
+  box.disabled=true; veilEnd.classList.remove("on"); veilCount.classList.remove("on");
+  veilIntro.classList.add("on");
+}
+
+async function begin(){
+  const me=++run;
+  stopTicker();
+  veilIntro.classList.remove("on"); veilEnd.classList.remove("on");
+  passage = pickPassage();
+  renderPassage();
+  box.value=""; prev=""; keys=0; goodKeys=0; startAt=0; msg.textContent="";
+  box.disabled=true; paint(""); hud();
+  $("hudLevel").textContent = `${CFG.levels[level].label} · ${words(passage)} words`;
+  markCurrentBoard();
+
+  state="countdown"; veilCount.classList.add("on");
+  for(const n of ["3","2","1"]){
+    $("countNum").textContent=n;
+    await new Promise(r=>setTimeout(r,550));
+    if(me!==run) return;
+  }
+  veilCount.classList.remove("on");
+  state="ready"; box.disabled=false; box.focus();
+}
+
+function stopTicker(){ cancelAnimationFrame(ticker); ticker=null; }
+function tick(){ hud(); ticker=requestAnimationFrame(tick); }
+
+/* ---------- typing ---------- */
+// block paste, drag-and-drop and anything that inserts more than one character at once
+box.addEventListener("paste", e=>e.preventDefault());
+box.addEventListener("drop",  e=>e.preventDefault());
+box.addEventListener("keydown", e=>{ if(e.key==="Enter") e.preventDefault(); });
+
+box.addEventListener("input", ()=>{
+  if(state!=="ready" && state!=="typing"){ box.value=prev; return; }
+  const v = box.value;
+
+  const appended = v.length===prev.length+1 && v.startsWith(prev);
+  const deleted  = v.length<prev.length && prev.startsWith(v);
+  if(!appended && !deleted){ box.value=prev; return; }   // paste, autocorrect, mid-text edits
+
+  if(appended){
+    const fe = firstError(prev);
+    if(v.length>passage.length || (fe!==-1 && v.length>fe+MAX_AHEAD)){ box.value=prev; return; }
+    if(state==="ready"){ state="typing"; startAt=performance.now(); tick(); }
+    keys++; if(v[v.length-1]===passage[v.length-1]) goodKeys++;
+  }
+
+  prev=v; paint(v);
+  if(v===passage) finish();
+});
+
+/* ---------- finish + save ---------- */
+async function finish(){
+  const ms = performance.now()-startAt;
+  state="done"; stopTicker(); hud(); box.disabled=true; moveUte(1);
+  const wpm = Math.round((passage.length/5)/(ms/60000));
+  const acc = keys ? Math.round(goodKeys/keys*100) : 100;
+  const game = `typing_${level}`;
+
+  $("endTitle").textContent = wpm>=80 ? "Flat out, mate!" : wpm>=45 ? "Good on ya!" : "She'll be right!";
+  $("finalWpm").textContent = `${wpm} WPM`;
+  $("finalAcc").textContent = `${acc}% accuracy`;
+  $("finalTime").textContent = fmtT(ms);
+  $("finalLvl").textContent = CFG.levels[level].label;
+  veilEnd.classList.add("on");
+
+  const { min, max } = RANGES[game];
+  if(!NAME){ msg.textContent="No Twitch name found, so this race wasn't saved."; return; }
+  if(wpm<min || wpm>max){ msg.textContent=`${wpm} WPM is outside the range the leaderboard accepts (${min}–${max}).`; return; }
+  msg.textContent="Saving…";
+  try{
+    const { saved, kept } = await submitScore({ game, name:NAME, score:wpm });
+    msg.textContent = saved ? `New ${CFG.levels[level].label} personal best — you're on the board.`
+                            : `Your best of ${kept.score} WPM on ${CFG.levels[level].label} still stands.`;
+  }catch(err){
+    msg.textContent = /permission/i.test(err.message||"")
+      ? "Firebase rejected the score — check the typing rule is in your Firebase rules."
+      : "Couldn't save: "+err.message;
+    console.error("[typing] save failed",{game,wpm},err);
+  }
+}
+
+/* ---------- three leaderboards ---------- */
+$("boards").innerHTML = LEVELS.map(k=>`
+  <div class="board" id="board_${k}">
+    <h2>${CFG.levels[k].label} &mdash; Top 10</h2>
+    <ol id="list_${k}"><li><span class="rank">—</span><span>Loading…</span><span class="wpm"></span></li></ol>
+  </div>`).join("");
+
+function markCurrentBoard(){
+  LEVELS.forEach(k=>$("board_"+k).classList.toggle("current", k===level));
+}
+
+function renderBoard(k, rows){
+  $("list_"+k).innerHTML = rows.length
+    ? rows.map((r,i)=>`<li class="${NAME&&r.name.toLowerCase()===String(NAME).toLowerCase()?"me":""}"><span class="rank">${i+1}</span><span>${esc(r.name)}</span><span class="wpm">${r.score} WPM</span></li>`).join("")
+    : `<li><span class="rank">—</span><span>Nobody yet. Be first.</span><span class="wpm"></span></li>`;
+}
+
+(async ()=>{
+  if(!FIREBASE.databaseURL){
+    LEVELS.forEach(k=>$("list_"+k).innerHTML="");
+    $("boardNote").textContent="Leaderboards are off: databaseURL is empty in shared/config.js.";
+    return;
+  }
+  try{
+    await initLeaderboard(FIREBASE);
+    LEVELS.forEach(k=>watchBoard({
+      game:`typing_${k}`, limit:10,
+      onData:rows=>renderBoard(k,rows),
+      onError:e=>{ $("list_"+k).innerHTML=""; $("boardNote").textContent=`Couldn't read a leaderboard (${e.code||"error"}): ${e.message}`; }
+    }));
+    $("boardNote").textContent="Best words per minute on each level. Only your best race per level is kept.";
+  }catch(e){
+    $("boardNote").textContent="Couldn't connect to Firebase: "+e.message;
+    console.error("[leaderboard] init failed:", e);
+  }
+})();
+</script>
+</body>
+</html>
