@@ -105,6 +105,24 @@ export const GAMES = {
     }
   },
 
+  wordwlw: {
+    guesses: 6,
+    title: "How to play",
+    steps: [
+      "Guess the 5-letter word in 6 tries.",
+      "Green = right letter, right spot. Yellow = in the word, wrong spot. Grey = not in the word.",
+      "Win or lose, hit New word to roll another one."
+    ],
+    /* Every answer must be exactly 5 letters. Anything else is skipped automatically.
+       ("couple" was left out — it has 6.) */
+    words: [
+      "queer", "femme", "women", "pride", "girls", "dykes", "butch", "honey",
+      "babes", "chats", "carol", "video", "emote", "gifts", "vlogs", "audio",
+      "clips", "setup", "views", "badge", "amber", "wives", "miami", "beers",
+      "uhaul"
+    ]
+  },
+
   caption: {
     /* Seconds people get to type a caption once the image appears. */
     submitSeconds: 30,
