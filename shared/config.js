@@ -50,6 +50,27 @@ export const GAMES = {
       "Click pizza slices as quickly as you can. There are 20, showing up one by one.",
       "When you finish, the time it took to click all 20 targets will be shown."
     ]
+  },
+
+  caption: {
+    /* Seconds people get to type a caption once the image appears. */
+    submitSeconds: 30,
+    /* How many random captions get drawn for the streamer to choose from. */
+    finalists: 5,
+    /* Longest caption allowed, in characters. */
+    maxLength: 100,
+
+    /* Your image pack. Upload the files to games/caption/images/
+       and list the filenames here. */
+    images: [
+      "01.jpg", "02.jpg", "03.jpg", "04.jpg", "05.jpg",
+      "06.jpg", "07.jpg", "08.jpg", "09.jpg", "10.jpg"
+    ],
+
+    /* Submissions containing any of these words are silently rejected.
+       Add slurs and anything you never want on the overlay. Case is ignored.
+       Fill this in before going live with an audience. */
+    blocklist: []
   }
 
 };
