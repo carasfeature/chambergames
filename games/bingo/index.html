@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Subathon Bingo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/ui.css">
+<style>
+:root{ --ink:#241C30; --paper:#FFF8EC; --taxi:#FFC629; --earth:#3A2620; --ochre:#C8642F; --stamp:#C8321F; }
+
+.game{
+  position:relative; width:100%; max-width:760px;
+  background:var(--earth); border-radius:16px; overflow:hidden;
+  box-shadow:0 16px 0 -6px rgba(0,0,0,.5);
+}
+.banner{display:block; width:100%; height:auto}
+.sub{
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:12px 18px 0; font-weight:900; font-size:14px; color:#F4D9B8;
+}
+.sub b{font-family:Bungee,cursive; font-weight:400; color:var(--taxi); font-size:17px; margin-left:6px}
+.sync{font-size:12px; font-weight:700; opacity:.8}
+.sync.warn{color:#FFB199; opacity:1}
+
+/* ---------- card ---------- */
+.card5{
+  display:grid; grid-template-columns:repeat(5,1fr); gap:clamp(5px,1.2vw,9px);
+  padding:clamp(10px,2.4vw,18px);
+}
+.sq{
+  position:relative; aspect-ratio:1; border:0; border-radius:10px; cursor:pointer;
+  background:var(--paper); color:var(--ink);
+  display:grid; place-items:center; padding:6px; text-align:center;
+  font:800 clamp(10px,1.9vw,15px)/1.2 Nunito,sans-serif;
+  overflow-wrap:anywhere; hyphens:auto;
+  box-shadow:0 4px 0 rgba(0,0,0,.35); transition:transform .08s, box-shadow .08s;
+}
+.sq:hover{transform:translateY(-2px); box-shadow:0 6px 0 rgba(0,0,0,.35)}
+.sq:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.sq:focus-visible{outline:3px solid var(--taxi); outline-offset:2px}
+.sq.empty{color:#B8A68E; font-family:Bungee,cursive; font-weight:400; font-size:clamp(16px,3.4vw,26px)}
+.sq .x{position:absolute; inset:8%; width:84%; height:84%; pointer-events:none; opacity:0; transform:scale(1.25) rotate(-8deg);
+       transition:opacity .12s, transform .12s}
+.sq.on{background:#F1E3C9; color:#8C7B66}
+.sq.on .x{opacity:.92; transform:scale(1) rotate(-8deg)}
+.card5.full .sq, .card5.full .free{box-shadow:0 0 0 3px var(--taxi), 0 4px 0 rgba(0,0,0,.35)}
+
+.free{
+  aspect-ratio:1; border-radius:10px; background:#1F2E5C; display:grid; place-items:center;
+  box-shadow:0 4px 0 rgba(0,0,0,.35); cursor:default;
+}
+.free-text{font-family:Bungee,cursive; font-size:clamp(9px,1.7vw,14px); line-height:1.15; color:var(--taxi); text-align:center; padding:4px}
+
+.bingo{
+  text-align:center; font-family:Bungee,cursive; font-size:clamp(26px,5vw,40px); color:var(--taxi);
+  padding:0 18px 14px; min-height:14px; text-shadow:0 3px 0 rgba(0,0,0,.4);
+}
+
+/* ---------- intro ---------- */
+.veil{position:absolute; inset:0; display:none; place-items:center; padding:24px;
+      background:rgba(28,16,12,.92); text-align:center; color:var(--paper); z-index:5}
+.veil.on{display:grid}
+.card{max-width:480px}
+.card h1{font-family:Bungee,cursive; font-weight:400; font-size:28px; margin:0 0 16px; color:var(--taxi)}
+.steps{list-style:none; margin:0 0 22px; padding:0; text-align:left; display:grid; gap:10px}
+.steps li{font-size:15px; line-height:1.45; display:grid; grid-template-columns:auto 1fr; gap:10px}
+.steps b{font-family:Bungee,cursive; font-weight:400; color:var(--taxi)}
+.btn{ font-family:Bungee,cursive; font-size:16px; background:var(--taxi); color:var(--ink);
+      border:3px solid var(--ink); border-radius:12px; padding:12px 26px; cursor:pointer;
+      box-shadow:0 5px 0 rgba(0,0,0,.5); }
+.btn:hover{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.5)}
+.btn:active{transform:translateY(5px); box-shadow:0 0 0 rgba(0,0,0,.5)}
+.note{max-width:760px; text-align:center}
+@media(prefers-reduced-motion:reduce){.sq .x{transition:none}}
+</style>
+</head>
+<body>
+
+<nav class="topbar"><a class="back" href="../../index.html#section=krispysgames"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
+
+<div class="game" id="game">
+  <!-- outback banner -->
+  <svg class="banner" viewBox="0 0 760 150" aria-hidden="true">
+    <defs>
+      <linearGradient id="bsky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#F6B679"/><stop offset="100%" stop-color="#FBE2B2"/>
+      </linearGradient>
+    </defs>
+    <rect width="760" height="150" fill="url(#bsky)"/>
+    <circle cx="640" cy="78" r="34" fill="#FCE7B8" opacity=".9"/>
+    <path d="M470 118 C 482 92, 505 84, 552 83 C 604 82, 640 86, 664 96 C 682 103, 690 110, 696 118 Z" fill="#B85A34"/>
+    <rect y="116" width="760" height="34" fill="#C8642F"/>
+    <g fill="#8C8A4A"><path d="M40 128 l5-12 4 12 5-10 3 10z"/><path d="M430 126 l5-12 4 12 5-10 3 10z"/><path d="M720 128 l5-12 4 12 5-10 3 10z"/></g>
+    <text x="30" y="72" font-family="Bungee,cursive" font-size="40" fill="#241C30" opacity=".9">SUBATHON</text>
+    <text x="32" y="106" font-family="Bungee,cursive" font-size="28" fill="#FFF8EC" stroke="#241C30" stroke-width="1.5">BINGO</text>
+  </svg>
+
+  <div class="sub">
+    <span>Crossed off<b id="count">0/24</b></span>
+    <span class="sync" id="sync">Loading your card…</span>
+  </div>
+
+  <div class="card5" id="cardGrid" role="grid" aria-label="Bingo card"></div>
+  <div class="bingo" id="bingoMsg" role="status" aria-live="polite"></div>
+
+  <div class="veil on" id="veilIntro">
+    <div class="card">
+      <h1 id="introTitle">Subathon Bingo</h1>
+      <ol class="steps" id="introSteps"></ol>
+      <button class="btn" id="btnGo">Grab my card</button>
+    </div>
+  </div>
+</div>
+
+<p class="note" id="foot"></p>
+
+<script type="module">
+import { FIREBASE, USER_KEY, GAMES } from "../../shared/config.js";
+const CFG = GAMES.bingo;
+const FREE = 12;                               // index of the middle square
+const CDN  = "https://www.gstatic.com/firebasejs/10.12.0/";
+
+const $ = id => document.getElementById(id);
+const grid=$("cardGrid"), syncEl=$("sync");
+
+/* ---------- who's playing ---------- */
+function getName(){
+  try{
+    const raw=localStorage.getItem(USER_KEY);
+    if(!raw) return null;
+    const o=raw.trim().startsWith("{")?JSON.parse(raw):{login:raw};
+    const n=o.login||o.display_name||o.displayName||o.name||o.username||"";
+    const clean=String(n).toLowerCase().replace(/[^a-z0-9_]/g,"").slice(0,25);
+    return clean.length>=2 ? clean : null;
+  }catch{ return null; }
+}
+const NAME = getName();
+const CARD = String(CFG.cardId).replace(/[^a-zA-Z0-9_-]/g,"") || "card";
+const LOCAL_KEY = `bingo:${CARD}:${NAME||"guest"}`;
+
+/* ---------- marks: 25 characters of 0/1, middle always 1 ---------- */
+const blank = () => "0".repeat(FREE) + "1" + "0".repeat(24-FREE);
+const valid = s => typeof s==="string" && /^[01]{25}$/.test(s);
+const withFree = s => s.slice(0,FREE) + "1" + s.slice(FREE+1);
+let marks = blank();
+
+function readLocal(){ try{ const s=localStorage.getItem(LOCAL_KEY); return valid(s)?withFree(s):null; }catch{ return null; } }
+function writeLocal(s){ try{ localStorage.setItem(LOCAL_KEY,s); }catch{} }
+
+/* ---------- intro ---------- */
+$("introTitle").textContent = CFG.title;
+$("introSteps").innerHTML = CFG.steps.map((s,i)=>`<li><b>${i+1}</b><span>${s}</span></li>`).join("");
+$("btnGo").addEventListener("click", ()=>{
+  $("veilIntro").classList.remove("on");
+  try{ localStorage.setItem("bingoIntroSeen","1"); }catch{}
+});
+try{ if(localStorage.getItem("bingoIntroSeen")) $("veilIntro").classList.remove("on"); }catch{}
+
+/* ---------- build the card ---------- */
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const X = `<svg class="x" viewBox="0 0 100 100" aria-hidden="true">
+  <path d="M16 14 C 38 38, 60 62, 86 88" stroke="var(--stamp)" stroke-width="11" stroke-linecap="round" fill="none"/>
+  <path d="M84 12 C 62 36, 38 60, 14 86" stroke="var(--stamp)" stroke-width="11" stroke-linecap="round" fill="none"/></svg>`;
+const MIDDLE = `<span class="free-text">Chamber<br>Subathon</span>`;
+
+// config square n (1-24) -> grid position, skipping the middle
+const posToSquare = p => p<FREE ? p : p-1;
+grid.innerHTML = Array.from({length:25},(_,p)=>{
+  if(p===FREE) return `<div class="free" data-p="${p}" role="gridcell" aria-label="Chamber Subathon">${MIDDLE}</div>`;
+  const i=posToSquare(p), text=String(CFG.squares[i]??"").trim();
+  return text
+    ? `<button class="sq" data-p="${p}" role="gridcell" aria-pressed="false">${esc(text)}${X}</button>`
+    : `<button class="sq empty" data-p="${p}" role="gridcell" aria-pressed="false" aria-label="Square ${i+1}">${i+1}${X}</button>`;
+}).join("");
+const cells=[...grid.children];
+
+function paint(){
+  cells.forEach((el,p)=>{
+    if(p===FREE) return;
+    const on=marks[p]==="1";
+    el.classList.toggle("on",on); el.setAttribute("aria-pressed",on);
+  });
+  const crossed=[...marks].filter((c,p)=>c==="1"&&p!==FREE).length;
+  const full = crossed===24;                                  // BINGO = every square crossed off
+  grid.classList.toggle("full", full);
+  $("count").textContent = `${crossed}/24`;
+  $("bingoMsg").textContent = full ? "BINGO!" : "";
+}
+
+/* ---------- Firebase (saves under the Twitch name) ---------- */
+let fb=null, db=null, myRef=null;
+
+async function save(){
+  writeLocal(marks);
+  if(!myRef) return;
+  try{
+    await fb.set(myRef,{ marked:marks, updatedAt:Date.now() });
+    setSync(`Saved to ${NAME}`);
+  }catch(e){
+    setSync("Saved on this device only — couldn't reach the server", true);
+    console.error("[bingo] save failed", e);
+  }
+}
+function setSync(t,warn){ syncEl.textContent=t; syncEl.classList.toggle("warn",!!warn); }
+
+grid.addEventListener("click", e=>{
+  const b=e.target.closest(".sq"); if(!b) return;
+  const p=Number(b.dataset.p);
+  marks = marks.slice(0,p) + (marks[p]==="1"?"0":"1") + marks.slice(p+1);
+  paint(); save();
+});
+
+async function connect(){
+  if(!NAME){ setSync("Not logged in — saving on this device only", true); return; }
+  if(!FIREBASE.databaseURL){ setSync("Server not configured — saving on this device only", true); return; }
+  try{
+    const [appMod, dbMod] = await Promise.all([ import(CDN+"firebase-app.js"), import(CDN+"firebase-database.js") ]);
+    const app = appMod.getApps().find(a=>a.name==="bingo") || appMod.initializeApp(FIREBASE,"bingo");
+    fb=dbMod; db=dbMod.getDatabase(app);
+    myRef = fb.ref(db, `bingo/${CARD}/${NAME}`);
+    let first=true;
+    fb.onValue(myRef, snap=>{
+      const v=snap.val();
+      if(v && valid(v.marked)){
+        marks=withFree(v.marked); writeLocal(marks); paint();       // server copy wins, and syncs other devices live
+      } else if(first && marks!==blank()){
+        save();                                                    // first visit with an offline card: upload it
+      }
+      first=false;
+      setSync(`Saved to ${NAME}`);
+    }, err=>{ setSync("Saved on this device only — couldn't reach the server", true); console.error(err); });
+  }catch(e){
+    setSync("Saved on this device only — couldn't reach the server", true);
+    console.error("[bingo] connect failed", e);
+  }
+}
+
+marks = readLocal() || blank();
+paint();
+connect();
+$("foot").textContent = NAME
+  ? "Your card follows your Twitch login across devices."
+  : "Log in with Twitch on the homepage so your card follows you across devices.";
+</script>
+</body>
+</html>
