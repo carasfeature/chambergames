@@ -23,7 +23,11 @@ export const RANGES = {
   // sequence: highest level reached
   sequence: { min: 1,    max: 100,    order: "desc" },
   // caption: number of rounds won
-  caption:  { min: 1,    max: 1000,   order: "desc" }
+  caption:  { min: 1,    max: 1000,   order: "desc" },
+  // typing: words per minute, one leaderboard per level
+  typing_easy:   { min: 5, max: 250, order: "desc" },
+  typing_medium: { min: 5, max: 250, order: "desc" },
+  typing_hard:   { min: 5, max: 250, order: "desc" }
 };
 
 /** Twitch names are a-z 0-9 _ only, so they're already safe as database keys. */
