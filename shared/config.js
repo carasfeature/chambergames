@@ -123,6 +123,51 @@ export const GAMES = {
     ]
   },
 
+  bingo: {
+    /* Change this (e.g. "subathon-2027") to give everyone a fresh, empty card.
+       Old cards stay saved under the old name. */
+    cardId: "subathon-2026",
+    title: "Subathon Bingo",
+    steps: [
+      "Spot something from a square on stream? Click it to cross it off.",
+      "Clicked by mistake? Click again to undo.",
+      "Your card is saved to your Twitch name, so it's still there after you reload, close the tab or log in on another device."
+    ],
+    /* 24 squares, read left to right, top to bottom. The middle is the free space.
+         1   2   3   4   5
+         6   7   8   9  10
+        11  12  **  13  14
+        15  16  17  18  19
+        20  21  22  23  24
+       Leave a square as "" and it shows its number on the card. */
+    squares: [
+      /*  1 */ "",
+      /*  2 */ "",
+      /*  3 */ "",
+      /*  4 */ "",
+      /*  5 */ "",
+      /*  6 */ "",
+      /*  7 */ "",
+      /*  8 */ "",
+      /*  9 */ "",
+      /* 10 */ "",
+      /* 11 */ "",
+      /* 12 */ "",
+      /* 13 */ "",
+      /* 14 */ "",
+      /* 15 */ "",
+      /* 16 */ "",
+      /* 17 */ "",
+      /* 18 */ "",
+      /* 19 */ "",
+      /* 20 */ "",
+      /* 21 */ "",
+      /* 22 */ "",
+      /* 23 */ "",
+      /* 24 */ ""
+    ]
+  },
+
   caption: {
     /* Seconds people get to type a caption once the image appears. */
     submitSeconds: 30,
