@@ -623,10 +623,10 @@
     </div>
 
     <div class="menu-wrap">
-      <button class="menu-featured" onclick="showSection('tournaments-menu')">
-        <div class="featured-badge">🏆 Main Event</div>
-        <div class="featured-title">Tournaments</div>
-        <div class="featured-sub">Claim your round, check who's qualified, see the results.</div>
+      <button class="menu-featured" onclick="showSection('krispysgames')">
+        <div class="featured-badge">🎮 Play Now</div>
+        <div class="featured-title">Games</div>
+        <div class="featured-sub">Bingo, Wordwlw, Reactions Test, Typing Race and Caption This — play along with chat.</div>
         <div class="featured-arrow">Enter →</div>
       </button>
 
@@ -634,7 +634,7 @@
         <div class="tab-bar">
           <button class="tab-btn" data-tab="stream" onclick="switchTab('stream')">Stream</button>
           <button class="tab-btn" data-tab="merch" onclick="switchTab('merch')">Merch</button>
-          <button class="tab-btn" data-tab="krispysgames" onclick="switchTab('krispysgames')">Games</button>
+          <button class="tab-btn" data-tab="tournaments" onclick="switchTab('tournaments')">Tournaments</button>
           <button class="tab-btn" data-tab="social" onclick="switchTab('social')">Social Media</button>
         </div>
         <div class="tab-panel">
@@ -933,11 +933,11 @@ const TAB_DATA = {
     highlights:['Clothing', 'Accessories', 'New drops added often'],
     linkText:'Shop Now →', section:'merch'
   },
-  krispysgames: {
-    tag:'🎮 Games', headline:'Games',
-    desc:'Games that Christina and Amber can enjoy playing together with chat. Coming soon.',
-    highlights:['Created by Caroline and Krispy', 'New additions over time', 'More coming soon'],
-    linkText:'Enter →', section:'krispysgames'
+  tournaments: {
+    tag:'🏆 Main Event', headline:'Tournaments',
+    desc:"Claim your round, check who's qualified and see the results.",
+    highlights:['Claim your round', 'Brackets and results', 'Prizes for winners'],
+    linkText:'Enter →', section:'tournaments-menu'
   },
   social: {
     tag:'📱 Connect', headline:'Social Media',
@@ -950,7 +950,7 @@ const TAB_DATA = {
 // `href` = built and playable. No href = greyed-out "Soon" card.
 // `wide: true` = card spans both columns.
 const CAROLINE_GAMES = [
-  { title:'Subathon Bingo',  desc:'Everyone gets a different card. Mark squares off live during the subathon.', wide:true },
+  { title:'Subathon Bingo',  desc:'Cross off all 24 squares during the subathon. Your card follows your Twitch login.', href:'games/bingo/index.html', wide:true },
   { title:'Wordwlw',         desc:'Guess the sapphic word in six tries. New word whenever you want.', href:'games/wordwlw/index.html' },
   { title:'Reactions Test',  desc:'Reflexes, aim and memory. Three quick tests, leaderboards on all of them.', href:'games/reactions/index.html' },
   { title:'Typing Race',     desc:'Race across the outback. Three levels, words per minute, ranked.', href:'games/typing/index.html' },
@@ -1128,7 +1128,7 @@ async function init(){
     // game page (or a plain revisit) doesn't dump you on the login screen.
     let saved = null;
     try{ saved = localStorage.getItem('twitchToken'); }catch(e){}
-    if(saved) await fetchUser(saved, true);
+    if(saved && await fetchUser(saved, true)) openSectionFromHash();
   }
 }
 
@@ -1168,6 +1168,13 @@ async function fetchUser(token, silent){
     if(!silent) alert('Login failed, try again.');
     return false;
   }
+}
+
+// Game pages link back to index.html#section=krispysgames — open that section
+// instead of the main menu. Only real sections are allowed.
+function openSectionFromHash(){
+  const m = window.location.hash.match(/^#section=([a-z0-9-]+)$/i);
+  if(m && document.getElementById('section-' + m[1])) showSection(m[1]);
 }
 
 function clearSession(){
