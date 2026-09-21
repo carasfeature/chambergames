@@ -52,6 +52,59 @@ export const GAMES = {
     ]
   },
 
+  sequence: {
+    /* Level 30 = win. */
+    maxLevel: 30,
+    /* true  = each level repeats the same sequence plus one new leaf (standard)
+       false = a brand-new random sequence every level (harder) */
+    extend: true,
+    /* How long each leaf stays lit, and the pause between leaves, in ms. */
+    flashMs: 450,
+    gapMs: 180,
+    title: "Before your walk",
+    steps: [
+      "Click Start.",
+      "Watch the leaves light up, then click them in the same order.",
+      "Each round adds one more leaf. Make it to 30 to finish the walk."
+    ]
+  },
+
+  typing: {
+    title: "Before you race",
+    steps: [
+      "Pick a level: Easy, Medium or Hard.",
+      "Type the passage exactly as shown. Mistakes turn red and must be fixed before you finish.",
+      "The clock starts on your first key. Your words per minute go on that level's leaderboard."
+    ],
+    /* One random passage per race. Add more lines to any level for variety. */
+    levels: {
+      easy: {
+        label: "Easy",
+        passages: [
+          "The sun was hot and the sand was soft at the beach. We swam in the blue sea and ate cold fruit in the shade of a tree. A kangaroo hopped past the car park as the sun went down.",
+          "At the zoo we saw a sleepy koala up in a gum tree. It held on with strong claws and chewed a leaf slowly. Next to it a wombat dug a hole in the dirt while kids watched and laughed.",
+          "Our family drove for hours on a red road in the outback. There were no shops and no towns for miles. At night the sky was full of bright stars and we could hear a dingo howl in the dark."
+        ]
+      },
+      medium: {
+        label: "Medium",
+        passages: [
+          "We rocked up to the servo this arvo to grab a cold drink and a pie for the road. Dazza reckons the esky is full of snags for the barbie, so no worries there. Chuck on your thongs and sunnies, mate, because the beach will be heaps busy by three.",
+          "Brekkie was avo on toast and a flat white at the little cafe down the road. Shaz was stoked because the footy was on tonight and her team was finally winning. After that we stopped at the bottle-o, filled the ute with firewood and headed off for a long weekend.",
+          "The tradie showed up late, carrying a cuppa and a sausage roll from the bakery. He reckoned the job would be a piece of cake, but by lunchtime the whole kitchen was a mess. Fair dinkum, it was a total shambles, although nobody could stay cranky at him for long."
+        ]
+      },
+      hard: {
+        label: "Hard",
+        passages: [
+          "Strewth, the campsite beside the billabong was absolutely chockablock by Saturday, crammed with larrikins, exhausted tradies and one spectacularly unprepared bogan who'd forgotten every tent peg. Despite the oppressive humidity and relentless mozzies, everyone agreed it was a ripper of a weekend, although nobody could adequately explain why the drongo insisted on wearing budgie smugglers to the pub for dinner.",
+          "Melbourne's notoriously unpredictable weather delivered four seasons in one day: blistering sunshine at breakfast, a ferocious hailstorm by lunchtime and bone-chilling wind throughout the evening. Unperturbed, the locals grabbed a cardigan, found a laneway cafe and ordered another coffee. She'll be right, they reckoned, ignoring the ominous thunderclouds over the bay while the tourists scrambled for shelter under an awning.",
+          "After an exhausting fortnight working on a remote cattle station, Bazza was flat out like a lizard drinking and desperately needed a holiday. Unfortunately, his dilapidated ute carked it halfway to Darwin, leaving him stranded beside a corrugated dirt road with nothing but a stubby holder, a battered swag and an extraordinarily curious emu that refused to leave him alone."
+        ]
+      }
+    }
+  },
+
   caption: {
     /* Seconds people get to type a caption once the image appears. */
     submitSeconds: 30,
