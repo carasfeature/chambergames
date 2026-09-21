@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wordwlw</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/ui.css">
+<style>
+:root{
+  --ink:#241C30; --paper:#FFF8EC;
+  /* lesbian flag */
+  --f1:#D52D00; --f2:#EF7627; --f3:#FF9A56; --f4:#FFFFFF; --f5:#D162A4; --f6:#B55690; --f7:#A30262;
+  --hit:#3AA35F; --near:#D9A63A; --miss:#4A4258; --empty:#2E2540; --edge:#5A4F6E;
+}
+
+.game{
+  position:relative; width:100%; max-width:560px;
+  background:#1E1729; border-radius:16px; overflow:hidden;
+  box-shadow:0 16px 0 -6px rgba(0,0,0,.5);
+}
+.flag{display:flex; height:10px}
+.flag i{flex:1}
+.title{
+  text-align:center; padding:16px 16px 4px;
+  font-family:Bungee,cursive; font-size:clamp(30px,8vw,42px); line-height:1; letter-spacing:.02em;
+  background:linear-gradient(90deg,var(--f1),var(--f2),var(--f3),var(--f5),var(--f6),var(--f7));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.stats{display:flex; justify-content:center; gap:22px; padding:6px 16px 0; font-size:13px; font-weight:900; color:#BDB3CC}
+.stats b{color:var(--paper); font-family:Bungee,cursive; font-weight:400; font-size:15px; margin-left:5px}
+
+/* ---------- board ---------- */
+.board{display:grid; gap:7px; padding:18px 0 14px; justify-content:center}
+.row{display:grid; grid-template-columns:repeat(5,1fr); gap:7px}
+.tile{
+  width:clamp(50px,13vw,62px); aspect-ratio:1; display:grid; place-items:center;
+  border:3px solid var(--edge); border-radius:8px; background:var(--empty);
+  font-family:Bungee,cursive; font-size:clamp(24px,6.5vw,32px); color:var(--paper); text-transform:uppercase;
+}
+.tile.filled{border-color:#8E82A6; animation:pop .08s ease-out}
+@keyframes pop{from{transform:scale(1.1)}to{transform:scale(1)}}
+.tile.hit {background:var(--hit);  border-color:var(--hit)}
+.tile.near{background:var(--near); border-color:var(--near); color:var(--ink)}
+.tile.miss{background:var(--miss); border-color:var(--miss)}
+.tile.flip{animation:flip .38s ease-in-out both}
+@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.row.shake{animation:shake .32s}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+
+.toast{
+  min-height:26px; text-align:center; font-weight:900; font-size:15px; color:var(--paper); padding:0 16px;
+}
+
+/* ---------- keyboard ---------- */
+.keys{display:grid; gap:7px; padding:6px 8px 16px}
+.krow{display:flex; justify-content:center; gap:6px}
+.key{
+  flex:1; max-width:44px; height:54px; border:0; border-radius:7px; cursor:pointer;
+  background:#6B6180; color:var(--paper); font:900 16px Nunito,sans-serif; text-transform:uppercase;
+}
+.key.wide{max-width:70px; font-size:12px; letter-spacing:.04em}
+.key.hit{background:var(--hit)} .key.near{background:var(--near); color:var(--ink)} .key.miss{background:#3A3346; color:#8D849C}
+.key:focus-visible{outline:3px solid var(--f3); outline-offset:1px}
+
+/* ---------- overlays ---------- */
+.veil{position:absolute; inset:0; display:none; place-items:center; padding:24px;
+      background:rgba(20,15,28,.92); text-align:center; color:var(--paper); z-index:5}
+.veil.on{display:grid}
+.card{max-width:420px}
+.card h1{font-family:Bungee,cursive; font-weight:400; font-size:28px; margin:0 0 16px; color:var(--f3)}
+.steps{list-style:none; margin:0 0 22px; padding:0; text-align:left; display:grid; gap:10px}
+.steps li{font-size:15px; line-height:1.45; display:grid; grid-template-columns:auto 1fr; gap:10px}
+.steps b{font-family:Bungee,cursive; font-weight:400; color:var(--f3)}
+.answer{font-family:Bungee,cursive; font-size:44px; letter-spacing:.08em; margin:4px 0 6px; text-transform:uppercase}
+.answer.win{color:var(--hit)} .answer.lose{color:var(--f5)}
+.sub{font-size:15px; opacity:.85; margin:0 0 20px}
+.btn{ font-family:Bungee,cursive; font-size:16px; background:var(--f3); color:var(--ink);
+      border:3px solid var(--ink); border-radius:12px; padding:12px 26px; cursor:pointer;
+      box-shadow:0 5px 0 rgba(0,0,0,.5); transition:transform .08s, box-shadow .08s; }
+.btn:hover{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.5)}
+.btn:active{transform:translateY(5px); box-shadow:0 0 0 rgba(0,0,0,.5)}
+.btn.ghost{background:transparent; color:var(--paper); border-color:var(--paper); box-shadow:none}
+.btnrow{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+@media(prefers-reduced-motion:reduce){.tile.flip,.tile.filled,.row.shake{animation:none}}
+</style>
+</head>
+<body>
+
+<nav class="topbar"><a class="back" href="../../index.html" onclick="try{if(document.referrer&&new URL(document.referrer).origin===location.origin){history.back();return false;}}catch(e){}"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
+
+<div class="game" id="game">
+  <div class="flag" aria-hidden="true">
+    <i style="background:#D52D00"></i><i style="background:#EF7627"></i><i style="background:#FF9A56"></i>
+    <i style="background:#FFFFFF"></i><i style="background:#D162A4"></i><i style="background:#B55690"></i><i style="background:#A30262"></i>
+  </div>
+  <div class="title">WORDWLW</div>
+  <div class="stats">
+    <span>Played<b id="stPlayed">0</b></span>
+    <span>Won<b id="stWon">0</b></span>
+    <span>Streak<b id="stStreak">0</b></span>
+  </div>
+
+  <div class="board" id="board" aria-label="Guesses"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="keys" id="keys"></div>
+
+  <!-- instructions -->
+  <div class="veil on" id="veilIntro">
+    <div class="card">
+      <h1 id="introTitle">How to play</h1>
+      <ol class="steps" id="introSteps"></ol>
+      <button class="btn" id="btnStart">Let's go</button>
+    </div>
+  </div>
+
+  <!-- result -->
+  <div class="veil" id="veilEnd">
+    <div class="card">
+      <h1 id="endTitle">—</h1>
+      <div class="answer" id="endWord">—</div>
+      <p class="sub" id="endSub">—</p>
+      <div class="btnrow">
+        <button class="btn" id="btnNew">New word</button>
+        <button class="btn ghost" id="btnLook">See board</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="note" style="max-width:560px;text-align:center" id="footNote"></p>
+
+<script type="module">
+import { GAMES } from "../../shared/config.js";
+const CFG = GAMES.wordwlw;
+const TRIES = CFG.guesses;
+
+// only exact 5-letter words make it in, whatever is typed in config
+const WORDS = [...new Set(CFG.words.map(w=>String(w).trim().toLowerCase()))].filter(w=>/^[a-z]{5}$/.test(w));
+const skipped = CFG.words.filter(w=>!/^[a-z]{5}$/.test(String(w).trim().toLowerCase()));
+if(skipped.length) console.warn("[wordwlw] skipped (not 5 letters):", skipped);
+
+const $ = id => document.getElementById(id);
+const board=$("board"), keysEl=$("keys"), toast=$("toast"),
+      veilIntro=$("veilIntro"), veilEnd=$("veilEnd");
+
+/* ---------- saved progress (per browser) ---------- */
+const load = (k, d) => { try{ return JSON.parse(localStorage.getItem(k)) ?? d; }catch{ return d; } };
+const save = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} };
+let seen  = load("wordwlwSeen", []);
+let stats = load("wordwlwStats", { played:0, won:0, streak:0 });
+
+function showStats(){
+  $("stPlayed").textContent = stats.played;
+  $("stWon").textContent    = stats.won;
+  $("stStreak").textContent = stats.streak;
+}
+
+/* ---------- intro ---------- */
+$("introTitle").textContent = CFG.title;
+$("introSteps").innerHTML = CFG.steps.map((s,i)=>`<li><b>${i+1}</b><span>${s}</span></li>`).join("");
+
+/* ---------- build board + keyboard ---------- */
+board.innerHTML = Array.from({length:TRIES}, ()=>`<div class="row">${'<div class="tile"></div>'.repeat(5)}</div>`).join("");
+const rows = [...board.children];
+const tileAt = (r,c) => rows[r].children[c];
+
+const LAYOUT = ["qwertyuiop","asdfghjkl","*zxcvbnm<"];
+keysEl.innerHTML = LAYOUT.map(r=>`<div class="krow">${[...r].map(k=>
+  k==="*" ? `<button class="key wide" data-k="Enter">Enter</button>` :
+  k==="<" ? `<button class="key wide" data-k="Backspace" aria-label="Delete">&#9003;</button>` :
+            `<button class="key" data-k="${k}">${k}</button>`).join("")}</div>`).join("");
+const keyBtn = k => keysEl.querySelector(`[data-k="${k}"]`);
+
+/* ---------- state ---------- */
+let answer="", row=0, col=0, state="intro", typed=[];
+
+function pickWord(){
+  let pool = WORDS.filter(w=>!seen.includes(w));
+  if(!pool.length){ seen=[]; pool=[...WORDS]; }        // seen them all: start the cycle again
+  const w = pool[Math.floor(Math.random()*pool.length)];
+  seen.push(w); save("wordwlwSeen", seen);
+  return w;
+}
+
+function newRound(){
+  answer = pickWord();
+  row=0; col=0; typed=[]; state="playing";
+  rows.forEach(r=>{ r.classList.remove("shake"); [...r.children].forEach(t=>{ t.className="tile"; t.textContent=""; }); });
+  keysEl.querySelectorAll(".key").forEach(k=>k.classList.remove("hit","near","miss"));
+  toast.textContent="";
+  veilIntro.classList.remove("on"); veilEnd.classList.remove("on");
+}
+
+/* ---------- scoring: handles repeated letters properly ---------- */
+function score(guess, target){
+  const res = Array(5).fill("miss");
+  const left = {};
+  for(let i=0;i<5;i++){
+    if(guess[i]===target[i]) res[i]="hit";
+    else left[target[i]] = (left[target[i]]||0) + 1;
+  }
+  for(let i=0;i<5;i++){
+    if(res[i]==="hit") continue;
+    if(left[guess[i]] > 0){ res[i]="near"; left[guess[i]]--; }
+  }
+  return res;
+}
+
+/* ---------- input ---------- */
+function press(k){
+  if(state!=="playing") return;
+  if(k==="Enter") return submit();
+  if(k==="Backspace"){
+    if(col>0){ col--; typed.pop(); const t=tileAt(row,col); t.textContent=""; t.classList.remove("filled"); }
+    return;
+  }
+  if(/^[a-z]$/.test(k) && col<5){
+    const t=tileAt(row,col); t.textContent=k; t.classList.add("filled");
+    typed.push(k); col++;
+  }
+}
+
+function flash(text){
+  toast.textContent=text;
+  rows[row].classList.remove("shake"); void rows[row].offsetWidth; rows[row].classList.add("shake");
+}
+
+async function submit(){
+  if(col<5) return flash("Not enough letters");
+  const guess = typed.join("");
+  const res = score(guess, answer);
+  state="revealing"; toast.textContent="";
+
+  for(let i=0;i<5;i++){
+    const t=tileAt(row,i);
+    t.classList.add("flip");
+    await new Promise(r=>setTimeout(r,140));
+    t.classList.add(res[i]);
+  }
+  // keyboard keeps its best colour: hit beats near beats miss
+  const rank={miss:0,near:1,hit:2};
+  guess.split("").forEach((ch,i)=>{
+    const b=keyBtn(ch); if(!b) return;
+    const cur=["hit","near","miss"].find(c=>b.classList.contains(c));
+    if(!cur || rank[res[i]]>rank[cur]){ b.classList.remove("hit","near","miss"); b.classList.add(res[i]); }
+  });
+
+  if(guess===answer) return end(true);
+  row++; col=0; typed=[];
+  if(row>=TRIES) return end(false);
+  state="playing";
+}
+
+function end(won){
+  state="done";
+  stats.played++;
+  if(won){ stats.won++; stats.streak++; } else stats.streak=0;
+  save("wordwlwStats", stats); showStats();
+
+  const tries=row+1;
+  $("endTitle").textContent = won ? (tries<=2?"Genius!":tries<=4?"Nailed it!":"Phew, got it!") : "Not this time";
+  $("endWord").textContent  = answer;
+  $("endWord").className    = "answer " + (won?"win":"lose");
+  $("endSub").textContent   = won ? `Solved in ${tries} of ${TRIES} guesses.` : "That was the word. Roll another?";
+  setTimeout(()=>veilEnd.classList.add("on"), 450);
+}
+
+/* ---------- wiring ---------- */
+keysEl.addEventListener("click", e=>{ const b=e.target.closest(".key"); if(b){ press(b.dataset.k); b.blur(); } });
+document.addEventListener("keydown", e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  const k = e.key.length===1 ? e.key.toLowerCase() : e.key;
+  if(k==="Enter"||k==="Backspace"||/^[a-z]$/.test(k)){
+    if(k==="Enter" && document.activeElement?.tagName==="BUTTON" && state!=="playing") return;
+    e.preventDefault(); press(k);
+  }
+});
+$("btnStart").addEventListener("click", newRound);
+$("btnNew").addEventListener("click", newRound);
+$("btnLook").addEventListener("click", ()=>{ veilEnd.classList.remove("on"); toast.innerHTML='<button class="btn" id="btnNew2" style="padding:8px 18px;font-size:13px">New word</button>'; $("btnNew2").onclick=newRound; });
+
+showStats();
+$("footNote").textContent = `${WORDS.length} words in the pool. You won't see a repeat until you've played them all.`;
+</script>
+</body>
+</html>
