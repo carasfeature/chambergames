@@ -80,7 +80,7 @@
 </head>
 <body>
 
-<nav class="topbar"><a class="back" href="index.html"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
+<nav class="topbar"><a class="back" href="index.html" onclick="try{if(document.referrer&&new URL(document.referrer).origin===location.origin){history.back();return false;}}catch(e){}"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
 
 <div class="wrap" id="wrap">
   <!-- deliberately low-contrast pizzeria so the slices are the only thing that pops -->
