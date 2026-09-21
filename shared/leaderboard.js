@@ -21,7 +21,9 @@ export const RANGES = {
   // aim: total time to clear all 20 targets, in ms (roughly 8-25s in practice)
   aim:      { min: 3000, max: 300000, order: "asc"  },
   // sequence: highest level reached
-  sequence: { min: 1,    max: 100,    order: "desc" }
+  sequence: { min: 1,    max: 100,    order: "desc" },
+  // caption: number of rounds won
+  caption:  { min: 1,    max: 1000,   order: "desc" }
 };
 
 /** Twitch names are a-z 0-9 _ only, so they're already safe as database keys. */
@@ -87,4 +89,16 @@ export async function submitScore({ game, name, score, extra = null }){
   );
   const kept = res.snapshot.val();
   return { saved: kept.score === score, kept };
+}
+
+/** Add to a running total (used for win counts rather than best-score games). */
+export async function bumpScore({ game, name, by = 1 }){
+  if (!db) throw new Error("Leaderboard isn't connected");
+  const key = cleanName(name);
+  if (!key) throw new Error("No Twitch name to save under");
+  const res = await fbdb.runTransaction(
+    fbdb.ref(db, `leaderboards/${game}/${key}`),
+    cur => ({ score: ((cur && cur.score) || 0) + by, updatedAt: Date.now() })
+  );
+  return res.snapshot.val();
 }
