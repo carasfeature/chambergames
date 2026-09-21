@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Caption This — host panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/ui.css">
+<style>
+.panel{width:100%; max-width:900px; display:grid; gap:16px}
+.bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.btn{
+  font-family:Bungee,cursive; font-size:15px; background:var(--taxi); color:var(--ink);
+  border:3px solid var(--ink); border-radius:12px; padding:12px 22px; cursor:pointer;
+  box-shadow:0 5px 0 rgba(0,0,0,.5);
+}
+.btn:hover{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.5)}
+.btn:active{transform:translateY(5px); box-shadow:0 0 0 rgba(0,0,0,.5)}
+.btn[disabled]{opacity:.35; cursor:not-allowed; transform:none}
+.btn.ghost{background:transparent; color:var(--paper); border-color:var(--paper); box-shadow:none}
+.btn.small{font-size:12px; padding:8px 14px; box-shadow:0 3px 0 rgba(0,0,0,.5)}
+
+.status{
+  background:#2E2540; border-radius:14px; padding:16px 18px; display:flex;
+  justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:center;
+}
+.status b{font-family:Bungee,cursive; font-weight:400; color:var(--taxi); font-size:16px}
+.status span{font-weight:700; font-size:15px}
+
+.preview{display:grid; grid-template-columns:200px 1fr; gap:16px; align-items:start}
+@media(max-width:620px){.preview{grid-template-columns:1fr}}
+.preview img{width:100%; border-radius:12px; background:#1B1526; aspect-ratio:4/3; object-fit:contain}
+
+.final{display:grid; gap:9px}
+.pick{
+  display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center;
+  background:#2E2540; border-radius:12px; padding:13px 15px; font-weight:700; font-size:16px;
+}
+.pick.gone{opacity:.32}
+.pick .who{display:block; font-size:12px; opacity:.6; margin-top:4px; text-transform:uppercase; letter-spacing:.05em}
+.pick.won{background:rgba(255,198,41,.16); box-shadow:inset 0 0 0 2px var(--taxi)}
+
+.warn{font-size:13px; line-height:1.5; opacity:.75; background:#33263F; border-radius:12px; padding:13px 15px}
+.warn b{color:var(--taxi)}
+.msg{font-size:14px; min-height:20px; opacity:.85}
+</style>
+</head>
+<body>
+
+<nav class="topbar"><a class="back" href="../../admin.html"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
+
+<header class="head">
+  <h1>Host panel</h1>
+  <p>Only you should have this open. Viewers use the main page.</p>
+</header>
+
+<main class="panel">
+
+  <div class="status">
+    <span><b>Phase</b> <span id="phase">—</span></span>
+    <span><b>Submissions</b> <span id="count">0</span></span>
+    <span><b>Image</b> <span id="imgName">—</span></span>
+  </div>
+
+  <div class="bar">
+    <button class="btn" id="btnNext">Next image</button>
+    <button class="btn ghost" id="btnClose" disabled>Close early</button>
+    <button class="btn" id="btnDraw" disabled>Draw 5</button>
+    <button class="btn ghost" id="btnRedraw" disabled>Redraw</button>
+    <button class="btn ghost" id="btnReset">Reset</button>
+  </div>
+
+  <div class="preview">
+    <img id="prev" alt="Current image">
+    <div>
+      <div class="final" id="finalists"></div>
+      <p class="msg" id="msg"></p>
+    </div>
+  </div>
+
+  <p class="warn">
+    <b>Before going live:</b> fill in the blocklist in <code>shared/config.js</code>.
+    Anything viewers type goes straight onto this screen, and the skip button next to
+    each caption is your only other line of defence.
+  </p>
+
+</main>
+
+<script type="module">
+import { FIREBASE, GAMES } from "../../shared/config.js";
+import { initCaption, watchRound, watchSubmissions, openRound,
+         closeRound, drawFinalists, setWinner, resetGame } from "../../shared/caption.js";
+import { initLeaderboard, bumpScore } from "../../shared/leaderboard.js";
+
+const CFG = GAMES.caption;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+let round = { phase:"idle" }, pool = [], unwatchSubs = null;
+let used = JSON.parse(localStorage.getItem("captionUsed") || "[]");
+let skipped = new Set();
+
+/* pick an image we haven't shown yet this session */
+function nextImage(){
+  let left = CFG.images.filter(i => !used.includes(i));
+  if(!left.length){ used = []; left = [...CFG.images]; }
+  const pick = left[Math.floor(Math.random()*left.length)];
+  used.push(pick);
+  localStorage.setItem("captionUsed", JSON.stringify(used));
+  return pick;
+}
+
+function render(){
+  $("phase").textContent   = round.phase;
+  $("imgName").textContent = round.image || "—";
+  $("prev").src = round.image ? `images/${round.image}` : "";
+  $("count").textContent = pool.length;
+
+  $("btnClose").disabled  = round.phase !== "submitting";
+  $("btnDraw").disabled   = !(round.phase === "closed" && pool.length);
+  $("btnRedraw").disabled = round.phase !== "judging";
+
+  const list = $("finalists");
+  if(round.phase === "judging" && round.finalists){
+    list.innerHTML = round.finalists.map((f,i) => `
+      <div class="pick ${skipped.has(i)?"gone":""}" data-i="${i}">
+        <span>${esc(f.text)}<span class="who">${esc(f.name)}</span></span>
+        <button class="btn small" data-act="win" data-i="${i}">Winner</button>
+        <button class="btn small ghost" data-act="skip" data-i="${i}">Skip</button>
+      </div>`).join("");
+  } else if(round.phase === "winner" && round.winner){
+    list.innerHTML = `<div class="pick won"><span>${esc(round.winner.text)}
+      <span class="who">${esc(round.winner.name)}</span></span><span></span><span></span></div>`;
+  } else {
+    list.innerHTML = "";
+  }
+}
+
+$("finalists").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if(!b) return;
+  const i = Number(b.dataset.i);
+  if(b.dataset.act === "skip"){ skipped.add(i); render(); return; }
+
+  const f = round.finalists[i];
+  try{
+    await setWinner(round, f);
+    await bumpScore({ game:"caption", name:f.name, by:1 });
+    $("msg").textContent = `${f.name} takes the round.`;
+  }catch(err){ $("msg").textContent = "Couldn't set winner: " + err.message; }
+});
+
+$("btnNext").addEventListener("click", async () => {
+  skipped.clear();
+  try{
+    const img = nextImage();
+    await openRound({ image: img, seconds: CFG.submitSeconds });
+    $("msg").textContent = `Round open — ${CFG.submitSeconds}s on the clock.`;
+  }catch(e){ $("msg").textContent = "Couldn't open round: " + e.message; }
+});
+
+$("btnClose").addEventListener("click", () => closeRound(round));
+$("btnDraw").addEventListener("click",  draw);
+$("btnRedraw").addEventListener("click", draw);
+
+async function draw(){
+  skipped.clear();
+  try{
+    await drawFinalists(round, pool, CFG.finalists);
+    $("msg").textContent = `Drew ${Math.min(CFG.finalists, pool.length)} of ${pool.length}.`;
+  }catch(e){ $("msg").textContent = "Couldn't draw: " + e.message; }
+}
+
+$("btnReset").addEventListener("click", () => { skipped.clear(); resetGame(); });
+
+/* auto-close once the clock runs out */
+setInterval(() => {
+  if(round.phase === "submitting" && round.endsAt && Date.now() > round.endsAt)
+    closeRound(round);
+}, 500);
+
+(async () => {
+  if(!FIREBASE.databaseURL){ $("msg").textContent = "databaseURL is empty in shared/config.js."; return; }
+  try{
+    await Promise.all([ initCaption(FIREBASE), initLeaderboard(FIREBASE) ]);
+    watchRound(r => {
+      const changed = r.roundId !== round.roundId;
+      round = r;
+      if(changed){
+        pool = []; skipped.clear();
+        unwatchSubs?.();
+        if(r.roundId) unwatchSubs = watchSubmissions(r.roundId, list => { pool = list; render(); });
+      }
+      render();
+    }, e => $("msg").textContent = "Round read failed: " + e.message);
+  }catch(e){ $("msg").textContent = "Couldn't connect: " + e.message; console.error(e); }
+})();
+</script>
+</body>
+</html>
