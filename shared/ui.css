@@ -1,53 +1,39 @@
 /* ============================================================
-   shared/ui.css — hub styling for pages under /games
-   Matches the main site: retro pixel, navy base, neon accents.
-   Vars are prefixed --g- so they never collide with a game's
-   own palette (speed.html keeps its NYC taxi look).
+   shared/ui.css — shell styling for every page under /games
    ============================================================ */
 :root{
-  --g-bg:#14151F;
-  --g-card:#1E2030;
-  --g-ink:#EDEBF5;
-  --g-ink-soft:#A8A6BC;
-  --g-border:#3A3D52;
-  --g-border-soft:#2A2C3D;
-  --g-blue:#4D7FFF;
-  --g-magenta:#E0339B;
-  --g-lime:#9ADB2E;
+  --ink:#241C30; --ink-2:#2E2540; --paper:#FFF8EC;
+  --taxi:#FFC629; --stop:#E03A2F; --soon:#6E6383;
 }
 *{box-sizing:border-box}
 body{
   margin:0; padding:26px 18px 70px; min-height:100vh;
-  background:var(--g-bg); color:var(--g-ink);
-  font-family:'IBM Plex Mono',monospace;
+  background:var(--ink); color:var(--paper);
+  font-family:Nunito,system-ui,sans-serif;
   display:flex; flex-direction:column; align-items:center; gap:26px;
 }
 
-/* CRT scanline overlay, same as the main site */
-body::after{
-  content:""; position:fixed; inset:0; z-index:2; pointer-events:none;
-  background:repeating-linear-gradient(0deg,
-    rgba(0,0,0,.18) 0px, rgba(0,0,0,.18) 1px, transparent 1px, transparent 3px);
-  mix-blend-mode:overlay; opacity:.5;
+/* ---------- back button ---------- */
+.topbar{width:100%; max-width:1000px}
+.back{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:Bungee,cursive; font-size:14px; letter-spacing:.04em;
+  color:var(--ink); background:var(--taxi); text-decoration:none;
+  border:3px solid var(--ink); border-radius:11px; padding:9px 16px 9px 13px;
+  box-shadow:0 4px 0 rgba(0,0,0,.5); transition:transform .08s, box-shadow .08s;
 }
-
-/* ---------- breadcrumb ---------- */
-.crumbs{
-  width:100%; max-width:1000px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
-  font-family:'Space Grotesk',sans-serif;
-  font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-}
-.crumbs a{color:var(--g-lime); text-decoration:none}
-.crumbs a:hover{color:var(--g-ink)}
-.crumbs span{color:var(--g-ink-soft); opacity:.55}
+.back:hover{transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.5)}
+.back:active{transform:translateY(4px); box-shadow:0 0 0 rgba(0,0,0,.5)}
+.back:focus-visible{outline:3px solid var(--paper); outline-offset:3px}
+.back svg{width:14px; height:14px}
 
 /* ---------- headings ---------- */
 .head{width:100%; max-width:1000px}
 .head h1{
-  font-family:'Press Start 2P',monospace; font-weight:400;
-  font-size:clamp(18px,3.4vw,30px); margin:0 0 16px; line-height:1.5;
+  font-family:Bungee,cursive; font-weight:400;
+  font-size:clamp(28px,5.4vw,46px); margin:0 0 8px; line-height:1.05;
 }
-.head p{margin:0; font-size:14px; color:var(--g-ink-soft); max-width:62ch; line-height:1.6}
+.head p{margin:0; font-size:16px; opacity:.72; max-width:60ch; line-height:1.55}
 
 /* ---------- game grid ---------- */
 .grid{
@@ -55,37 +41,25 @@ body::after{
   grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
 }
 .tile{
-  display:flex; flex-direction:column; gap:10px;
-  background:var(--g-card); padding:24px 22px;
-  border:3px solid var(--g-border); text-decoration:none; color:var(--g-ink);
-  box-shadow:inset -3px -3px 0 rgba(0,0,0,.4), inset 3px 3px 0 rgba(255,255,255,.05);
-  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  display:flex; flex-direction:column; gap:8px;
+  background:var(--ink-2); border-radius:16px; padding:22px 20px 20px;
+  border:3px solid transparent; text-decoration:none; color:var(--paper);
+  box-shadow:0 7px 0 rgba(0,0,0,.4);
+  transition:transform .1s, box-shadow .1s, border-color .1s;
 }
-.tile:hover{
-  transform:translate(-3px,-3px);
-  border-color:var(--g-blue);
-  box-shadow:6px 6px 0 var(--g-blue);
-}
-.tile:active{transform:translate(2px,2px); box-shadow:2px 2px 0 var(--g-blue)}
-.tile:focus-visible{outline:3px dashed var(--g-lime); outline-offset:3px}
-.tile h2{
-  font-family:'Press Start 2P',monospace; font-weight:400;
-  font-size:13px; margin:0; line-height:1.6;
-}
-.tile p{margin:0; font-size:13px; line-height:1.55; color:var(--g-ink-soft)}
+.tile:hover{transform:translateY(-3px); box-shadow:0 10px 0 rgba(0,0,0,.4); border-color:var(--taxi)}
+.tile:active{transform:translateY(2px); box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.tile:focus-visible{outline:3px solid var(--taxi); outline-offset:3px}
+.tile h2{font-family:Bungee,cursive; font-weight:400; font-size:19px; margin:0; line-height:1.2}
+.tile p{margin:0; font-size:14px; line-height:1.5; opacity:.72}
 
 .tile.soon{
-  pointer-events:none; opacity:.45; box-shadow:none;
-  border-style:dashed; border-color:var(--g-border-soft);
+  pointer-events:none; opacity:.42; box-shadow:none;
+  border-style:dashed; border-color:var(--soon);
 }
 .badge{
   align-self:flex-start; margin-top:4px;
-  font-family:'Space Grotesk',sans-serif; font-weight:700;
-  font-size:11px; letter-spacing:.1em; text-transform:uppercase;
-  background:var(--g-lime); color:var(--g-card); padding:5px 12px;
+  font-family:Bungee,cursive; font-size:11px; letter-spacing:.06em;
+  background:var(--taxi); color:var(--ink); border-radius:999px; padding:4px 11px;
 }
-.tile.soon .badge{background:var(--g-border-soft); color:var(--g-ink-soft)}
-
-@media (prefers-reduced-motion:reduce){
-  .tile{transition:none}
-}
+.tile.soon .badge{background:var(--soon); color:var(--paper)}
