@@ -221,13 +221,30 @@ $("password").addEventListener("keydown", e => { if (e.key === "Enter") signIn()
 /* ================= CAPTION CONTROLS ================= */
 const last = () => CFG.images.length - 1;
 
+function withTimeout(promise, ms, label){
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(
+      `No response from Firebase after ${ms/1000}s (${label}). Check your connection, or an ad blocker/extension may be blocking it.`
+    )), ms))
+  ]);
+}
+
 function btn(label, cls, fn){
   const b = document.createElement("button");
   b.className = "btn " + cls; b.textContent = label;
   b.onclick = async () => {
     if (busy) return; busy = true; b.disabled = true;
-    try{ await fn(); $("capMsg").textContent = ""; }
-    catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+    console.log("[admin] clicked:", label);
+    try{
+      await withTimeout(fn(), 8000, label);
+      $("capMsg").textContent = "";
+      console.log("[admin] done:", label);
+    }
+    catch(e){
+      $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e);
+      console.error("[admin] failed:", label, e);
+    }
     busy = false; b.disabled = false;
   };
   return b;
@@ -277,8 +294,15 @@ function render(){
       b.innerHTML = `<span>${esc(f.text)}<small>${esc(f.display||f.name)}${f.also ? ` · +${f.also} said the same` : ""}</small></span><span class="crown">Winner</span>`;
       b.onclick = async () => {
         if (busy) return; busy = true;
-        try{ await crownWinner(f, round); }
-        catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+        console.log("[admin] clicked: crown winner", f.display || f.name);
+        try{
+          await withTimeout(crownWinner(f, round), 8000, "crown winner");
+          console.log("[admin] done: crown winner");
+        }
+        catch(e){
+          $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e);
+          console.error("[admin] failed: crown winner", e);
+        }
         busy = false;
       };
       $("pick").append(b);
@@ -320,12 +344,19 @@ async function finishRound(){
 
 $("btnReset").onclick = async () => {
   if (!confirm("Reset Caption This? The screen goes back to 'starts soon'.")) return;
-  try{ await resetGame(); }catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+  console.log("[admin] clicked: reset game");
+  try{ await withTimeout(resetGame(), 8000, "reset game"); console.log("[admin] done: reset game"); }
+  catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); console.error("[admin] failed: reset game", e); }
 };
 $("btnNewSubathon").onclick = async () => {
   if (!confirm("Clear the Round 1-9 winners board? This can't be undone — do this at the start of a new subathon, not between rounds of the same one.")) return;
-  try{ await resetWinners(); await resetGame(); }
-  catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+  console.log("[admin] clicked: new subathon");
+  try{
+    await withTimeout(resetWinners(), 8000, "clear winners");
+    await withTimeout(resetGame(), 8000, "reset game");
+    console.log("[admin] done: new subathon");
+  }
+  catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); console.error("[admin] failed: new subathon", e); }
 };
 
 /* ================= BOOT ================= */
