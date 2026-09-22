@@ -40,6 +40,11 @@ export function watchRound(onChange, onError){
   return fbdb.onValue(fbdb.ref(db, "captionGame/current"),
     s => onChange(s.val() || { phase: "idle" }), e => onError?.(e));
 }
+/** captionGame/winners/{round} -> display name of whoever won that round. */
+export function watchWinners(onChange, onError){
+  return fbdb.onValue(fbdb.ref(db, "captionGame/winners"),
+    s => onChange(s.val() || {}), e => onError?.(e));
+}
 export function watchSubmissions(roundId, onChange, onError){
   return fbdb.onValue(fbdb.ref(db, `captionGame/submissions/${roundId}`), s => {
     const out = []; s.forEach(c => { out.push({ name: c.key, ...c.val() }); }); onChange(out);
@@ -154,13 +159,33 @@ export async function submitCaption({ round, name, display, text, cfg }){
 const cur = () => fbdb.ref(db, "captionGame/current");
 const roundOf = i => i >= 1 ? i : null;              // image 0 = example, 1 = Round 1 ...
 
-export function showImage(index, cfg){
+/** Reads whatever round is on screen right now, so moving on can reveal it. */
+async function readCurrent(){
+  return new Promise((res, rej) => {
+    let off;                                  // declared before use — onValue can fire synchronously
+    off = fbdb.onValue(cur(), s => { off?.(); res(s.val() || {}); }, rej);
+  });
+}
+
+export async function showImage(index, cfg){
+  const leaving = await readCurrent();               // the round we're moving away from
   const example = index === 0;
-  return fbdb.set(cur(), {
+  await fbdb.set(cur(), {
     phase: example ? "example" : "ready",
     index, image: cfg.images[index], round: roundOf(index),
     roundId: example ? null : "r" + Date.now() + "_" + index
   });
+  // whatever round was just left behind becomes visible on the winners list —
+  // stored as its own counter so it survives idle/reset states cleanly
+  if (leaving.round){
+    await fbdb.runTransaction(fbdb.ref(db, "captionGame/revealed"),
+      n => Math.max(n || 0, leaving.round));
+  }
+}
+/** Round r's winner is safe to show once the game has moved past it. */
+export function watchRevealed(onChange, onError){
+  return fbdb.onValue(fbdb.ref(db, "captionGame/revealed"),
+    s => onChange(s.val() || 0), e => onError?.(e));
 }
 export function startRound(round, cfg){
   return fbdb.update(cur(), { phase: "submitting", endsAt: serverNow() + cfg.submitSeconds*1000 });
@@ -170,8 +195,19 @@ export async function closeAndPick(round, entries, cfg){
   await fbdb.update(cur(), { phase: "judging", finalists, stats });
   return { finalists, stats };
 }
-export function crownWinner(finalist){
-  return fbdb.update(cur(), { phase: "winner",
+export async function crownWinner(finalist, round){
+  await fbdb.update(cur(), { phase: "winner",
     winner: { name: finalist.name, display: finalist.display, text: finalist.text } });
+  if (round?.round) await fbdb.set(fbdb.ref(db, `captionGame/winners/${round.round}`), finalist.display || finalist.name);
 }
 export function resetGame(){ return fbdb.set(cur(), { phase: "idle" }); }
+/** Wipes the Round 1-9 winners board too — a fresh subathon, not just the current round. */
+export function resetWinners(){
+  return Promise.all([
+    fbdb.set(fbdb.ref(db, "captionGame/winners"), null),
+    fbdb.set(fbdb.ref(db, "captionGame/revealed"), null)
+  ]);
+}
+export function watchWinners(onChange, onError){
+  return fbdb.onValue(fbdb.ref(db, "captionGame/winners"), s => onChange(s.val() || {}), e => onError?.(e));
+}
