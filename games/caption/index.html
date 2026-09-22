@@ -44,8 +44,9 @@
 .hint{margin:0; min-height:22px; font-size:15px; font-weight:700; opacity:.85}
 .hint.bad{color:var(--bad); opacity:1}
 .hint.ok{color:#8FE3A8; opacity:1}
-.example{margin:0; font-size:clamp(16px,2vw,19px); font-weight:800; color:#CFC4DF}
+.example{margin:0; font-size:clamp(20px,2.6vw,25px); font-weight:900; color:#E7DEF2}
 .example b{color:var(--taxi); font-family:Bungee,cursive; font-weight:400}
+.entry input.example-mode::placeholder{font-weight:900; font-size:1.05em; color:var(--paper); opacity:.85}
 
 .answers{display:grid; gap:12px; grid-template-columns:1fr}
 @media(min-width:700px){.answers{grid-template-columns:1fr 1fr}}
@@ -71,17 +72,17 @@
 @keyframes boom{from{transform:scale(.3); opacity:0}to{transform:scale(1); opacity:1}}
 #fx{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:21}
 
-/* ---------- leaderboard ---------- */
+/* ---------- winners board ---------- */
 .board{width:100%; max-width:1000px}
 .board h2{font-family:Bungee,cursive; font-weight:400; font-size:18px; margin:0 0 12px; color:var(--taxi)}
 .board ol{list-style:none; margin:0; padding:0; display:grid; gap:6px}
-@media(min-width:700px){.board ol{grid-template-columns:1fr 1fr; grid-template-rows:repeat(5,auto); grid-auto-flow:column; gap:6px 18px}}
-.board li{display:grid; grid-template-columns:30px 1fr auto; gap:12px; align-items:center;
+@media(min-width:640px){.board ol{grid-template-columns:1fr 1fr; grid-template-rows:repeat(5,auto); grid-auto-flow:column; gap:6px 18px}}
+.board li{display:grid; grid-template-columns:96px 1fr; gap:12px; align-items:center;
           background:rgba(255,255,255,.06); border-radius:10px; padding:10px 14px; font-weight:700; font-size:15px}
-.board li.me{background:rgba(255,198,41,.16); box-shadow:inset 0 0 0 2px var(--taxi)}
-.rank{font-family:Bungee,cursive; font-size:13px; opacity:.6}
-.board li:first-child .rank{opacity:1; color:var(--taxi)}
-.wins{font-family:Bungee,cursive; font-size:14px}
+.board li.done{background:rgba(255,198,41,.10)}
+.board .rlabel{font-family:Bungee,cursive; font-size:13px; color:var(--taxi); opacity:.85}
+.board .rwin{font-weight:800}
+.board .rwin.pending{opacity:.4; font-weight:700}
 @media(prefers-reduced-motion:reduce){.answer,.winner .who{animation:none}}
 </style>
 </head>
@@ -118,7 +119,7 @@
 </main>
 
 <section class="board">
-  <h2>Most rounds won</h2>
+  <h2>Winners</h2>
   <ol id="boardList"></ol>
 </section>
 
@@ -133,10 +134,10 @@
 
 <script type="module">
 import { FIREBASE, USER_KEY, GAMES } from "../../shared/config.js";
-import { initCaption, watchRound, submitCaption, serverNow, junkReason, junkMessage } from "../../shared/caption.js";
-import { initLeaderboard, watchBoard } from "../../shared/leaderboard.js";
+import { initCaption, watchRound, watchWinners, watchRevealed, submitCaption, serverNow, junkReason, junkMessage } from "../../shared/caption.js";
 
 const CFG = GAMES.caption;
+const TOTAL_ROUNDS = Math.max(0, Math.min(9, CFG.images.length - 1));
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
@@ -173,6 +174,7 @@ function render(){
   $("send").disabled = p !== "submitting" || already;
   $("text").placeholder = p === "submitting" ? (already ? "Caption sent — good luck!" : "Type your caption…")
                         : p === "example" ? "This one's just an example" : "Wait for START…";
+  $("text").classList.toggle("example-mode", p === "example");
   $("example").hidden = p !== "example";
   if (p === "example") $("example").innerHTML = `<b>Example:</b> “${esc(CFG.exampleCaption)}”`;
 
@@ -288,22 +290,32 @@ function celebrate(){
   fxLoop = requestAnimationFrame(step);
 }
 
-/* ---------- leaderboard ---------- */
-function renderBoard(rows){
-  $("boardList").innerHTML = rows.length
-    ? rows.map((r,i) => `<li class="${USER && r.name === USER.name ? "me" : ""}"><span class="rank">${i+1}</span><span>${esc(r.name)}</span><span class="wins">${r.score} ${r.score === 1 ? "win" : "wins"}</span></li>`).join("")
-    : `<li><span class="rank">—</span><span>No winners yet.</span><span class="wins"></span></li>`;
+/* ---------- winners board ----------
+   Crowning a winner writes their name straight away, but the list only
+   shows it once the admin has actually moved on to the next image — a
+   separate "revealed" counter (bumped in showImage) tracks how far the
+   game has progressed, independent of idle/reset states. */
+let winners = {}, revealedThrough = 0;
+function renderWinners(){
+  const rows = [];
+  for (let r = 1; r <= TOTAL_ROUNDS; r++){
+    const isRevealed = r <= revealedThrough;
+    const name = winners[r];
+    rows.push(`<li class="${isRevealed && name ? "done" : ""}"><span class="rlabel">Round ${r}</span><span class="rwin${isRevealed && name ? "" : " pending"}">${isRevealed && name ? esc(name) : "—"}</span></li>`);
+  }
+  $("boardList").innerHTML = rows.join("");
 }
 
 /* ---------- boot ---------- */
 (async () => {
   try{
-    await Promise.all([ initCaption(FIREBASE), initLeaderboard(FIREBASE) ]);
+    await initCaption(FIREBASE);
     watchRound(r => {
       if (r.roundId !== round.roundId){ $("text").value = ""; $("hint").textContent = ""; }
-      round = r; render();
+      round = r; render(); renderWinners();
     }, e => { $("idle").textContent = "Couldn't load the game: " + e.message; });
-    watchBoard({ game: "caption", limit: 10, onData: renderBoard, onError: () => {} });
+    watchWinners(w => { winners = w; renderWinners(); }, () => {});
+    watchRevealed(n => { revealedThrough = n; renderWinners(); }, () => {});
   }catch(e){
     $("idle").textContent = "Couldn't connect: " + e.message; console.error(e);
   }
