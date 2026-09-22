@@ -249,29 +249,29 @@ function resize(){ fx.width = innerWidth * devicePixelRatio; fx.height = innerHe
 addEventListener("resize", resize); resize();
 
 function burst(x, y){                               // one firework
-  const n = 70, c = COLORS[Math.floor(Math.random()*COLORS.length)];
+  const n = 24, c = COLORS[Math.floor(Math.random()*COLORS.length)];
   for (let i=0;i<n;i++){
     const a = (i/n)*Math.PI*2, s = 2.5 + Math.random()*4.5;
-    parts.push({ x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:60+Math.random()*30, age:0, c, r:2.4, kind:"spark" });
+    parts.push({ x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:45+Math.random()*20, age:0, c, r:2.1, kind:"spark" });
   }
 }
 function confetti(){                                // falling paper
-  for (let i=0;i<14;i++) parts.push({
-    x: Math.random()*fx.width, y: -20, vx:(Math.random()-.5)*3, vy: 2+Math.random()*3,
-    life: 260, age: 0, c: COLORS[Math.floor(Math.random()*COLORS.length)],
-    w: 8+Math.random()*8, h: 5+Math.random()*6, rot: Math.random()*6, vr:(Math.random()-.5)*.3, kind:"paper"
+  for (let i=0;i<3;i++) parts.push({
+    x: Math.random()*fx.width, y: -20, vx:(Math.random()-.5)*2, vy: 1.6+Math.random()*2.2,
+    life: 110, age: 0, c: COLORS[Math.floor(Math.random()*COLORS.length)],
+    w: 7+Math.random()*7, h: 4+Math.random()*5, rot: Math.random()*6, vr:(Math.random()-.5)*.25, kind:"paper"
   });
 }
 function celebrate(){
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  fxUntil = performance.now() + 6000;
+  fxUntil = performance.now() + 3000;
   let nextBoom = 0;
   cancelAnimationFrame(fxLoop);
   const step = t => {
     ctx.clearRect(0,0,fx.width,fx.height);
     const dpr = devicePixelRatio;
-    if (t < fxUntil){
-      if (t > nextBoom){ burst(fx.width*(.15+Math.random()*.7), fx.height*(.12+Math.random()*.4)); nextBoom = t + 380 + Math.random()*420; }
+    if (t < fxUntil - 700){
+      if (t > nextBoom){ burst(fx.width*(.15+Math.random()*.7), fx.height*(.12+Math.random()*.4)); nextBoom = t + 700 + Math.random()*500; }
       confetti();
     }
     parts = parts.filter(p => p.age < p.life);
