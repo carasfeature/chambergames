@@ -6,15 +6,16 @@
 
 /* ---- 1. Firebase -------------------------------------------------------
    Firebase console -> Project settings -> General -> Your apps -> SDK setup.
-   Paste your seven values in here.                                      */
+   Filled in from the tournament admin — same project. These are safe to be public;
+   the database rules are what protect your data.                                      */
 export const FIREBASE = {
-  apiKey:            "",
-  authDomain:        "",
+  apiKey:            "AIzaSyAdx6UIx2mHwqbK4KPKnXolbgmUcCR1Wvg",
+  authDomain:        "lobby-claim.firebaseapp.com",
   databaseURL:       "https://lobby-claim-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:         "",
-  storageBucket:     "",
-  messagingSenderId: "",
-  appId:             ""
+  projectId:         "lobby-claim",
+  storageBucket:     "lobby-claim.firebasestorage.app",
+  messagingSenderId: "41913061647",
+  appId:             "1:41913061647:web:4eac52a2ddbb5ec2696e7a"
 };
 
 /* ---- 2. Where the Twitch login stores the user ------------------------ */
@@ -169,24 +170,32 @@ export const GAMES = {
   },
 
   caption: {
-    /* Seconds people get to type a caption once the image appears. */
-    submitSeconds: 30,
-    /* How many random captions get drawn for the streamer to choose from. */
-    finalists: 5,
-    /* Longest caption allowed, in characters. */
-    maxLength: 100,
-
-    /* Your image pack. Upload the files to games/caption/images/
-       and list the filenames here. */
+    /* Images live in games/caption/images/ and are shown IN THIS ORDER.
+       The first one is the example round; the rest are Round 1, Round 2, ... */
     images: [
-      "01.jpg", "02.jpg", "03.jpg", "04.jpg", "05.jpg",
-      "06.jpg", "07.jpg", "08.jpg", "09.jpg", "10.jpg"
+      "01.png", "02.png", "03.png", "04.png", "05.png",
+      "06.png", "07.png", "08.png", "09.png", "10.png"
     ],
+    /* Shown under the typing box during the example round. */
+    exampleCaption: "When I hear someone is ordering McDonalds",
 
-    /* Submissions containing any of these words are silently rejected.
-       Add slurs and anything you never want on the overlay. Case is ignored.
-       Fill this in before going live with an audience. */
-    blocklist: []
+    submitSeconds: 30,      // typing time once you press START
+    finalists: 8,           // answers shown on screen
+    maxLength: 100,         // longest caption allowed
+
+    /* ---- automatic picking ---- */
+    similarity: 0.60,       // 60%+ alike = the same joke, only the first one counts
+    minScore: 60,           // answers below this are only used if there aren't 8 better ones
+    minWords: 3,            // anything shorter is dropped
+
+    /* Whole words only (plurals included) — "ring" blocks "rings" but not "bring". */
+    blocklist: [
+      "nigga", "nigger", "ex", "lag", "lagging", "trump", "israel",
+      "palestine", "engagement", "ring", "birthday", "gift"
+    ],
+    /* These are also caught when disguised: n1gga, n i g g a, n.i.g.g.a ... */
+    slurs: [ "nigga", "nigger" ]
   }
+
 
 };
