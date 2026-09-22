@@ -9,226 +9,303 @@
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../shared/ui.css">
 <style>
-.stage{width:100%; max-width:820px; display:grid; gap:18px}
-.shot{
-  width:100%; aspect-ratio:4/3; background:#1B1526; border-radius:16px;
-  object-fit:contain; display:block; box-shadow:0 10px 0 -4px rgba(0,0,0,.45);
-}
-.clockbar{height:10px; background:rgba(255,255,255,.1); border-radius:999px; overflow:hidden}
-.clockfill{height:100%; width:100%; background:var(--taxi); transition:width .25s linear}
-.clockfill.low{background:#FF6B5A}
+:root{ --ink:#241C30; --paper:#FFF8EC; --taxi:#FFC629; --pink:#FF6FB5; --bad:#FF8D7F; --card:#2E2540; }
 
-.rowline{display:flex; align-items:center; justify-content:space-between; gap:12px}
-.rowline h2{font-family:Bungee,cursive; font-weight:400; font-size:17px; margin:0; color:var(--taxi)}
-.secs{font-family:Bungee,cursive; font-size:17px}
+.stage{width:100%; max-width:1000px; display:grid; gap:16px}
+.titlebar{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap}
+.titlebar h1{font-family:Bungee,cursive; font-weight:400; font-size:clamp(28px,5vw,44px); margin:0; color:var(--taxi); line-height:1}
+.chip{font-family:Bungee,cursive; font-size:clamp(15px,2.2vw,20px); padding:8px 16px; border-radius:999px; background:var(--card); color:var(--paper)}
+.chip.live{background:var(--pink); color:var(--ink)}
+
+.picture{position:relative; border-radius:16px; overflow:hidden; background:#1B1526; box-shadow:0 10px 0 -4px rgba(0,0,0,.45)}
+.picture img{display:block; width:100%; max-height:62vh; object-fit:contain; background:#1B1526}
+.clock{
+  position:absolute; top:14px; right:14px; min-width:92px; text-align:center;
+  font-family:Bungee,cursive; font-size:clamp(30px,5vw,50px); line-height:1; padding:10px 16px;
+  border-radius:14px; background:rgba(20,15,28,.85); color:var(--taxi);
+}
+.clock.low{color:var(--bad)}
+.bar{height:12px; background:rgba(255,255,255,.1); border-radius:999px; overflow:hidden}
+.bar i{display:block; height:100%; width:100%; background:var(--taxi); transition:width .25s linear}
+.bar i.low{background:var(--bad)}
 
 .entry{display:flex; gap:10px; flex-wrap:wrap}
-textarea{
-  flex:1 1 320px; min-height:66px; resize:none;
-  background:#2E2540; color:var(--paper); border:3px solid transparent; border-radius:12px;
-  padding:13px 15px; font:700 16px/1.4 Nunito,sans-serif;
+.entry input{
+  flex:1 1 320px; background:var(--card); color:var(--paper); border:3px solid transparent; border-radius:12px;
+  padding:16px 18px; font:800 clamp(17px,2.2vw,21px) Nunito,sans-serif;
 }
-textarea:focus{outline:none; border-color:var(--taxi)}
-textarea:disabled{opacity:.45}
-.btn{
-  font-family:Bungee,cursive; font-size:16px; background:var(--taxi); color:var(--ink);
-  border:3px solid var(--ink); border-radius:12px; padding:13px 26px; cursor:pointer;
-  box-shadow:0 5px 0 rgba(0,0,0,.5);
-}
+.entry input:focus{outline:none; border-color:var(--taxi)}
+.entry input:disabled{opacity:.55}
+.btn{ font-family:Bungee,cursive; font-size:18px; background:var(--taxi); color:var(--ink);
+      border:3px solid var(--ink); border-radius:12px; padding:14px 28px; cursor:pointer; box-shadow:0 5px 0 rgba(0,0,0,.5); }
 .btn:hover{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.5)}
 .btn:active{transform:translateY(5px); box-shadow:0 0 0 rgba(0,0,0,.5)}
-.btn[disabled]{opacity:.4; cursor:not-allowed; transform:none}
-.hint{font-size:13px; opacity:.65; min-height:18px; margin:0}
-.hint.bad{color:#FF8D7F; opacity:1}
+.btn[disabled]{opacity:.4; cursor:not-allowed; transform:none; box-shadow:0 5px 0 rgba(0,0,0,.5)}
+.hint{margin:0; min-height:22px; font-size:15px; font-weight:700; opacity:.85}
+.hint.bad{color:var(--bad); opacity:1}
+.hint.ok{color:#8FE3A8; opacity:1}
+.example{margin:0; font-size:clamp(16px,2vw,19px); font-weight:800; color:#CFC4DF}
+.example b{color:var(--taxi); font-family:Bungee,cursive; font-weight:400}
 
-.cards{display:grid; gap:9px}
-.cap{
-  background:#2E2540; border-radius:12px; padding:14px 16px;
-  font-size:16px; font-weight:700; line-height:1.4;
-  border:3px solid transparent;
+.answers{display:grid; gap:12px; grid-template-columns:1fr}
+@media(min-width:700px){.answers{grid-template-columns:1fr 1fr}}
+.answer{
+  background:var(--card); border-radius:14px; padding:18px 20px; border:3px solid transparent;
+  font:800 clamp(17px,2.2vw,22px)/1.35 Nunito,sans-serif; animation:rise .35s ease-out both;
 }
-.cap.win{border-color:var(--taxi); background:rgba(255,198,41,.14)}
-.cap .who{display:block; font-size:12px; opacity:.6; margin-top:5px; font-weight:900; letter-spacing:.05em; text-transform:uppercase}
+@keyframes rise{from{opacity:0; transform:translateY(12px)}to{opacity:1; transform:none}}
 
-.idle{
-  background:#2E2540; border-radius:16px; padding:40px 24px; text-align:center;
-  font-size:17px; opacity:.8;
+.idle{background:var(--card); border-radius:16px; padding:60px 24px; text-align:center; font-size:20px; font-weight:800; opacity:.85}
+
+/* ---------- winner ---------- */
+.winner{
+  position:fixed; inset:0; z-index:20; display:none; place-items:center; padding:24px; text-align:center;
+  background:radial-gradient(circle at center, rgba(46,37,64,.92), rgba(20,15,28,.97));
 }
-.board{width:100%; max-width:820px}
+.winner.on{display:grid}
+.winner .who{font-family:Bungee,cursive; font-size:clamp(34px,7vw,78px); line-height:1.05; color:var(--taxi);
+             text-shadow:0 5px 0 rgba(0,0,0,.5); animation:boom .6s cubic-bezier(.2,1.6,.4,1) both; overflow-wrap:anywhere}
+.winner .line{font-family:Bungee,cursive; font-size:clamp(20px,3.4vw,34px); color:var(--paper); margin-top:10px}
+.winner .said{max-width:820px; margin:26px auto 0; font:800 clamp(20px,3vw,30px)/1.35 Nunito,sans-serif;
+              background:rgba(255,255,255,.08); border-radius:16px; padding:20px 24px}
+@keyframes boom{from{transform:scale(.3); opacity:0}to{transform:scale(1); opacity:1}}
+#fx{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:21}
+
+/* ---------- leaderboard ---------- */
+.board{width:100%; max-width:1000px}
 .board h2{font-family:Bungee,cursive; font-weight:400; font-size:18px; margin:0 0 12px; color:var(--taxi)}
 .board ol{list-style:none; margin:0; padding:0; display:grid; gap:6px}
+@media(min-width:700px){.board ol{grid-template-columns:1fr 1fr; grid-template-rows:repeat(5,auto); grid-auto-flow:column; gap:6px 18px}}
 .board li{display:grid; grid-template-columns:30px 1fr auto; gap:12px; align-items:center;
           background:rgba(255,255,255,.06); border-radius:10px; padding:10px 14px; font-weight:700; font-size:15px}
 .board li.me{background:rgba(255,198,41,.16); box-shadow:inset 0 0 0 2px var(--taxi)}
 .rank{font-family:Bungee,cursive; font-size:13px; opacity:.6}
+.board li:first-child .rank{opacity:1; color:var(--taxi)}
 .wins{font-family:Bungee,cursive; font-size:14px}
-.note{font-size:13px; opacity:.6; margin-top:11px}
+@media(prefers-reduced-motion:reduce){.answer,.winner .who{animation:none}}
 </style>
 </head>
 <body>
 
 <nav class="topbar"><a class="back" href="../../index.html#section=krispysgames"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
 
-<header class="head">
-  <h1>Caption This</h1>
-  <p>One image, one caption each, best one wins the round.</p>
-</header>
+<main class="stage">
+  <div class="titlebar">
+    <h1>Caption This</h1>
+    <span class="chip" id="chip">Waiting…</span>
+  </div>
 
-<main class="stage" id="stage">
-  <div class="idle" id="idle">Waiting for the next image…</div>
+  <div class="idle" id="idle">Caption This starts soon — stay here, the picture will appear by itself.</div>
 
   <div id="live" hidden>
-    <img class="shot" id="shot" alt="Image to caption">
-    <div class="clockbar" style="margin-top:14px"><div class="clockfill" id="clockfill"></div></div>
-    <div class="rowline" style="margin-top:10px">
-      <h2 id="phaseLabel">Write your caption</h2>
-      <span class="secs" id="secs"></span>
+    <div class="picture">
+      <img id="shot" alt="Picture to caption">
+      <div class="clock" id="clock" hidden>30</div>
+    </div>
+    <div class="bar" id="bar" hidden style="margin-top:12px"><i id="barFill"></i></div>
+
+    <div id="entryArea" style="display:grid; gap:10px; margin-top:14px">
+      <div class="entry">
+        <input id="text" maxlength="100" autocomplete="off" placeholder="Type your caption…" aria-label="Your caption">
+        <button class="btn" id="send">Send</button>
+      </div>
+      <p class="example" id="example" hidden></p>
+      <p class="hint" id="hint"></p>
     </div>
 
-    <div class="entry" style="margin-top:12px" id="entry">
-      <textarea id="text" maxlength="100" placeholder="Type your caption…"></textarea>
-      <button class="btn" id="send">Send</button>
-    </div>
-    <p class="hint" id="hint"></p>
-
-    <div class="cards" id="cards"></div>
+    <div class="answers" id="answers" style="margin-top:14px"></div>
   </div>
 </main>
 
 <section class="board">
   <h2>Most rounds won</h2>
-  <ol id="boardList"><li><span class="rank">—</span><span>Loading…</span><span class="wins"></span></li></ol>
-  <p class="note" id="boardNote"></p>
+  <ol id="boardList"></ol>
 </section>
+
+<div class="winner" id="winner" role="status" aria-live="assertive">
+  <div>
+    <div class="who" id="winWho">—</div>
+    <div class="line" id="winLine">—</div>
+    <div class="said" id="winSaid">—</div>
+  </div>
+</div>
+<canvas id="fx" aria-hidden="true"></canvas>
 
 <script type="module">
 import { FIREBASE, USER_KEY, GAMES } from "../../shared/config.js";
-import { initCaption, watchRound, submitCaption } from "../../shared/caption.js";
+import { initCaption, watchRound, submitCaption, serverNow, junkReason, junkMessage } from "../../shared/caption.js";
 import { initLeaderboard, watchBoard } from "../../shared/leaderboard.js";
 
 const CFG = GAMES.caption;
 const $ = id => document.getElementById(id);
-
-function getName(){
-  try{
-    const raw = localStorage.getItem(USER_KEY);
-    if(!raw) return null;
-    const o = raw.trim().startsWith("{") ? JSON.parse(raw) : { login: raw };
-    return o.display_name||o.displayName||o.login||o.name||o.username||null;
-  }catch{ return null; }
-}
-const NAME = getName();
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-let round = { phase:"idle" }, sentFor = null, clock = null;
+/* ---------- who's playing ---------- */
+function getUser(){
+  try{
+    const raw = localStorage.getItem(USER_KEY); if(!raw) return null;
+    const o = raw.trim().startsWith("{") ? JSON.parse(raw) : { login: raw };
+    const login = String(o.login || o.display_name || o.name || "").toLowerCase().replace(/[^a-z0-9_]/g,"").slice(0,25);
+    return login.length >= 2 ? { name: login, display: o.display_name || o.displayName || login } : null;
+  }catch{ return null; }
+}
+const USER = getUser();
+
+let round = { phase:"idle" }, sentFor = null, clockLoop = null, celebrated = null;
 
 /* ---------- render ---------- */
 function render(){
-  const live = round.phase !== "idle";
-  $("idle").hidden = live;
-  $("live").hidden = !live;
-  if(!live) return;
+  const p = round.phase, live = p !== "idle" && round.image;
+  $("idle").hidden = !!live; $("live").hidden = !live;
 
-  $("shot").src = `images/${round.image}`;
+  $("chip").textContent = p === "idle" ? "Waiting…" : round.round ? `Round ${round.round}` : "Example";
+  $("chip").classList.toggle("live", p === "submitting");
+  if (!live){ showWinner(false); return; }
 
-  const submitting = round.phase === "submitting";
-  const already = sentFor === round.roundId;
-  $("entry").style.display = submitting ? "flex" : "none";
-  $("text").disabled = already;
-  $("send").disabled = already;
+  const src = `images/${round.image}`;
+  if ($("shot").getAttribute("src") !== src) $("shot").src = src;
 
-  $("phaseLabel").textContent =
-    submitting ? (already ? "Caption sent" : "Write your caption")
-    : round.phase === "closed"  ? "Submissions closed"
-    : round.phase === "judging" ? "Pick of the bunch"
-    : "Winner";
+  // typing box: visible for example / ready / submitting, only usable while submitting
+  const typing = p === "example" || p === "ready" || p === "submitting";
+  const already = sentFor && sentFor === round.roundId;
+  $("entryArea").style.display = typing ? "grid" : "none";
+  $("text").disabled = p !== "submitting" || already;
+  $("send").disabled = p !== "submitting" || already;
+  $("text").placeholder = p === "submitting" ? (already ? "Caption sent — good luck!" : "Type your caption…")
+                        : p === "example" ? "This one's just an example" : "Wait for START…";
+  $("example").hidden = p !== "example";
+  if (p === "example") $("example").innerHTML = `<b>Example:</b> “${esc(CFG.exampleCaption)}”`;
 
-  const cards = $("cards");
-  if(round.phase === "judging" && round.finalists){
-    cards.innerHTML = round.finalists
-      .map(f => `<div class="cap">${esc(f.text)}</div>`).join("");
-  } else if(round.phase === "winner" && round.winner){
-    cards.innerHTML = `<div class="cap win">${esc(round.winner.text)}
-      <span class="who">${esc(round.winner.name)}</span></div>`;
-  } else {
-    cards.innerHTML = "";
-  }
+  // the 8
+  if (p === "judging" && round.finalists){
+    $("answers").innerHTML = round.finalists.map((f,i) =>
+      `<div class="answer" style="animation-delay:${i*70}ms">${esc(f.text)}</div>`).join("");
+  } else if (p !== "winner") $("answers").innerHTML = "";
+
+  showWinner(p === "winner");
+  runClock();
 }
 
-/* ---------- countdown ---------- */
-function startClock(){
-  cancelAnimationFrame(clock);
+/* ---------- countdown (server-synced) ---------- */
+function runClock(){
+  cancelAnimationFrame(clockLoop);
+  const on = round.phase === "submitting" && round.endsAt;
+  $("clock").hidden = !on; $("bar").hidden = !on;
+  if (!on) return;
+  const total = CFG.submitSeconds * 1000;
   const tick = () => {
-    if(round.phase !== "submitting" || !round.endsAt){ $("secs").textContent=""; return; }
-    const left = Math.max(0, round.endsAt - Date.now());
-    const pct  = Math.max(0, Math.min(100, (left / (CFG.submitSeconds*1000)) * 100));
-    $("clockfill").style.width = pct + "%";
-    $("clockfill").classList.toggle("low", left < 6000);
-    $("secs").textContent = Math.ceil(left/1000) + "s";
-    if(left <= 0){ $("send").disabled = true; $("text").disabled = true; return; }
-    clock = requestAnimationFrame(tick);
+    const left = Math.max(0, round.endsAt - serverNow());
+    const low = left < 6000;
+    $("clock").textContent = Math.ceil(left/1000);
+    $("clock").classList.toggle("low", low);
+    $("barFill").style.width = (left/total*100) + "%";
+    $("barFill").classList.toggle("low", low);
+    if (left <= 0){ $("text").disabled = true; $("send").disabled = true; $("text").placeholder = "Time's up! Picking answers…"; return; }
+    clockLoop = requestAnimationFrame(tick);
   };
   tick();
 }
 
 /* ---------- sending ---------- */
 $("send").addEventListener("click", send);
-$("text").addEventListener("keydown", e => {
-  if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); send(); }
-});
+$("text").addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); send(); } });
+$("text").addEventListener("input", () => { $("hint").textContent = ""; $("hint").className = "hint"; });
 
 async function send(){
-  const hint = $("hint");
-  hint.className = "hint";
-  if(!NAME){ hint.className="hint bad"; hint.textContent="Log in with Twitch to join in."; return; }
-  if(round.phase !== "submitting" || Date.now() > round.endsAt){
-    hint.className="hint bad"; hint.textContent="Too late — submissions are closed."; return;
-  }
+  const hint = $("hint"); hint.className = "hint";
+  if (!USER){ hint.className = "hint bad"; hint.textContent = "Log in with Twitch on the homepage to join in."; return; }
+  const r = junkReason($("text").value, CFG);
+  if (r){ hint.className = "hint bad"; hint.textContent = junkMessage(r); return; }
   $("send").disabled = true;
   try{
-    await submitCaption({
-      roundId: round.roundId, name: NAME, text: $("text").value,
-      maxLength: CFG.maxLength, blocklist: CFG.blocklist, existing: []
-    });
+    await submitCaption({ round, name: USER.name, display: USER.display, text: $("text").value, cfg: CFG });
     sentFor = round.roundId;
-    hint.textContent = "Sent. Good luck.";
+    hint.className = "hint ok"; hint.textContent = "Sent! Good luck.";
     render();
   }catch(err){
-    hint.className = "hint bad";
-    hint.textContent = err.message;
-    $("send").disabled = false;
+    hint.className = "hint bad"; hint.textContent = err.message;
+    if (!/already/.test(err.message)) $("send").disabled = false;
   }
+}
+
+/* ---------- winner + fireworks + confetti ---------- */
+function showWinner(on){
+  $("winner").classList.toggle("on", on);
+  if (!on){ celebrated = null; return; }
+  const w = round.winner || {};
+  $("winWho").textContent = w.display || w.name || "";
+  $("winLine").textContent = `is the winner of Round ${round.round}!`;
+  $("winSaid").textContent = `“${w.text || ""}”`;
+  const key = round.roundId + ":" + w.name;
+  if (celebrated !== key){ celebrated = key; celebrate(); }
+}
+
+const fx = $("fx"), ctx = fx.getContext("2d");
+let parts = [], fxLoop = null, fxUntil = 0;
+const COLORS = ["#FFC629","#FF6FB5","#7FD3FF","#8FE3A8","#FF8A3D","#C9A8FF","#FFFFFF"];
+function resize(){ fx.width = innerWidth * devicePixelRatio; fx.height = innerHeight * devicePixelRatio; }
+addEventListener("resize", resize); resize();
+
+function burst(x, y){                               // one firework
+  const n = 70, c = COLORS[Math.floor(Math.random()*COLORS.length)];
+  for (let i=0;i<n;i++){
+    const a = (i/n)*Math.PI*2, s = 2.5 + Math.random()*4.5;
+    parts.push({ x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s, life:60+Math.random()*30, age:0, c, r:2.4, kind:"spark" });
+  }
+}
+function confetti(){                                // falling paper
+  for (let i=0;i<14;i++) parts.push({
+    x: Math.random()*fx.width, y: -20, vx:(Math.random()-.5)*3, vy: 2+Math.random()*3,
+    life: 260, age: 0, c: COLORS[Math.floor(Math.random()*COLORS.length)],
+    w: 8+Math.random()*8, h: 5+Math.random()*6, rot: Math.random()*6, vr:(Math.random()-.5)*.3, kind:"paper"
+  });
+}
+function celebrate(){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  fxUntil = performance.now() + 6000;
+  let nextBoom = 0;
+  cancelAnimationFrame(fxLoop);
+  const step = t => {
+    ctx.clearRect(0,0,fx.width,fx.height);
+    const dpr = devicePixelRatio;
+    if (t < fxUntil){
+      if (t > nextBoom){ burst(fx.width*(.15+Math.random()*.7), fx.height*(.12+Math.random()*.4)); nextBoom = t + 380 + Math.random()*420; }
+      confetti();
+    }
+    parts = parts.filter(p => p.age < p.life);
+    for (const p of parts){
+      p.age++; p.x += p.vx*dpr; p.y += p.vy*dpr;
+      if (p.kind === "spark"){ p.vx *= .97; p.vy = p.vy*.97 + .06; }
+      else { p.rot += p.vr; p.vx += (Math.random()-.5)*.1; }
+      ctx.globalAlpha = Math.max(0, 1 - p.age/p.life);
+      ctx.fillStyle = p.c;
+      if (p.kind === "spark"){ ctx.beginPath(); ctx.arc(p.x,p.y,p.r*dpr,0,Math.PI*2); ctx.fill(); }
+      else { ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillRect(-p.w/2*dpr,-p.h/2*dpr,p.w*dpr,p.h*dpr); ctx.restore(); }
+    }
+    ctx.globalAlpha = 1;
+    if (parts.length || t < fxUntil) fxLoop = requestAnimationFrame(step);
+  };
+  fxLoop = requestAnimationFrame(step);
 }
 
 /* ---------- leaderboard ---------- */
 function renderBoard(rows){
   $("boardList").innerHTML = rows.length
-    ? rows.map((r,i)=>`<li class="${NAME&&r.name.toLowerCase()===String(NAME).toLowerCase()?"me":""}"><span class="rank">${i+1}</span><span>${esc(r.name)}</span><span class="wins">${r.score}</span></li>`).join("")
+    ? rows.map((r,i) => `<li class="${USER && r.name === USER.name ? "me" : ""}"><span class="rank">${i+1}</span><span>${esc(r.name)}</span><span class="wins">${r.score} ${r.score === 1 ? "win" : "wins"}</span></li>`).join("")
     : `<li><span class="rank">—</span><span>No winners yet.</span><span class="wins"></span></li>`;
-  $("boardNote").textContent = "Rounds won, all time.";
 }
 
 /* ---------- boot ---------- */
 (async () => {
-  if(!FIREBASE.databaseURL){
-    $("idle").textContent = "Not connected: databaseURL is empty in shared/config.js.";
-    return;
-  }
   try{
     await Promise.all([ initCaption(FIREBASE), initLeaderboard(FIREBASE) ]);
     watchRound(r => {
-      const changed = r.roundId !== round.roundId;
-      round = r;
-      if(changed){ $("text").value=""; $("hint").textContent=""; }
-      render();
-      startClock();
-    }, e => { $("idle").textContent = "Couldn't read the round: " + e.message; });
-
-    watchBoard({ game:"caption", limit:20, onData:renderBoard,
-                 onError:e => $("boardNote").textContent = "Leaderboard error: " + e.message });
+      if (r.roundId !== round.roundId){ $("text").value = ""; $("hint").textContent = ""; }
+      round = r; render();
+    }, e => { $("idle").textContent = "Couldn't load the game: " + e.message; });
+    watchBoard({ game: "caption", limit: 10, onData: renderBoard, onError: () => {} });
   }catch(e){
-    $("idle").textContent = "Couldn't connect: " + e.message;
-    console.error(e);
+    $("idle").textContent = "Couldn't connect: " + e.message; console.error(e);
   }
 })();
 </script>
