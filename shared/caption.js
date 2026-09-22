@@ -208,6 +208,3 @@ export function resetWinners(){
     fbdb.set(fbdb.ref(db, "captionGame/revealed"), null)
   ]);
 }
-export function watchWinners(onChange, onError){
-  return fbdb.onValue(fbdb.ref(db, "captionGame/winners"), s => onChange(s.val() || {}), e => onError?.(e));
-}
