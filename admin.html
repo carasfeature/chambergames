@@ -146,6 +146,7 @@ body{
     <div class="row">
       <a class="btn ghost" href="games/caption/index.html" target="_blank" rel="noopener">Open viewer page ↗</a>
       <button class="btn ghost" id="btnReset">Reset game</button>
+      <button class="btn ghost" id="btnNewSubathon">New subathon (clear Round 1-9)</button>
     </div>
   </div>
 
@@ -185,8 +186,8 @@ body{
 <script type="module">
 import { FIREBASE, GAMES } from "./shared/config.js";
 import { initCaption, onAdmin, adminSignIn, adminSignOut, watchRound, watchSubmissions,
-         showImage, startRound, closeAndPick, crownWinner, resetGame, pickFinalists, serverNow } from "./shared/caption.js";
-import { initLeaderboard, bumpScore } from "./shared/leaderboard.js";
+         showImage, startRound, closeAndPick, crownWinner, resetGame, resetWinners, pickFinalists, serverNow } from "./shared/caption.js";
+
 
 const CFG = GAMES.caption;
 const $ = id => document.getElementById(id);
@@ -276,7 +277,7 @@ function render(){
       b.innerHTML = `<span>${esc(f.text)}<small>${esc(f.display||f.name)}${f.also ? ` · +${f.also} said the same` : ""}</small></span><span class="crown">Winner</span>`;
       b.onclick = async () => {
         if (busy) return; busy = true;
-        try{ await crownWinner(f); await bumpScore({ game:"caption", name:f.name, by:1 }).catch(()=>{}); }
+        try{ await crownWinner(f, round); }
         catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
         busy = false;
       };
@@ -321,11 +322,16 @@ $("btnReset").onclick = async () => {
   if (!confirm("Reset Caption This? The screen goes back to 'starts soon'.")) return;
   try{ await resetGame(); }catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
 };
+$("btnNewSubathon").onclick = async () => {
+  if (!confirm("Clear the Round 1-9 winners board? This can't be undone — do this at the start of a new subathon, not between rounds of the same one.")) return;
+  try{ await resetWinners(); await resetGame(); }
+  catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+};
 
 /* ================= BOOT ================= */
 (async () => {
   try{
-    await Promise.all([ initCaption(FIREBASE), initLeaderboard(FIREBASE) ]);
+    await initCaption(FIREBASE);
     await onAdmin(user => showLoggedIn(user));
     watchRound(r => {
       if (r.roundId !== round.roundId){
