@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* shared/ui.css, built in so this page never shows up unstyled */
+/* ============================================================
+   shared/ui.css — shell styling for every page under /games
+   ============================================================ */
+:root{
+  --ink:#241C30; --ink-2:#2E2540; --paper:#FFF8EC;
+  --taxi:#FFC629; --stop:#E03A2F; --soon:#6E6383;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; padding:26px 18px 70px; min-height:100vh;
+  background:var(--ink); color:var(--paper);
+  font-family:Nunito,system-ui,sans-serif;
+  display:flex; flex-direction:column; align-items:center; gap:26px;
+}
+
+/* ---------- back button ---------- */
+.topbar{width:100%; max-width:1000px}
+.back{
+  display:inline-flex; align-items:center; gap:8px;
+  font-family:Bungee,cursive; font-size:14px; letter-spacing:.04em;
+  color:var(--ink); background:var(--taxi); text-decoration:none;
+  border:3px solid var(--ink); border-radius:11px; padding:9px 16px 9px 13px;
+  box-shadow:0 4px 0 rgba(0,0,0,.5); transition:transform .08s, box-shadow .08s;
+}
+.back:hover{transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.5)}
+.back:active{transform:translateY(4px); box-shadow:0 0 0 rgba(0,0,0,.5)}
+.back:focus-visible{outline:3px solid var(--paper); outline-offset:3px}
+.back svg{width:14px; height:14px}
+
+/* ---------- headings ---------- */
+.head{width:100%; max-width:1000px}
+.head h1{
+  font-family:Bungee,cursive; font-weight:400;
+  font-size:clamp(28px,5.4vw,46px); margin:0 0 8px; line-height:1.05;
+}
+.head p{margin:0; font-size:16px; opacity:.72; max-width:60ch; line-height:1.55}
+
+/* ---------- game grid ---------- */
+.grid{
+  width:100%; max-width:1000px; display:grid; gap:16px;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+}
+.tile{
+  display:flex; flex-direction:column; gap:8px;
+  background:var(--ink-2); border-radius:16px; padding:22px 20px 20px;
+  border:3px solid transparent; text-decoration:none; color:var(--paper);
+  box-shadow:0 7px 0 rgba(0,0,0,.4);
+  transition:transform .1s, box-shadow .1s, border-color .1s;
+}
+.tile:hover{transform:translateY(-3px); box-shadow:0 10px 0 rgba(0,0,0,.4); border-color:var(--taxi)}
+.tile:active{transform:translateY(2px); box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.tile:focus-visible{outline:3px solid var(--taxi); outline-offset:3px}
+.tile h2{font-family:Bungee,cursive; font-weight:400; font-size:19px; margin:0; line-height:1.2}
+.tile p{margin:0; font-size:14px; line-height:1.5; opacity:.72}
+
+.tile.soon{
+  pointer-events:none; opacity:.42; box-shadow:none;
+  border-style:dashed; border-color:var(--soon);
+}
+.badge{
+  align-self:flex-start; margin-top:4px;
+  font-family:Bungee,cursive; font-size:11px; letter-spacing:.06em;
+  background:var(--taxi); color:var(--ink); border-radius:999px; padding:4px 11px;
+}
+.tile.soon .badge{background:var(--soon); color:var(--paper)}
+
+</style>
+<style>
+.panel{width:100%; max-width:1000px; background:#2E2540; border-radius:16px; padding:20px; display:grid; gap:16px}
+.panel h2{font-family:Bungee,cursive; font-weight:400; font-size:20px; margin:0; color:var(--taxi)}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.spread{justify-content:space-between}
+.btn{ font-family:Bungee,cursive; font-size:16px; background:var(--taxi); color:var(--ink);
+      border:3px solid var(--ink); border-radius:12px; padding:12px 24px; cursor:pointer; box-shadow:0 5px 0 rgba(0,0,0,.5); }
+.btn:hover{transform:translateY(2px); box-shadow:0 3px 0 rgba(0,0,0,.5)}
+.btn:active{transform:translateY(5px); box-shadow:0 0 0 rgba(0,0,0,.5)}
+.btn.big{font-size:22px; padding:16px 38px}
+.btn.go{background:#8FE3A8}
+.btn.ghost{background:transparent; color:var(--paper); border-color:#6B6180; box-shadow:none; font-size:13px; padding:9px 16px}
+.btn[disabled]{opacity:.4; cursor:not-allowed; transform:none}
+.field{display:grid; gap:6px; font-weight:800; font-size:14px}
+.field input{background:#1E1729; color:var(--paper); border:3px solid transparent; border-radius:10px; padding:12px 14px; font:700 16px Nunito,sans-serif}
+.field input:focus{outline:none; border-color:var(--taxi)}
+.msg{margin:0; font-weight:700; font-size:14px; min-height:20px}
+.msg.bad{color:#FF8D7F} .msg.ok{color:#8FE3A8}
+.who{font-size:14px; font-weight:700; opacity:.85}
+.who a{color:var(--taxi)}
+
+.stats{display:flex; gap:10px; flex-wrap:wrap}
+.stat{background:#1E1729; border-radius:10px; padding:9px 14px; font-weight:800; font-size:14px}
+.stat b{font-family:Bungee,cursive; font-weight:400; color:var(--taxi); margin-left:6px}
+.preview{display:grid; grid-template-columns:260px 1fr; gap:18px; align-items:start}
+@media(max-width:720px){.preview{grid-template-columns:1fr}}
+.preview img{width:100%; border-radius:12px; background:#1B1526; aspect-ratio:4/3; object-fit:contain}
+.big-clock{font-family:Bungee,cursive; font-size:64px; line-height:1; color:var(--taxi)}
+.step{font-size:15px; font-weight:700; line-height:1.5; opacity:.9; margin:0}
+
+.pick{display:grid; gap:9px}
+.pickbtn{
+  display:grid; grid-template-columns:1fr auto; gap:12px; align-items:center; text-align:left; cursor:pointer;
+  background:#1E1729; color:var(--paper); border:3px solid transparent; border-radius:12px; padding:13px 15px;
+  font:800 16px/1.35 Nunito,sans-serif;
+}
+.pickbtn:hover{border-color:var(--taxi)}
+.pickbtn small{display:block; font-size:12px; opacity:.6; margin-top:4px; font-weight:900; letter-spacing:.04em}
+.pickbtn .crown{font-family:Bungee,cursive; font-size:13px; color:var(--ink); background:var(--taxi); border-radius:8px; padding:7px 11px}
+.winnerbox{background:rgba(255,198,41,.14); box-shadow:inset 0 0 0 2px var(--taxi); border-radius:12px; padding:16px; font-weight:800; font-size:17px}
+.sec{width:100%; max-width:1000px}
+.sec > h2{font-family:Bungee,cursive; font-weight:400; font-size:15px; letter-spacing:.06em; margin:0 0 12px; opacity:.6; text-transform:uppercase}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<header class="head">
+  <h1>Admin</h1>
+  <p class="who" id="who">Checking login…</p>
+</header>
+
+<!-- ================= LOGIN ================= -->
+<section class="panel" id="loginPanel" hidden>
+  <h2>Sign in</h2>
+  <p class="step">Same email and password as your tournament admin.</p>
+  <label class="field">Email <input id="email" type="email" autocomplete="username"></label>
+  <label class="field">Password <input id="password" type="password" autocomplete="current-password"></label>
+  <div class="row"><button class="btn" id="btnSignIn">Sign in</button></div>
+  <p class="msg" id="loginMsg"></p>
+</section>
+
+<!-- ================= CAPTION THIS ================= -->
+<section class="panel" id="capPanel" hidden>
+  <div class="row spread">
+    <h2>Caption This</h2>
+    <div class="row">
+      <a class="btn ghost" href="games/caption/index.html" target="_blank" rel="noopener">Open viewer page ↗</a>
+      <button class="btn ghost" id="btnReset">Reset game</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <span class="stat">Showing<b id="sRound">—</b></span>
+    <span class="stat">Image<b id="sImage">—</b></span>
+    <span class="stat">Answers in<b id="sEntries">0</b></span>
+    <span class="stat" id="sJunkWrap" hidden>Junk dropped<b id="sJunk">0</b></span>
+    <span class="stat" id="sUniqueWrap" hidden>Different jokes<b id="sUnique">0</b></span>
+  </div>
+
+  <div class="preview">
+    <img id="prev" alt="Current image">
+    <div style="display:grid; gap:14px">
+      <p class="step" id="stepText">—</p>
+      <div class="big-clock" id="bigClock" hidden>30</div>
+      <div class="row" id="actions"></div>
+      <div class="pick" id="pick"></div>
+      <p class="msg" id="capMsg"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LINKS ================= -->
+<section class="sec" id="linksSec" hidden>
+  <h2>Other games — they run themselves</h2>
+  <div class="grid">
+    <a class="tile" href="games/bingo/index.html"><h2>Subathon Bingo</h2><p>Viewers cross off their own cards.</p><span class="badge">View</span></a>
+    <a class="tile" href="games/wordwlw/index.html"><h2>Wordwlw</h2><p>Everyone gets their own random word.</p><span class="badge">View</span></a>
+    <a class="tile" href="games/reactions/speed.html"><h2>Reaction Speed</h2><p>Check the leaderboard.</p><span class="badge">View</span></a>
+    <a class="tile" href="games/reactions/aim.html"><h2>Aim Tester</h2><p>Check the leaderboard.</p><span class="badge">View</span></a>
+    <a class="tile" href="games/reactions/sequence.html"><h2>Sequence Memory</h2><p>Check the leaderboard.</p><span class="badge">View</span></a>
+    <a class="tile" href="games/typing/index.html"><h2>Typing Race</h2><p>Three leaderboards — Easy, Medium, Hard.</p><span class="badge">View</span></a>
+  </div>
+</section>
+
+<script type="module">
+import { FIREBASE, GAMES } from "./shared/config.js";
+import { initCaption, onAdmin, adminSignIn, adminSignOut, watchRound, watchSubmissions,
+         showImage, startRound, closeAndPick, crownWinner, resetGame, pickFinalists, serverNow } from "./shared/caption.js";
+import { initLeaderboard, bumpScore } from "./shared/leaderboard.js";
+
+const CFG = GAMES.caption;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+let round = { phase:"idle" }, entries = [], unwatch = null, closing = false, busy = false;
+
+/* ================= LOGIN ================= */
+function showLoggedIn(user){
+  $("loginPanel").hidden = !!user;
+  $("capPanel").hidden = !user;
+  $("linksSec").hidden = !user;
+  $("who").innerHTML = user
+    ? `Signed in as <b>${esc(user.email)}</b> · <a href="#" id="logout">Log out</a>`
+    : "Sign in to run the games.";
+  if (user) $("logout").onclick = e => { e.preventDefault(); adminSignOut(); };
+}
+async function signIn(){
+  const msg = $("loginMsg"); msg.className = "msg"; msg.textContent = "Signing in…";
+  try{ await adminSignIn($("email").value.trim(), $("password").value); $("password").value = ""; msg.textContent = ""; }
+  catch(e){
+    msg.className = "msg bad";
+    msg.textContent = /invalid|wrong|user-not-found|credential/i.test(e.code||e.message)
+      ? "Email or password is wrong." : /too-many/i.test(e.code||"") ? "Too many tries — wait a minute."
+      : "Couldn't sign in: " + (e.code || e.message);
+  }
+}
+$("btnSignIn").onclick = signIn;
+$("password").addEventListener("keydown", e => { if (e.key === "Enter") signIn(); });
+
+/* ================= CAPTION CONTROLS ================= */
+const last = () => CFG.images.length - 1;
+
+function btn(label, cls, fn){
+  const b = document.createElement("button");
+  b.className = "btn " + cls; b.textContent = label;
+  b.onclick = async () => {
+    if (busy) return; busy = true; b.disabled = true;
+    try{ await fn(); $("capMsg").textContent = ""; }
+    catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+    busy = false; b.disabled = false;
+  };
+  return b;
+}
+const friendly = e => /permission/i.test(e.message||"") ? "Firebase said no — are the new rules published?" : (e.message || String(e));
+
+function render(){
+  const p = round.phase;
+  $("sRound").textContent = p === "idle" ? "Nothing" : round.round ? `Round ${round.round}` : "Example";
+  $("sImage").textContent = round.image ? `${round.image} (${round.index+1}/${CFG.images.length})` : "—";
+  $("sEntries").textContent = entries.length;
+  const st = round.stats;
+  $("sJunkWrap").hidden = $("sUniqueWrap").hidden = !(st && (p === "judging" || p === "winner"));
+  if (st){ $("sJunk").textContent = st.junk; $("sUnique").textContent = st.unique; }
+  $("prev").src = round.image ? `games/caption/images/${round.image}` : "";
+  $("prev").hidden = !round.image;
+
+  const A = $("actions"); A.innerHTML = ""; $("pick").innerHTML = "";
+  const nextBtn = () => round.index < last()
+    ? btn("Next image →", "big", () => showImage(round.index + 1, CFG))
+    : btn("That was the last one — Reset", "", () => resetGame());
+
+  if (p === "idle"){
+    $("stepText").textContent = "Nothing on screen. Start shows the example image (01) to everyone.";
+    A.append(btn("Start game", "big", () => showImage(0, CFG)));
+  }
+  else if (p === "example"){
+    $("stepText").textContent = "Example round: viewers see the picture and the example caption. They can't type yet.";
+    A.append(nextBtn());
+  }
+  else if (p === "ready"){
+    $("stepText").textContent = `Round ${round.round} is on screen, typing is locked. Press START to open answers for ${CFG.submitSeconds} seconds.`;
+    A.append(btn("START", "big go", () => startRound(round, CFG)));
+    A.append(btn("Skip this image", "ghost", () => round.index < last() ? showImage(round.index+1, CFG) : resetGame()));
+  }
+  else if (p === "submitting"){
+    $("stepText").textContent = "Answers are coming in. When the clock hits 0, 8 are picked automatically.";
+    A.append(btn("End early", "ghost", () => finishRound()));
+  }
+  else if (p === "judging"){
+    $("stepText").textContent = "These 8 are on screen now. Click the funniest to crown the winner.";
+    const list = round.finalists || [];
+    if (!list.length){ $("pick").innerHTML = `<p class="step">No valid answers this round.</p>`; A.append(nextBtn()); }
+    list.forEach(f => {
+      const b = document.createElement("button");
+      b.className = "pickbtn";
+      b.innerHTML = `<span>${esc(f.text)}<small>${esc(f.display||f.name)}${f.also ? ` · +${f.also} said the same` : ""}</small></span><span class="crown">Winner</span>`;
+      b.onclick = async () => {
+        if (busy) return; busy = true;
+        try{ await crownWinner(f); await bumpScore({ game:"caption", name:f.name, by:1 }).catch(()=>{}); }
+        catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+        busy = false;
+      };
+      $("pick").append(b);
+    });
+    if (list.length) A.append(btn("Draw a different 8", "ghost", () => closeAndPick(round, entries, CFG)));
+  }
+  else if (p === "winner"){
+    const w = round.winner || {};
+    $("stepText").textContent = "Winner is on everyone's screen with fireworks.";
+    $("pick").innerHTML = `<div class="winnerbox">🏆 ${esc(w.display||w.name)} — “${esc(w.text)}”</div>`;
+    A.append(nextBtn());
+  }
+  runClock();
+}
+
+/* ---- the clock, and the automatic pick when it runs out ---- */
+let loop = null;
+function runClock(){
+  cancelAnimationFrame(loop);
+  const on = round.phase === "submitting" && round.endsAt;
+  $("bigClock").hidden = !on;
+  if (!on) return;
+  const tick = () => {
+    const left = round.endsAt - serverNow();
+    $("bigClock").textContent = Math.max(0, Math.ceil(left/1000));
+    // wait 2.5s past zero so answers sent in the last second still count
+    if (left <= -2500){ finishRound(); return; }
+    loop = requestAnimationFrame(tick);
+  };
+  tick();
+}
+async function finishRound(){
+  if (closing || round.phase !== "submitting") return;
+  closing = true;
+  try{ await closeAndPick(round, entries, CFG); }
+  catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+  closing = false;
+}
+
+$("btnReset").onclick = async () => {
+  if (!confirm("Reset Caption This? The screen goes back to 'starts soon'.")) return;
+  try{ await resetGame(); }catch(e){ $("capMsg").className = "msg bad"; $("capMsg").textContent = friendly(e); }
+};
+
+/* ================= BOOT ================= */
+(async () => {
+  try{
+    await Promise.all([ initCaption(FIREBASE), initLeaderboard(FIREBASE) ]);
+    await onAdmin(user => showLoggedIn(user));
+    watchRound(r => {
+      if (r.roundId !== round.roundId){
+        unwatch?.(); entries = [];
+        if (r.roundId) unwatch = watchSubmissions(r.roundId, list => { entries = list; $("sEntries").textContent = list.length; });
+      }
+      round = r; render();
+    }, e => { $("capMsg").className = "msg bad"; $("capMsg").textContent = "Couldn't read the game: " + e.message; });
+  }catch(e){
+    $("who").textContent = "Couldn't connect to Firebase: " + e.message; console.error(e);
+  }
+})();
+</script>
+</body>
+</html>
