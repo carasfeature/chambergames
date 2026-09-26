@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amber's Vegemite Heist</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<main class="game-shell">
+
+  <header class="topbar">
+    <div>
+      <div class="kicker">KRISPY'S GAMES</div>
+      <div class="game-title">AMBER'S VEGEMITE HEIST</div>
+    </div>
+
+    <div class="top-controls">
+      <button id="muteBtn" class="mini-btn">SOUND ON</button>
+      <button id="pauseBtn" class="mini-btn">PAUSE</button>
+
+      <div class="stat">
+        <span>TOASTS</span>
+        <strong id="score">0</strong>
+      </div>
+
+      <div class="stat">
+        <span>BEST</span>
+        <strong id="best">0</strong>
+      </div>
+    </div>
+  </header>
+
+
+  <section id="gameArea" class="game-area">
+    <div class="room">
+
+      <div class="floor">
+        <img src="assets/backgrounds/floor.png" alt="">
+      </div>
+
+      <div class="wall-lines"></div>
+      <div class="kitchen-light"></div>
+
+      <div id="guardDog" class="guard-dog">
+        <img id="dogSprite" src="assets/characters/dog-idle.png" alt="Guard dog">
+      </div>
+
+      <div class="door">
+        <div class="hallway-dark"></div>
+
+        <div id="christina" class="character christina hidden">
+          <img id="christinaSprite"
+               class="character-sprite"
+               src="assets/characters/christina-arriving.png"
+               alt="Christina">
+        </div>
+
+        <img src="assets/backgrounds/door-frame.png" class="door-frame" alt="">
+      </div>
+
+
+      <div class="front-counter">
+        <img src="assets/backgrounds/front-counter.png" alt="" class="front-counter-img">
+      </div>
+
+
+      
+      <div id="amber" class="character amber">
+        <img id="amberSprite"
+             class="character-sprite"
+             src="assets/characters/amber-idle.png"
+             alt="Amber">
+      </div>
+
+
+      <div class="toast-stack">
+        <span>FINISHED TOAST</span>
+        <strong id="plateScore">0</strong>
+      </div>
+
+
+      <div id="warning" class="warning hidden">
+        <div class="warning-icon">!</div>
+
+        <div>
+          <strong id="warningTitle">FOOTSTEPS...</strong>
+          <small id="warningText">Christina might be coming.</small>
+        </div>
+      </div>
+
+
+      <div id="statusBubble" class="status">
+        Press START to begin.
+      </div>
+
+    </div>
+
+    <section class="progress-panel">
+
+      <div class="progress-head">
+        <span id="stepLabel">READY</span>
+        <span id="progressPercent">0%</span>
+      </div>
+
+      <div class="progress-track">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+
+      <div class="steps">
+        <span id="stepBread">BREAD</span>
+        <span id="stepButter">BUTTER</span>
+        <span id="stepVegemite">VEGEMITE</span>
+        <span id="stepDone">DONE</span>
+      </div>
+
+    </section>
+
+
+    <div class="controls">
+      <button id="toastBtn" class="big-btn yellow" disabled>MAKE TOAST</button>
+      <button id="hideBtn" class="big-btn danger" disabled>HIDE EVERYTHING</button>
+    </div>
+
+
+
+    <section id="menuScreen" class="screen menu-screen">
+
+      <div class="menu-card">
+
+        <div class="kicker">KRISPY'S GAMES PRESENTS</div>
+
+        <h1>
+          AMBER'S
+          <span>VEGEMITE HEIST</span>
+        </h1>
+
+        <p>
+          Make as many Vegemite toasts as you can
+          before Christina catches you.
+        </p>
+
+        <div class="menu-actions">
+          <button id="menuStartBtn" class="big-btn yellow">START GAME</button>
+          <button id="settingsBtn" class="big-btn dark">SETTINGS</button>
+        </div>
+
+        <div class="keys">
+          <span>SPACE = MAKE TOAST</span>
+          <span>H = HIDE</span>
+          <span>ESC = PAUSE</span>
+        </div>
+
+      </div>
+    </section>
+
+
+    <section id="settingsScreen" class="screen hidden">
+
+      <div class="settings-card">
+
+        <div class="settings-head">
+          <div>
+            <div class="kicker">GAME OPTIONS</div>
+            <h2>SETTINGS</h2>
+          </div>
+
+          <button id="closeSettingsBtn" class="close-btn">×</button>
+        </div>
+
+
+        <div class="setting-row">
+          <div>
+            <strong>SOUND</strong>
+            <small>Game sounds and warning effects</small>
+          </div>
+
+          <button id="soundToggle" class="toggle">ON</button>
+        </div>
+
+
+        <div class="setting-row">
+          <div>
+            <strong>VOLUME</strong>
+            <small>Overall game volume</small>
+          </div>
+
+          <input id="volumeSlider" type="range" min="0" max="100" value="70">
+        </div>
+
+
+        <div class="setting-row">
+          <div>
+            <strong>SCREEN SHAKE</strong>
+            <small>Shake when Christina catches you</small>
+          </div>
+
+          <button id="shakeToggle" class="toggle">ON</button>
+        </div>
+
+
+        <div class="setting-row">
+          <div>
+            <strong>WARNING FLASH</strong>
+            <small>Flash when footsteps are heard</small>
+          </div>
+
+          <button id="flashToggle" class="toggle">ON</button>
+        </div>
+
+
+        <button id="resetBestBtn" class="big-btn reset-btn">
+          RESET LOCAL BEST
+        </button>
+
+      </div>
+    </section>
+
+
+    
+    <div id="pauseOverlay" class="overlay hidden">
+      <div class="modal">
+
+        <div class="kicker">PAUSED</div>
+        <h2>HEIST ON HOLD</h2>
+
+        <p>Christina has temporarily stopped investigating.</p>
+
+        <button id="resumeBtn" class="big-btn yellow">RESUME</button>
+        <button id="quitBtn" class="big-btn dark">BACK TO MENU</button>
+
+      </div>
+    </div>
+
+
+    
+    <div id="gameOverOverlay" class="overlay hidden">
+      <div class="modal caught">
+
+        <div class="kicker danger-text">BUSTED</div>
+
+        <h2>CHRISTINA CAUGHT YOU</h2>
+
+        <p>You managed to make</p>
+
+        <div class="final-score">
+          <strong id="finalScore">0</strong>
+          <span>VEGEMITE TOASTS</span>
+        </div>
+
+        <p id="bestMessage" class="best-message"></p>
+
+        <button id="restartBtn" class="big-btn yellow">TRY AGAIN</button>
+        <button id="menuBtn" class="big-btn dark">BACK TO MENU</button>
+
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<script src="game.js"></script>
+<script src="vegemite-leaderboard.js"></script>
+</body>
+</html>
