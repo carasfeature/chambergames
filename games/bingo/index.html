@@ -16,6 +16,10 @@
   background:var(--earth); border-radius:16px; overflow:hidden;
   box-shadow:0 16px 0 -6px rgba(0,0,0,.5);
 }
+.game[hidden], .bingo-lock[hidden]{display:none}
+.bingo-lock{width:min(760px,calc(100% - 32px)); background:var(--earth); color:var(--paper);
+  border:3px solid var(--taxi); border-radius:16px; padding:48px 24px; text-align:center;
+  font-family:Bungee,cursive; font-size:clamp(18px,4vw,28px); line-height:1.5}
 .banner{display:block; width:100%; height:auto}
 .sub{
   display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
@@ -115,6 +119,7 @@
   </div>
 </div>
 
+<div class="bingo-lock" id="bingoLock" role="status" hidden>Locked for Christina And Amber, no peaking 👀</div>
 <p class="note" id="foot"></p>
 
 <script type="module">
@@ -138,6 +143,11 @@ function getName(){
   }catch{ return null; }
 }
 const NAME = getName();
+if (NAME === "christinaandamber") {
+  $("game").hidden = true;
+  $("bingoLock").hidden = false;
+  $("foot").hidden = true;
+} else {
 const CARD = String(CFG.cardId).replace(/[^a-zA-Z0-9_-]/g,"") || "card";
 const LOCAL_KEY = `bingo:${CARD}:${NAME||"guest"}`;
 
@@ -244,6 +254,7 @@ connect();
 $("foot").textContent = NAME
   ? "Your card follows your Twitch login across devices."
   : "Log in with Twitch on the homepage so your card follows you across devices.";
+}
 </script>
 </body>
 </html>
