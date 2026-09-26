@@ -167,7 +167,7 @@ svg.fx{pointer-events:none}
 </section>
 
 <script type="module">
-import { initLeaderboard, watchBoard, submitScore, RANGES } from "../../shared/leaderboard.js";
+import { watchBoardWithRetry, submitScore, RANGES } from "../../shared/leaderboard.js";
 import { FIREBASE, USER_KEY, GAMES } from "../../shared/config.js";
 const CFG = GAMES.reaction;
 
@@ -267,6 +267,7 @@ async function endRun(){
   if(avg<min || avg>max){ msg.textContent=`Average of ${avg}ms is outside the range the leaderboard accepts.`; return; }
   msg.textContent="Saving…";
   try{
+    await leaderboardReady;
     const { saved, kept } = await submitScore({ game:"reaction", name:NAME, score:avg, extra:times.slice() });
     msg.textContent = saved ? "New personal best — you're on the board."
                             : `Your best run of ${kept.score}ms still stands.`;
@@ -301,29 +302,21 @@ function renderBoard(rows, playerRank){
   boardNote.textContent="Best average across a full five-round run. Beat yours and it updates automatically.";
 }
 
-(async () => {
-  if(!FIREBASE.databaseURL){
-    boardList.innerHTML="";
-    boardNote.textContent="Leaderboard is off: databaseURL is empty in shared/config.js.";
-    return;
-  }
-  try{
-    await initLeaderboard(FIREBASE);
-    console.log("[leaderboard] connected —", FIREBASE.databaseURL, "— watching leaderboards/reaction");
-    watchBoard({
-      game:"reaction", limit:20, player:NAME,
-      onData:(rows,playerRank) => { console.log("[leaderboard] received", rows.length, "rows"); renderBoard(rows,playerRank); },
-      onError:e => {
-        boardList.innerHTML="";
-        boardNote.textContent=`Couldn't read the leaderboard (${e.code||"error"}): ${e.message}`;
-      }
-    });
-  }catch(e){
-    boardList.innerHTML="";
-    boardNote.textContent="Couldn't connect to Firebase: "+e.message;
-    console.error("[leaderboard] init failed:", e);
-  }
-})();
+let leaderboardReady = Promise.resolve();
+if(!FIREBASE.databaseURL){
+  boardList.innerHTML="";
+  boardNote.textContent="Leaderboard is off: databaseURL is empty in shared/config.js.";
+}else{
+  const connection = watchBoardWithRetry({
+    config:FIREBASE, game:"reaction", limit:20, player:NAME,
+    onData:(rows,playerRank) => { console.log("[leaderboard] received", rows.length, "rows"); renderBoard(rows,playerRank); },
+    onError:e => {
+      boardList.innerHTML=`<li><span class="rank">—</span><span>Reconnecting to leaderboard…</span><span class="ms"></span></li>`;
+      boardNote.textContent=`Leaderboard connection failed (${e.code||"error"}). Retrying automatically: ${e.message}`;
+    }
+  });
+  leaderboardReady = connection.ready;
+}
 
 setCounter();
 </script>
