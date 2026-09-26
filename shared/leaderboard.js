@@ -57,7 +57,7 @@ export const isReady = () => !!db;
  * checks on queried reads — both of which fail silently and are painful to
  * debug. Sorting a few hundred rows in JS costs nothing.
  */
-export function watchBoard({ game, limit = 20, onData, onError }){
+export function watchBoard({ game, limit = 20, player = null, onData, onError }){
   if (!db) throw new Error("initLeaderboard() must finish first");
   const order = RANGES[game]?.order ?? "asc";
 
@@ -67,8 +67,16 @@ export function watchBoard({ game, limit = 20, onData, onError }){
       const v = c.val();
       if (v && typeof v.score === "number") rows.push({ name: c.key, ...v });
     });
-    rows.sort((a, b) => order === "asc" ? a.score - b.score : b.score - a.score);
-    onData(rows.slice(0, limit));
+    rows.sort((a, b) => {
+      const scoreDifference = order === "asc" ? a.score - b.score : b.score - a.score;
+      return scoreDifference || a.name.localeCompare(b.name);
+    });
+    const playerKey = cleanName(player || "").toLowerCase();
+    const playerIndex = playerKey
+      ? rows.findIndex(row => row.name.toLowerCase() === playerKey)
+      : -1;
+    const playerRank = playerIndex < 0 ? null : { ...rows[playerIndex], rank: playerIndex + 1 };
+    onData(rows.slice(0, limit), playerRank);
   }, err => {
     console.error(`[leaderboard] read failed on leaderboards/${game}:`, err);
     onError?.(err);
