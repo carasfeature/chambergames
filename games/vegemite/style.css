@@ -3182,3 +3182,114 @@
         margin-top: 8px;
       }
     }
+    .back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 9999;
+
+  padding: 10px 16px;
+
+  background: #fff7e8;
+  color: #3b2118;
+  border: 2px solid #3b2118;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: bold;
+
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #3b2118;
+}
+
+.back-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #3b2118;
+}
+
+.back-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #3b2118;
+}
+/* ========================================
+   MOBILE FIX
+   ======================================== */
+
+@media (max-width: 600px) {
+
+  /* Back button gets its own space */
+  .back-btn {
+    position: relative;
+    top: auto;
+    left: auto;
+    margin: 12px 12px 6px;
+    width: fit-content;
+    z-index: 100;
+  }
+
+  /* Main game container */
+  .game-shell {
+    width: 100%;
+    padding: 0 8px 20px;
+  }
+
+  /* Header */
+  .topbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .topbar > div:first-child {
+    width: 100%;
+  }
+
+  .kicker {
+    font-size: 10px;
+  }
+
+  .game-title {
+    font-size: clamp(26px, 8vw, 38px);
+    line-height: 0.9;
+    margin-top: 3px;
+  }
+
+  /* Put controls underneath title */
+  .top-controls {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .mini-btn,
+  .stat {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+    padding: 4px;
+  }
+
+  .mini-btn {
+    font-size: 8px;
+  }
+
+  .stat span {
+    font-size: 7px;
+  }
+
+  .stat strong {
+    font-size: 20px;
+  }
+
+  /* Game itself */
+  .game-area {
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .room {
+    width: 100%;
+  }
+}
