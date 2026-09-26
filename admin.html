@@ -185,7 +185,7 @@ body{
 
 <script type="module">
 import { FIREBASE, GAMES } from "./shared/config.js";
-import { initCaption, onAdmin, adminSignIn, adminSignOut, watchRound, watchSubmissions,
+import { initCaption, onAdmin, adminSignIn, adminSignOut, watchRound, watchSubmissions, isClockReady, onClockChange,
          showImage, startRound, closeAndPick, crownWinner, resetGame, resetWinners, pickFinalists, serverNow } from "./shared/caption.js";
 
 
@@ -325,6 +325,7 @@ function runClock(){
   const on = round.phase === "submitting" && round.endsAt;
   $("bigClock").hidden = !on;
   if (!on) return;
+  if (!isClockReady()) { $("bigClock").textContent = "…"; return; }
   const tick = () => {
     const left = round.endsAt - serverNow();
     $("bigClock").textContent = Math.max(0, Math.ceil(left/1000));
@@ -360,19 +361,29 @@ $("btnNewSubathon").onclick = async () => {
 };
 
 /* ================= BOOT ================= */
+onClockChange(() => runClock());
 (async () => {
-  try{
-    await initCaption(FIREBASE);
-    await onAdmin(user => showLoggedIn(user));
-    watchRound(r => {
-      if (r.roundId !== round.roundId){
-        unwatch?.(); entries = [];
-        if (r.roundId) unwatch = watchSubmissions(r.roundId, list => { entries = list; $("sEntries").textContent = list.length; });
-      }
-      round = r; render();
-    }, e => { $("capMsg").className = "msg bad"; $("capMsg").textContent = "Couldn't read the game: " + e.message; });
-  }catch(e){
-    $("who").textContent = "Couldn't connect to Firebase: " + e.message; console.error(e);
+  let delay = 1000;
+  for (;;) {
+    try{
+      await initCaption(FIREBASE);
+      await onAdmin(user => showLoggedIn(user));
+      watchRound(r => {
+        if (r.roundId !== round.roundId){
+          unwatch?.(); entries = [];
+          if (r.roundId) unwatch = watchSubmissions(r.roundId,
+            list => { entries = list; $("sEntries").textContent = list.length; },
+            e => { $("capMsg").className = "msg bad"; $("capMsg").textContent = "Couldn't read captions: " + e.message; });
+        }
+        round = r; render();
+      }, e => { $("capMsg").className = "msg bad"; $("capMsg").textContent = "Couldn't read the game: " + e.message; });
+      break;
+    }catch(e){
+      $("who").textContent = "Couldn't connect to Firebase. Retrying automatically…";
+      console.error("[admin] connection failed:", e);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay = Math.min(delay * 2, 30000);
+    }
   }
 })();
 </script>
