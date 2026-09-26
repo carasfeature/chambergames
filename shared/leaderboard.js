@@ -88,6 +88,58 @@ export function watchBoard({ game, limit = 20, player = null, onData, onError })
   });
 }
 
+/** Keep a live board subscribed across temporary Firebase startup/read failures. */
+export function watchBoardWithRetry({ config, onStatus, ...options }){
+  let stopped = false, unsubscribe = null, retryTimer = null, delay = 1000;
+  let resolveReady, readyResolved = false;
+  const ready = new Promise(resolve => { resolveReady = resolve; });
+
+  const retry = error => {
+    unsubscribe?.();
+    unsubscribe = null;
+    options.onError?.(error);
+    if (stopped || retryTimer) return;
+    onStatus?.("retrying", error);
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      connect();
+    }, delay);
+    delay = Math.min(delay * 2, 30000);
+  };
+
+  const connect = async () => {
+    if (stopped) return;
+    onStatus?.("connecting");
+    try{
+      await initLeaderboard(config);
+      if (stopped) return;
+      unsubscribe = watchBoard({
+        ...options,
+        onData: (...args) => {
+          delay = 1000;
+          options.onData?.(...args);
+          onStatus?.("connected");
+          if (!readyResolved){ readyResolved = true; resolveReady(); }
+        },
+        onError: retry
+      });
+    }catch(error){
+      retry(error);
+    }
+  };
+
+  connect();
+  return {
+    ready,
+    stop(){
+      stopped = true;
+      clearTimeout(retryTimer);
+      unsubscribe?.();
+      unsubscribe = null;
+    }
+  };
+}
+
 /** Write a score, keeping whichever run is better. → { saved, kept } */
 export async function submitScore({ game, name, score, extra = null }){
   if (!db) throw new Error("Leaderboard isn't connected");
