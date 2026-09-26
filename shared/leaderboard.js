@@ -34,6 +34,7 @@ export const RANGES = {
 export const cleanName = n => String(n).trim().replace(/[^a-zA-Z0-9_]/g, "").slice(0, 25);
 
 export function initLeaderboard(config){
+  if (db) return Promise.resolve();
   if (boot) return boot;
   boot = (async () => {
     if (!config?.databaseURL) throw new Error("Firebase config is missing databaseURL");
@@ -42,8 +43,12 @@ export function initLeaderboard(config){
       import(CDN + "firebase-database.js")
     ]);
     fbdb = dbMod;
-    db = dbMod.getDatabase(appMod.initializeApp(config, "site"));
-  })();
+    const app = appMod.getApps().find(a => a.name === "site") || appMod.initializeApp(config, "site");
+    db = dbMod.getDatabase(app);
+  })().catch(error => {
+    boot = null;
+    throw error;
+  });
   return boot;
 }
 
@@ -96,11 +101,11 @@ export async function submitScore({ game, name, score, extra = null }){
   const res = await fbdb.runTransaction(
     fbdb.ref(db, `leaderboards/${game}/${key}`),
     cur => (cur && (asc ? cur.score <= score : cur.score >= score))
-      ? cur
-      : { score, extra: extra || null, updatedAt: Date.now() }
+      ? undefined
+      : { score, extra: extra || null, updatedAt: fbdb.serverTimestamp() }
   );
   const kept = res.snapshot.val();
-  return { saved: kept.score === score, kept };
+  return { saved: res.committed, kept };
 }
 
 /** Add to a running total (used for win counts rather than best-score games). */
@@ -110,7 +115,7 @@ export async function bumpScore({ game, name, by = 1 }){
   if (!key) throw new Error("No Twitch name to save under");
   const res = await fbdb.runTransaction(
     fbdb.ref(db, `leaderboards/${game}/${key}`),
-    cur => ({ score: ((cur && cur.score) || 0) + by, updatedAt: Date.now() })
+    cur => ({ score: ((cur && cur.score) || 0) + by, updatedAt: fbdb.serverTimestamp() })
   );
   return res.snapshot.val();
 }

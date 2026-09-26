@@ -8,22 +8,35 @@
    ============================================================ */
 
 const CDN = "https://www.gstatic.com/firebasejs/10.12.0/";
-let appMod, fbdb, db, app, boot = null, offset = 0;
+let appMod, fbdb, db, app, boot = null, offset = 0, clockReady = false;
+const clockListeners = new Set();
 
 export function initCaption(config){
+  if (db) return Promise.resolve();
   if (boot) return boot;
   boot = (async () => {
     if (!config?.databaseURL) throw new Error("Firebase config is missing databaseURL");
     [appMod, fbdb] = await Promise.all([ import(CDN+"firebase-app.js"), import(CDN+"firebase-database.js") ]);
     // own app name: other shared modules register their own, Firebase refuses duplicates
     app = appMod.getApps().find(a => a.name === "caption") || appMod.initializeApp(config, "caption");
-    db  = fbdb.getDatabase(app);
+    const database = fbdb.getDatabase(app);
     // server clock correction, so everyone's countdown agrees
-    fbdb.onValue(fbdb.ref(db, ".info/serverTimeOffset"), s => { offset = s.val() || 0; });
-  })();
+    fbdb.onValue(fbdb.ref(database, ".info/serverTimeOffset"), s => {
+      if (typeof s.val() !== "number") return;
+      offset = s.val();
+      clockReady = true;
+      clockListeners.forEach(listener => listener());
+    });
+    db = database;
+  })().catch(error => { boot = null; throw error; });
   return boot;
 }
 export const serverNow = () => Date.now() + offset;
+export const isClockReady = () => clockReady;
+export function onClockChange(listener){
+  clockListeners.add(listener);
+  return () => clockListeners.delete(listener);
+}
 
 /* ---------- admin login (email + password, same as the tournament admin) ---------- */
 let authMod = null, auth = null;
@@ -142,13 +155,15 @@ export function pickFinalists(entries, cfg, rand = Math.random){
 export async function submitCaption({ round, name, display, text, cfg }){
   const r = junkReason(text, cfg);
   if (r) throw new Error(junkMessage(r));
+  if (!clockReady) throw new Error("Syncing the game clock — try again in a moment.");
   if (round.phase !== "submitting" || serverNow() > round.endsAt) throw new Error("Too late — time's up.");
   const clean = String(text).trim().replace(/\s+/g," ");
   try{
     await fbdb.set(fbdb.ref(db, `captionGame/submissions/${round.roundId}/${name}`),
                    { text: clean, display: String(display||name).slice(0,25), at: fbdb.serverTimestamp() });
   }catch(e){
-    if (/permission/i.test(e.message||"")) throw new Error("You've already sent one this round.");
+    if (e.code === "PERMISSION_DENIED" || /permission/i.test(e.message||""))
+      throw new Error("Firebase rejected this caption. It may already be submitted, or the game rules may be blocking it.");
     throw e;
   }
 }
@@ -188,10 +203,16 @@ export function watchRevealed(onChange, onError){
     s => onChange(s.val() || 0), e => onError?.(e));
 }
 export function startRound(round, cfg){
+  if (!clockReady) throw new Error("Game clock is still syncing — try again in a moment.");
   return fbdb.update(cur(), { phase: "submitting", endsAt: serverNow() + cfg.submitSeconds*1000 });
 }
 export async function closeAndPick(round, entries, cfg){
-  const { finalists, stats } = pickFinalists(entries, cfg);
+  // Fetch the latest server snapshot before picking; the admin's live count may lag
+  // behind submissions that reached Firebase in the final seconds.
+  const snapshot = await fbdb.get(fbdb.ref(db, `captionGame/submissions/${round.roundId}`));
+  const latest = [];
+  snapshot.forEach(child => latest.push({ name: child.key, ...child.val() }));
+  const { finalists, stats } = pickFinalists(latest, cfg);
   await fbdb.update(cur(), { phase: "judging", finalists, stats });
   return { finalists, stats };
 }
