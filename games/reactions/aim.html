@@ -71,6 +71,12 @@
 .board li{display:grid; grid-template-columns:32px 1fr auto; gap:12px; align-items:center;
           background:rgba(255,255,255,.06); border-radius:10px; padding:11px 14px; font-weight:700; font-size:15px}
 .board li.me{background:rgba(255,198,41,.16); box-shadow:inset 0 0 0 2px var(--taxi)}
+.your-rank{margin-top:16px; border-top:2px dashed rgba(255,198,41,.5); padding-top:12px}
+.your-rank:empty{display:none}
+.your-rank-label{font-family:Bungee,cursive; font-size:13px; color:var(--taxi); margin-bottom:6px}
+.your-rank-row{display:grid; grid-template-columns:44px minmax(0,1fr) auto; gap:12px; align-items:center;
+  background:rgba(255,198,41,.16); box-shadow:inset 0 0 0 2px var(--taxi); border-radius:10px; padding:11px 14px; font-weight:700; font-size:15px}
+.your-rank-row span:nth-child(2){overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .rank{font-family:Bungee,cursive; font-size:13px; opacity:.6}
 .board li:first-child .rank{opacity:1; color:var(--taxi)}
 .ms{font-family:Bungee,cursive; font-size:15px}
@@ -157,6 +163,7 @@
 <section class="board">
   <h2>Aim Tester &mdash; Top 20</h2>
   <ol id="boardList"><li><span class="rank">—</span><span>Loading…</span><span class="ms"></span></li></ol>
+  <div class="your-rank" id="yourRank"></div>
   <p class="note" id="boardNote"></p>
 </section>
 
@@ -275,10 +282,14 @@ async function finish(){
 /* ---------- leaderboard ---------- */
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-function renderBoard(rows){
+function renderBoard(rows, playerRank){
+  const isPlayer = r => playerRank && r.name.toLowerCase() === playerRank.name.toLowerCase();
   boardList.innerHTML = rows.length
-    ? rows.map((r,i)=>`<li class="${NAME&&r.name.toLowerCase()===String(NAME).toLowerCase()?"me":""}"><span class="rank">${i+1}</span><span>${esc(r.name)}</span><span class="ms">${fmt(r.score)}</span></li>`).join("")
+    ? rows.map((r,i)=>`<li class="${isPlayer(r)?"me":""}"><span class="rank">${i+1}</span><span>${esc(r.name)}</span><span class="ms">${fmt(r.score)}</span></li>`).join("")
     : `<li><span class="rank">—</span><span>Nobody's played yet. Be first.</span><span class="ms"></span></li>`;
+  $("yourRank").innerHTML = NAME && (!playerRank || playerRank.rank > 20)
+    ? `<div class="your-rank-label">Your rank</div><div class="your-rank-row"><span class="rank">${playerRank ? playerRank.rank : "—"}</span><span>${esc(playerRank?.name || NAME)}</span><span class="ms">${playerRank ? fmt(playerRank.score) : "No score yet"}</span></div>`
+    : "";
   boardNote.textContent="Fastest time to clear all 20 slices. Only your best run is kept.";
 }
 
@@ -292,8 +303,8 @@ function renderBoard(rows){
     await initLeaderboard(FIREBASE);
     console.log("[leaderboard] connected — watching leaderboards/aim");
     watchBoard({
-      game:"aim", limit:20,
-      onData:rows=>{ console.log("[leaderboard] received", rows.length, "rows"); renderBoard(rows); },
+      game:"aim", limit:20, player:NAME,
+      onData:(rows,playerRank)=>{ console.log("[leaderboard] received", rows.length, "rows"); renderBoard(rows,playerRank); },
       onError:e=>{ boardList.innerHTML=""; boardNote.textContent=`Couldn't read the leaderboard (${e.code||"error"}): ${e.message}`; }
     });
   }catch(e){
