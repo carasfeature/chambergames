@@ -134,7 +134,7 @@
 
 <script type="module">
 import { FIREBASE, USER_KEY, GAMES } from "../../shared/config.js";
-import { initCaption, watchRound, watchWinners, watchRevealed, submitCaption, serverNow, junkReason, junkMessage } from "../../shared/caption.js";
+import { initCaption, watchRound, watchWinners, watchRevealed, submitCaption, serverNow, isClockReady, onClockChange, junkReason, junkMessage } from "../../shared/caption.js";
 
 const CFG = GAMES.caption;
 const TOTAL_ROUNDS = Math.max(0, Math.min(9, CFG.images.length - 1));
@@ -170,8 +170,8 @@ function render(){
   const typing = p === "example" || p === "ready" || p === "submitting";
   const already = sentFor && sentFor === round.roundId;
   $("entryArea").style.display = typing ? "grid" : "none";
-  $("text").disabled = p !== "submitting" || already;
-  $("send").disabled = p !== "submitting" || already;
+  $("text").disabled = p !== "submitting" || already || !isClockReady();
+  $("send").disabled = p !== "submitting" || already || !isClockReady();
   $("text").placeholder = p === "submitting" ? (already ? "Caption sent — good luck!" : "Type your caption…")
                         : p === "example" ? "This one's just an example" : "Wait for START…";
   $("text").classList.toggle("example-mode", p === "example");
@@ -194,6 +194,7 @@ function runClock(){
   const on = round.phase === "submitting" && round.endsAt;
   $("clock").hidden = !on; $("bar").hidden = !on;
   if (!on) return;
+  if (!isClockReady()) { $("clock").textContent = "…"; return; }
   const total = CFG.submitSeconds * 1000;
   const tick = () => {
     const left = Math.max(0, round.endsAt - serverNow());
@@ -226,7 +227,7 @@ async function send(){
     render();
   }catch(err){
     hint.className = "hint bad"; hint.textContent = err.message;
-    if (!/already/.test(err.message)) $("send").disabled = false;
+    if (round.phase === "submitting" && isClockReady() && serverNow() <= round.endsAt) $("send").disabled = false;
   }
 }
 
@@ -307,17 +308,34 @@ function renderWinners(){
 }
 
 /* ---------- boot ---------- */
+onClockChange(() => render());
+let unwatchRound = null;
+function connectRound(){
+  unwatchRound?.();
+  unwatchRound = watchRound(r => {
+    if (r.roundId !== round.roundId){ $("text").value = ""; $("hint").textContent = ""; }
+    round = r; render(); renderWinners();
+  }, e => {
+    $("idle").textContent = "Couldn't load the game. Retrying automatically…";
+    console.error("[caption] round read failed:", e);
+    setTimeout(connectRound, 3000);
+  });
+}
 (async () => {
-  try{
-    await initCaption(FIREBASE);
-    watchRound(r => {
-      if (r.roundId !== round.roundId){ $("text").value = ""; $("hint").textContent = ""; }
-      round = r; render(); renderWinners();
-    }, e => { $("idle").textContent = "Couldn't load the game: " + e.message; });
-    watchWinners(w => { winners = w; renderWinners(); }, () => {});
-    watchRevealed(n => { revealedThrough = n; renderWinners(); }, () => {});
-  }catch(e){
-    $("idle").textContent = "Couldn't connect: " + e.message; console.error(e);
+  let delay = 1000;
+  for (;;) {
+    try{
+      await initCaption(FIREBASE);
+      connectRound();
+      watchWinners(w => { winners = w; renderWinners(); }, () => {});
+      watchRevealed(n => { revealedThrough = n; renderWinners(); }, () => {});
+      break;
+    }catch(e){
+      $("idle").textContent = "Couldn't connect. Retrying automatically…";
+      console.error("[caption] connection failed:", e);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      delay = Math.min(delay * 2, 30000);
+    }
   }
 })();
 </script>
