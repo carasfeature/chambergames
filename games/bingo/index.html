@@ -16,10 +16,6 @@
   background:var(--earth); border-radius:16px; overflow:hidden;
   box-shadow:0 16px 0 -6px rgba(0,0,0,.5);
 }
-.game[hidden], .bingo-lock[hidden]{display:none}
-.bingo-lock{width:min(760px,calc(100% - 32px)); background:var(--earth); color:var(--paper);
-  border:3px solid var(--taxi); border-radius:16px; padding:48px 24px; text-align:center;
-  font-family:Bungee,cursive; font-size:clamp(18px,4vw,28px); line-height:1.5}
 .banner{display:block; width:100%; height:auto}
 .sub{
   display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
@@ -119,7 +115,6 @@
   </div>
 </div>
 
-<div class="bingo-lock" id="bingoLock" role="status" hidden>Locked for Christina And Amber, no peaking 👀</div>
 <p class="note" id="foot"></p>
 
 <script type="module">
@@ -143,13 +138,9 @@ function getName(){
   }catch{ return null; }
 }
 const NAME = getName();
-if (NAME === "christinaandamber") {
-  $("game").hidden = true;
-  $("bingoLock").hidden = false;
-  $("foot").hidden = true;
-} else {
 const CARD = String(CFG.cardId).replace(/[^a-zA-Z0-9_-]/g,"") || "card";
 const LOCAL_KEY = `bingo:${CARD}:${NAME||"guest"}`;
+const PENDING_KEY = `${LOCAL_KEY}:pending`;
 
 /* ---------- marks: 25 characters of 0/1, middle always 1 ---------- */
 const blank = () => "0".repeat(FREE) + "1" + "0".repeat(24-FREE);
@@ -201,18 +192,34 @@ function paint(){
 }
 
 /* ---------- Firebase (saves under the Twitch name) ---------- */
-let fb=null, db=null, myRef=null;
+let fb=null, db=null, myRef=null, unsubscribe=null, reconnectTimer=null;
+let reconnectDelay=1000, writeQueue=Promise.resolve(), localVersion=0;
+let localDirty=(()=>{ try{ return localStorage.getItem(PENDING_KEY)==="1"; }catch{ return false; } })();
+let firstSnapshot=true;
 
-async function save(){
+function save(){
+  const savedMarks=marks;
+  const version=++localVersion;
+  localDirty=true;
+  try{ localStorage.setItem(PENDING_KEY,"1"); }catch{}
   writeLocal(marks);
   if(!myRef) return;
-  try{
-    await fb.set(myRef,{ marked:marks, updatedAt:Date.now() });
-    setSync(`Saved to ${NAME}`);
-  }catch(e){
-    setSync("Saved on this device only — couldn't reach the server", true);
+  writeQueue=writeQueue.catch(()=>{}).then(()=>fb.set(myRef,{ marked:savedMarks, updatedAt:fb.serverTimestamp() }));
+  return writeQueue.then(()=>{
+    if(version===localVersion){
+      localDirty=false;
+      try{ localStorage.removeItem(PENDING_KEY); }catch{}
+      setSync(`Saved to ${NAME}`);
+    }
+  }).catch(e=>{
+    if(e.code === "PERMISSION_DENIED"){
+      setSync("Firebase rejected this save — check the Bingo rules. Your card remains on this device.", true);
+      return;
+    }
+    setSync("Change is saved on this device; reconnecting to sync it", true);
     console.error("[bingo] save failed", e);
-  }
+    scheduleReconnect();
+  });
 }
 function setSync(t,warn){ syncEl.textContent=t; syncEl.classList.toggle("warn",!!warn); }
 
@@ -223,6 +230,16 @@ grid.addEventListener("click", e=>{
   paint(); save();
 });
 
+function scheduleReconnect(){
+  if(reconnectTimer || !NAME || !FIREBASE.databaseURL) return;
+  setSync("Reconnecting — your card is saved on this device", true);
+  reconnectTimer=setTimeout(()=>{
+    reconnectTimer=null;
+    connect();
+  },reconnectDelay);
+  reconnectDelay=Math.min(reconnectDelay*2,30000);
+}
+
 async function connect(){
   if(!NAME){ setSync("Not logged in — saving on this device only", true); return; }
   if(!FIREBASE.databaseURL){ setSync("Server not configured — saving on this device only", true); return; }
@@ -231,20 +248,29 @@ async function connect(){
     const app = appMod.getApps().find(a=>a.name==="bingo") || appMod.initializeApp(FIREBASE,"bingo");
     fb=dbMod; db=dbMod.getDatabase(app);
     myRef = fb.ref(db, `bingo/${CARD}/${NAME}`);
-    let first=true;
-    fb.onValue(myRef, snap=>{
+    unsubscribe?.();
+    firstSnapshot=true;
+    unsubscribe=fb.onValue(myRef, snap=>{
+      reconnectDelay=1000;
       const v=snap.val();
-      if(v && valid(v.marked)){
+      if(firstSnapshot && localDirty){
+        save(); // Keep the player's pending local change and sync it after reconnecting.
+      } else if(v && valid(v.marked) && !localDirty){
         marks=withFree(v.marked); writeLocal(marks); paint();       // server copy wins, and syncs other devices live
-      } else if(first && marks!==blank()){
+      } else if(firstSnapshot && !v && marks!==blank()){
         save();                                                    // first visit with an offline card: upload it
       }
-      first=false;
-      setSync(`Saved to ${NAME}`);
-    }, err=>{ setSync("Saved on this device only — couldn't reach the server", true); console.error(err); });
+      firstSnapshot=false;
+      if(!localDirty) setSync(`Synced to ${NAME}`);
+    }, err=>{
+      setSync("Change is saved on this device; reconnecting to sync it", true);
+      console.error("[bingo] read failed", err);
+      scheduleReconnect();
+    });
   }catch(e){
-    setSync("Saved on this device only — couldn't reach the server", true);
+    setSync("Change is saved on this device; reconnecting to sync it", true);
     console.error("[bingo] connect failed", e);
+    scheduleReconnect();
   }
 }
 
@@ -254,7 +280,6 @@ connect();
 $("foot").textContent = NAME
   ? "Your card follows your Twitch login across devices."
   : "Log in with Twitch on the homepage so your card follows you across devices.";
-}
 </script>
 </body>
 </html>
