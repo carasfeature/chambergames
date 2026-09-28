@@ -129,7 +129,7 @@ body{
   </div>
   <h1 class="title">Words Guesser</h1>
   <p class="season-copy">Autumn and Halloween theme, new word each day 12AM EST 🍁🎃</p>
-  <div class="status-bar"><span id="dayLabel">Today's word</span><span>Streak <b id="stStreak">0</b> 🔥</span></div>
+  <div class="status-bar"><span>Streak <b id="stStreak">0</b> 🔥</span></div>
   <div class="board" id="board" aria-label="Six guesses of five letters"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="keys" id="keys" aria-label="Letter keyboard"></div>
@@ -164,9 +164,6 @@ keysEl.innerHTML = layout.map(line => `<div class="krow">${[...line].map(key =>
 
 const nyDate = new Intl.DateTimeFormat("en-US", {
   timeZone:"America/New_York", year:"numeric", month:"2-digit", day:"2-digit"
-});
-const nyLabel = new Intl.DateTimeFormat("en-US", {
-  timeZone:"America/New_York", month:"long", day:"numeric"
 });
 function dateKey(){
   const parts = Object.fromEntries(nyDate.formatToParts(new Date()).map(p => [p.type, p.value]));
@@ -226,11 +223,11 @@ function paint(animateLast=false){
   });
 }
 function resultOverlay(){
-  $("endTitle").textContent = progress.won ? "You found it!" : "The forest wins this one";
+  $("endTitle").textContent = progress.won ? "Congratulations!" : "The forest wins this one";
   $("endWord").textContent = answer;
   $("endWord").className = "answer " + (progress.won ? "win" : "lose");
   $("endSub").textContent = progress.won
-    ? `Solved in ${progress.guesses.length} of ${TRIES} guesses. A new word arrives at midnight New York time.`
+    ? `Solved in ${progress.guesses.length} of ${TRIES} guesses. Come back tomorrow and keep your streak going!`
     : "A new word arrives at midnight New York time.";
   veilEnd.classList.add("on");
 }
@@ -240,11 +237,10 @@ function startDay(){
   answer = String(DAYS[day] || "").toLowerCase();
   veilEnd.classList.remove("on");
   toast.textContent = "";
-  $("dayLabel").textContent = day > LAST ? "Season complete" :
-    `New York · ${nyLabel.format(new Date(`${day}T12:00:00Z`))}`;
   progress = blank();
   if(!answer){
     state = "season-end";
+    $("footNote").hidden = false;
     $("footNote").textContent = "This season is complete. New words coming soon!";
     paint();
     return;
@@ -258,9 +254,9 @@ function startDay(){
   state = progress.done ? "done" : "playing";
   showStreak();
   paint();
-  $("footNote").textContent = progress.done
-    ? "Today's word is complete. Come back at midnight New York time for the next one."
-    : "Guess the five-letter word in six tries. Green is right; gold is in the word; grey is absent.";
+  $("footNote").hidden = progress.done;
+  $("footNote").textContent = progress.done ? "" :
+    "Guess the five-letter word in six tries. Green is right; gold is in the word; grey is absent.";
   if(progress.done) resultOverlay();
 }
 function finish(won, show=true){
@@ -280,7 +276,8 @@ function finish(won, show=true){
   state = "done";
   showStreak();
   paint();
-  $("footNote").textContent = "Today's word is complete. Come back at midnight New York time for the next one.";
+  $("footNote").textContent = "";
+  $("footNote").hidden = true;
   if(show) timer = setTimeout(() => { if(day === effectiveDay()) resultOverlay(); }, 900);
 }
 function flash(message){
