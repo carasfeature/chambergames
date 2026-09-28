@@ -108,20 +108,44 @@ export const GAMES = {
 
   wordwlw: {
     guesses: 6,
-    title: "How to play",
-    steps: [
-      "Guess the 5-letter word in 6 tries.",
-      "Green = right letter, right spot. Yellow = in the word, wrong spot. Grey = not in the word.",
-      "Win or lose, hit New word to roll another one."
-    ],
-    /* Every answer must be exactly 5 letters. Anything else is skipped automatically.
-       ("couple" was left out — it has 6.) */
-    words: [
-      "queer", "femme", "women", "pride", "girls", "dykes", "butch", "honey",
-      "babes", "chats", "carol", "video", "emote", "gifts", "vlogs", "audio",
-      "clips", "setup", "views", "badge", "amber", "wives", "miami", "beers",
-      "uhaul"
-    ]
+    /* Dates use America/New_York. Maple is available immediately;
+       after Oct 31, the season ends until more dates are added. */
+    dailyWords: {
+      "2026-09-28": "maple",
+      "2026-09-29": "woods",
+      "2026-09-30": "windy",
+      "2026-10-01": "ghost",
+      "2026-10-02": "spice",
+      "2026-10-03": "scarf",
+      "2026-10-04": "witch",
+      "2026-10-05": "hazel",
+      "2026-10-06": "roast",
+      "2026-10-07": "candy",
+      "2026-10-08": "acorn",
+      "2026-10-09": "cider",
+      "2026-10-10": "spook",
+      "2026-10-11": "baked",
+      "2026-10-12": "stove",
+      "2026-10-13": "haunt",
+      "2026-10-14": "trees",
+      "2026-10-15": "warms",
+      "2026-10-16": "scare",
+      "2026-10-17": "feast",
+      "2026-10-18": "plums",
+      "2026-10-19": "ghoul",
+      "2026-10-20": "pecan",
+      "2026-10-21": "mummy",
+      "2026-10-22": "blood",
+      "2026-10-23": "spell",
+      "2026-10-24": "magic",
+      "2026-10-25": "rusty",
+      "2026-10-26": "brown",
+      "2026-10-27": "crisp",
+      "2026-10-28": "falls",
+      "2026-10-29": "crisp",
+      "2026-10-30": "trick",
+      "2026-10-31": "treat"
+    }
   },
 
   bingo: {
