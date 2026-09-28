@@ -309,8 +309,7 @@
     color:#9ADB2E; line-height:1.6; padding:70px 20px;
     text-shadow:0 0 18px rgba(154,219,46,0.45);
   }
-  .games-list{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
-  @media (max-width:640px){ .games-list{grid-template-columns:1fr;} }
+  .games-list{display:grid; grid-template-columns:1fr; gap:16px;}
   .game-card{
     background:var(--bg); border:3px solid var(--border); padding:24px; cursor:pointer;
     transition:transform .15s ease, box-shadow .15s ease;
@@ -626,7 +625,7 @@
       <button class="menu-featured" onclick="showSection('krispysgames')">
         <div class="featured-badge">🎮 Play Now</div>
         <div class="featured-title">Games</div>
-        <div class="featured-sub">Bingo, Wordwlw, Reactions Test, Typing Race and Caption This — play along with chat.</div>
+        <div class="featured-sub">Words Guesser, Reactions Test and Typing Race — play along with chat. Caption This v.2 is coming soon.</div>
         <div class="featured-arrow">Enter →</div>
       </button>
 
@@ -974,10 +973,10 @@ const TAB_DATA = {
 // `href` = built and playable. No href = greyed-out "Soon" card.
 // `wide: true` = card spans both columns.
 const CAROLINE_GAMES = [
-  { title:'Wordwlw',         desc:'Guess the word. Five letters, six tries. All WLW, streaming and Chamber related!', href:'games/wordwlw/index.html' },
+  { title:'Words Guesser',   desc:'A new autumn and Halloween word every day at midnight New York time.', href:'games/wordwlw/index.html' },
   { title:'Reactions Test',  desc:'Reflexes, aim and memory. Three quick tests, see how good you are compared to others!', href:'games/reactions/index.html' },
   { title:'Typing Race',     desc:'Race across Australia. Three levels, ranked by words per minute.', href:'games/typing/index.html' },
-  { title:'Caption This',    desc:'See one imagine, write one caption. Christina and Amber pick a winner!', href:'games/caption/index.html' }
+  { title:'Caption This v.2', desc:'A new version is on its way. Christina and Amber pick a winner!', href:null }
 ];
 
 function renderCarolineGames(){
@@ -993,7 +992,7 @@ function renderCarolineGames(){
     const body = `
       <div class="game-card-title">${escapeHtml(g.title)}</div>
       <div class="game-card-desc">${escapeHtml(g.desc || '')}</div>
-      <div class="game-card-badge">${g.href ? 'Play →' : 'Soon'}</div>`;
+      <div class="game-card-badge">${g.href ? 'Play →' : 'Coming soon'}</div>`;
     const wide = g.wide ? ' wide' : '';
     return g.href
       ? `<a class="game-card${wide}" href="${escapeHtml(g.href)}">${body}</a>`
