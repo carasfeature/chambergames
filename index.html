@@ -221,7 +221,7 @@
   .menu-wrap{max-width:820px; margin:0 auto;}
 
   .menu-info-row{display:flex; gap:14px; max-width:820px; margin:0 auto 20px; flex-wrap:wrap;}
-  .countdown-panel, .discord-link-panel, .placeholder-mini-panel{
+  .countdown-panel, .discord-link-panel, .words-guesser-panel{
     flex:1 1 220px; background:var(--card); border:3px solid var(--border-soft);
     padding:20px; text-align:center; display:block;
   }
@@ -230,7 +230,9 @@
   .countdown-value{font-family:'Press Start 2P', monospace; font-size:16px; text-transform:uppercase; line-height:1.6;}
   .discord-link-panel:hover{border-color:var(--ink);}
   .discord-link-title{font-family:'Press Start 2P', monospace; font-size:12px; text-transform:uppercase; margin-top:8px; line-height:1.6;}
-  .placeholder-mini-panel{opacity:.4;}
+  .words-guesser-panel{border-color:#FF9B3D; color:var(--ink); text-decoration:none; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
+  .words-guesser-panel:hover{transform:translateY(-3px); box-shadow:5px 5px 0 #FF9B3D;}
+  .words-guesser-panel:focus-visible{outline:3px solid #FF9B3D; outline-offset:3px;}
 
   .tournament-select-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; max-width:900px; margin:0 auto;}
   @media (max-width:700px){ .tournament-select-grid{grid-template-columns:1fr;} }
@@ -615,10 +617,10 @@
         <div class="countdown-stream-name" id="nextStreamName"></div>
         <div class="countdown-value" id="nextStreamCountdown">—</div>
       </div>
-      <div class="placeholder-mini-panel">
-        <div class="countdown-label">Coming Soon</div>
-        <div class="countdown-stream-name">FIFA Tournament</div>
-      </div>
+      <a class="words-guesser-panel" href="games/wordwlw/index.html">
+        <div class="countdown-label">Word Guesser</div>
+        <div class="countdown-stream-name">New word every day</div>
+      </a>
     </div>
 
     <div class="menu-wrap">
