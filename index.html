@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chamber Games</title>
+<title>Chamber Games — Halloween TEST</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -21,16 +21,38 @@
     --blue-tint:rgba(77,127,255,0.15);
     --radius:0px;
   }
+  @font-face {
+  font-family: "LONEWARC";
+  src: url("./fonts/LONEWARC.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+body,
+a,
+button,
+.game-card,
+[role="button"] {
+  cursor: url("./images/Eye.svg") 16 16, auto !important;
+}
+/* HALLOWEEN EYE CURSOR */
+html,
+body,
+body * {
+  cursor: url("./images/Eye.svg") 16 16, auto !important;
+}
+
+
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   html,body{margin:0;padding:0;}
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:'IBM Plex Mono', monospace;
+    
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
-    cursor:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj48Y2lyY2xlIGN4PSI2IiBjeT0iNiIgcj0iMyIgc3Ryb2tlPSIjRTAzMzlCIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSI2IiBjeT0iMTgiIHI9IjMiIHN0cm9rZT0iI0UwMzM5QiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjIwIiB5MT0iNCIgeDI9IjguMTIiIHkyPSIxNS44OCIgc3Ryb2tlPSIjRTAzMzlCIiBzdHJva2Utd2lkdGg9IjIiLz48bGluZSB4MT0iMTQuNDciIHkxPSIxNC40OCIgeDI9IjIwIiB5Mj0iMjAiIHN0cm9rZT0iI0UwMzM5QiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjguMTIiIHkxPSI4LjEyIiB4Mj0iMTIiIHkyPSIxMiIgc3Ryb2tlPSIjRTAzMzlCIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=") 4 4, auto;
+    cursor: url("./images/Eye.svg") 16 16, auto !important;
     overflow-x:hidden;
     position:relative;
   }
@@ -61,7 +83,11 @@
 
   /* Glitch text on hero title */
   h1.title{position:relative;}
+  h1.title {
+  font-family: "MONSTER", sans-serif !important;
+}
   h1.title::before, h1.title::after{
+    
     content:attr(data-text); position:absolute; top:0; left:0; width:100%; height:100%;
     background:var(--bg); overflow:hidden;
   }
@@ -527,14 +553,905 @@
   .qual-round li{font-size:12px; color:var(--ink-soft); display:flex; gap:8px;}
   .qual-round li b{color:var(--blue); font-family:'Space Grotesk', sans-serif; font-weight:700; width:12px;}
 
-  @media (max-width:900px){
+  @media (max-width:900px){F
     .layout{grid-template-columns:1fr;}
     .round-card.final{grid-column:auto;}
   }
 
   footer{text-align:center; margin-top:60px; font-family:'Space Grotesk', sans-serif; letter-spacing:0.2em; font-size:11px; color:var(--ink-soft); text-transform:uppercase;}
+@font-face {
+  font-family: "MONSTER";
+  src: url("./fonts/MONSTER.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+</style>
+
+<style id="halloween-takeover">
+  :root{
+    --bg:#08060D;
+    --card:#120D19;
+    --ink:#F3EEE7;
+    --ink-soft:#A99CAF;
+    --border:#3A2945;
+    --border-soft:#261B2E;
+    --red:#FF5A1F;
+    --red-tint:rgba(255,90,31,.15);
+    --blue:#8B3DFF;
+    --blue-tint:rgba(139,61,255,.15);
+    --h-orange:#FF6A00;
+    --h-purple:#8B3DFF;
+    --h-slime:#9ADB2E;
+  }
+
+  body{
+    background:
+      radial-gradient(circle at 50% -20%, rgba(139,61,255,.13), transparent 36%),
+      linear-gradient(180deg,#08060d 0%,#0b0711 55%,#07050a 100%);
+  }
+
+  /* Halloween ambient lighting */
+  .ambient-orb-blue{background:#8B3DFF;opacity:.24;}
+  .ambient-orb-magenta{background:#FF6A00;opacity:.18;}
+  .ambient-orb-lime{background:#9ADB2E;opacity:.13;}
+
+  .nav{
+    background:rgba(8,6,13,.88);
+    border-bottom-color:#34233f;
+    box-shadow:0 5px 24px rgba(0,0,0,.35);
+  }
+  .nav .brand{color:#eee7f5;text-shadow:2px 2px 0 #3b165c;}
+  .nav-icon-btn{box-shadow:0 0 12px rgba(139,61,255,.18);}
+
+  .ticker{
+    background:#0d0913;
+    border-bottom-color:#47265c;
+    box-shadow:0 4px 18px rgba(139,61,255,.12);
+  }
+  .ticker-track{
+    color:var(--h-slime);
+    text-shadow:0 0 8px rgba(154,219,46,.28);
+  }
+
+  /* Haunted hero */
+  .hero{
+    background:
+      radial-gradient(circle at 50% 44%,rgba(255,106,0,.08),transparent 20%),
+      linear-gradient(180deg,#08060d 0%,#100a18 62%,#0a0710 100%);
+    border-bottom-color:#3b2547;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    width:150px;height:150px;
+    left:50%;top:40px;
+    transform:translateX(-50%);
+    border-radius:50%;
+    background:#ffb14a;
+    box-shadow:0 0 20px rgba(255,106,0,.45),0 0 65px rgba(255,106,0,.22);
+    opacity:.72;
+    z-index:0;
+  }
+  .hero::after{
+    content:"🦇      🦇             🦇";
+    position:absolute;
+    top:82px;left:-260px;
+    z-index:1;
+    width:250px;
+    font-size:20px;
+    letter-spacing:18px;
+    filter:grayscale(1) brightness(.25);
+    animation:halloweenBats 24s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes halloweenBats{
+    from{transform:translateX(0) translateY(0);}
+    45%{transform:translateX(calc(100vw + 260px)) translateY(28px);}
+    100%{transform:translateX(calc(100vw + 520px)) translateY(-12px);}
+  }
+
+  .hero-mountains-far{fill:#24152f;}
+  .hero-mountains-near{fill:#130d1b;}
+  .hero-grid{stroke:#ff6a00;opacity:.24;}
+  .hero-stars rect{fill:#c9a7ff;}
+  .hero-stars rect:nth-child(3n){fill:#ff8a2a;}
+  .eyebrow-line{color:var(--h-slime);text-shadow:0 0 9px rgba(154,219,46,.4);}
+  h1.title{
+    color:#eee9f1;
+    text-shadow:5px 5px 0 #2b1538,0 0 18px rgba(139,61,255,.16);
+  }
+  h1.title::before{color:#8B3DFF;background:transparent;}
+  h1.title::after{color:#FF6A00;background:transparent;}
+  .game-wordmark{color:#8e8197;}
+  .game-wordmark span{color:#d8cfdc;}
+
+  /* Fog bank over the bottom of the hero */
+  .hero-center::after{
+    content:"";
+    position:absolute;
+    left:-30vw;right:-30vw;
+    height:115px;
+    bottom:-145px;
+    z-index:-1;
+    background:
+      radial-gradient(ellipse at 15% 60%,rgba(150,124,170,.16),transparent 45%),
+      radial-gradient(ellipse at 50% 50%,rgba(111,82,132,.20),transparent 48%),
+      radial-gradient(ellipse at 85% 60%,rgba(150,124,170,.15),transparent 45%);
+    filter:blur(12px);
+    animation:halloweenFog 12s ease-in-out infinite alternate;
+  }
+  @keyframes halloweenFog{to{transform:translateX(45px);}}
+
+  /* Cards / menus */
+  .countdown-panel,.discord-link-panel,.words-guesser-panel,
+  .tab-menu,.games-tab-menu,.game-card,.tournament-option,.panel,
+  .login-panel,.round-card,.placeholder-panel,.snap-card,.merch-featured,
+  .fc26-podium-card,.prize-tier{
+    background:linear-gradient(145deg,#130e1a,#0e0a14);
+    border-color:#3a2945;
+  }
+  .menu-info-row > *{
+    transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+  }
+  .menu-info-row > *:hover{
+    transform:translateY(-3px);
+    border-color:#ff6a00;
+    box-shadow:4px 4px 0 #35105c,0 0 18px rgba(255,106,0,.18);
+  }
+  .words-guesser-panel{border-color:#ff6a00;}
+  .words-guesser-panel .countdown-label{color:#ff8a35;}
+  .words-guesser-panel:hover{box-shadow:4px 4px 0 #35105c,0 0 18px rgba(255,106,0,.2);}
+
+  .menu-featured{
+    position:relative;
+    overflow:hidden;
+    background:
+      linear-gradient(135deg,rgba(139,61,255,.08),transparent 35%),
+      linear-gradient(145deg,#15101d,#0e0a14);
+    border-color:#4a3158;
+  }
+  .menu-featured::after{
+    content:"";
+    position:absolute;
+    width:80px;height:80px;
+    right:-35px;top:-35px;
+    border:2px solid rgba(255,106,0,.35);
+    transform:rotate(45deg);
+  }
+  .menu-featured:hover{
+    box-shadow:6px 6px 0 #8B3DFF,0 0 22px rgba(255,106,0,.14);
+    border-color:#ff6a00;
+  }
+  .featured-badge,.game-card-badge,.merch-featured-cta{
+    background:#ff6a00;
+    color:#100912;
+  }
+  .featured-arrow,.games-coming-soon{color:#9ADB2E;}
+
+  .tab-bar,.games-tab-bar{background:#09060d;}
+  .tab-btn.active,.games-tab-btn.active{
+    background:#eee9f1;
+    border-color:#ff6a00;
+    color:#110b16;
+    box-shadow:0 0 12px rgba(255,106,0,.22);
+  }
+  .tab-link{color:#b277ff;}
+  .tab-link:hover{color:#ff7b1a;text-shadow:3px 3px 0 rgba(139,61,255,.32);}
+  .game-card:hover{box-shadow:6px 6px 0 #8B3DFF;border-color:#ff6a00;}
+  .tournament-option.unlocked{border-color:#8B3DFF;}
+  .tournament-option.unlocked:hover{box-shadow:6px 6px 0 #8B3DFF;}
+  .tournament-option.unlocked .tournament-option-status{color:#b277ff;}
+
+  .back-btn:hover{border-color:#ff6a00;}
+  .logout-link:hover{color:#ff6a00;}
+  :focus-visible{outline-color:#ff6a00;}
+
+  /* Tiny corner cobwebs on key cards, no external assets */
+  .menu-featured::before,.tab-menu::before,.games-tab-menu::before{
+    content:"";
+    position:absolute;
+    width:58px;height:58px;
+    top:0;left:0;
+    pointer-events:none;
+    opacity:.22;
+    background:
+      linear-gradient(45deg,transparent 48%,#cdbbd8 49%,#cdbbd8 51%,transparent 52%),
+      radial-gradient(circle at 0 0,transparent 0 14px,#cdbbd8 15px 16px,transparent 17px 27px,#cdbbd8 28px 29px,transparent 30px);
+  }
+  .tab-menu,.games-tab-menu{position:relative;}
+
+  /* Occasional quick haunted flicker */
+  @keyframes hauntedFlicker{
+    0%,91%,93%,95%,100%{filter:none;}
+    92%{filter:brightness(.72) contrast(1.35) hue-rotate(8deg);}
+    94%{filter:brightness(1.12) contrast(1.15);}
+  }
+  .hero{animation:hauntedFlicker 18s steps(1,end) infinite;}
+
+  @media (prefers-reduced-motion:reduce){
+    .hero,.hero::after,.hero-center::after{animation:none!important;}
+  }
+  @media (max-width:700px){
+    .hero::before{width:105px;height:105px;top:55px;}
+    .hero::after{font-size:15px;}
+  }
+</style>
+
+
+<style id="envato-style-halloween">
+:root{
+  --bg:#220205;
+  --card:#160507;
+  --ink:#fff3df;
+  --ink-soft:#d9aaa0;
+  --border:#6b111b;
+  --border-soft:#400a10;
+  --red:#ff6a16;
+  --red-tint:rgba(255,106,22,.14);
+  --blue:#ffad43;
+  --blue-tint:rgba(255,173,67,.12);
+  --radius:12px;
+}
+.scanlines,.ambient-orbs{display:none!important}
+body{
+  cursor:auto!important;
+  font-family:"Space Grotesk",sans-serif!important;
+  background:#210205!important;
+  color:#fff3df!important;
+}
+button,a{cursor:pointer}
+.nav{
+  
+  background:#100203!important;
+  border:0!important;
+  border-bottom:1px solid #5b0e16!important;
+}
+.nav .brand{font-family: "LONEWARC", sans-serif !important;color:#e8c8bc!important}
+.ticker{background:#170204!important;border-bottom:1px solid #5b0e16!important}
+.ticker-track{
+  font-family:"Space Grotesk",sans-serif!important;
+  color:#ff8a28!important;text-shadow:none!important;letter-spacing:.15em!important;
+}
+
+/* Main poster scene */
+.hero{
+  position:relative;
+  isolation:isolate;
+  min-height:720px!important;
+  padding:115px 0 190px!important;
+  overflow:hidden!important;
+  border:0!important;
+  background:
+    radial-gradient(circle at 8% 14%,#1a0203 0 2px,transparent 3px),
+    radial-gradient(circle at 17% 71%,#240304 0 3px,transparent 4px),
+    radial-gradient(circle at 29% 24%,#330506 0 2px,transparent 3px),
+    radial-gradient(circle at 42% 82%,#260304 0 2px,transparent 3px),
+    radial-gradient(circle at 58% 16%,#2b0305 0 3px,transparent 4px),
+    radial-gradient(circle at 72% 67%,#250304 0 2px,transparent 3px),
+    radial-gradient(circle at 89% 28%,#330506 0 3px,transparent 4px),
+    repeating-linear-gradient(90deg,rgba(15,0,2,.08) 0 2px,transparent 2px 39px),
+    radial-gradient(ellipse at 50% 38%,#ef4b28 0%,#d92b20 27%,#ad1520 54%,#720b15 78%,#290205 100%)!important;
+  animation:none!important;
+}
+.hero-scene{display:none!important}
+
+/* Rough painted top edge */
+.hero::before{
+  content:"";
+  position:absolute;
+  top:-1px;left:-1%;width:102%;height:120px;
+  z-index:5;pointer-events:none;
+  background:#080203!important;
+  clip-path:polygon(
+    0 0,100% 0,100% 49%,97% 44%,94% 57%,91% 42%,87% 52%,83% 39%,
+    79% 55%,75% 44%,71% 59%,67% 42%,63% 54%,59% 40%,55% 57%,51% 45%,
+    47% 60%,43% 43%,39% 55%,35% 40%,31% 58%,27% 45%,23% 54%,19% 39%,
+    15% 56%,11% 43%,7% 53%,3% 40%,0 55%
+  )!important;
+  opacity:1!important;
+}
+
+/* Black graveyard foreground */
+.hero::after{
+  content:"";
+  position:absolute;
+  left:-2%;bottom:-1px;width:104%;height:235px;
+  z-index:4!important;
+  background:#070203!important;
+  clip-path:polygon(
+    0 58%,4% 51%,7% 55%,10% 43%,11% 55%,15% 49%,18% 30%,19% 51%,
+    23% 46%,27% 36%,28% 51%,32% 47%,36% 26%,37% 50%,41% 45%,46% 50%,
+    50% 36%,51% 52%,56% 47%,61% 29%,62% 51%,67% 45%,72% 36%,73% 52%,
+    78% 47%,83% 26%,84% 50%,88% 44%,93% 34%,94% 51%,100% 44%,100% 100%,0 100%
+  )!important;
+  animation:none!important;filter:none!important;
+}
+
+/* Poster distress */
+.hero-grunge{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  opacity:.34;
+  background:
+    repeating-linear-gradient(88deg,transparent 0 28px,rgba(30,0,3,.22) 29px,transparent 31px),
+    repeating-linear-gradient(178deg,transparent 0 57px,rgba(255,178,120,.08) 58px,transparent 60px),
+    radial-gradient(circle at 5% 8%,#0a0102 0 4px,transparent 5px),
+    radial-gradient(circle at 94% 17%,#0a0102 0 5px,transparent 6px),
+    radial-gradient(circle at 15% 89%,#0a0102 0 4px,transparent 5px),
+    radial-gradient(circle at 84% 79%,#0a0102 0 3px,transparent 4px);
+}
+.hero-grunge::before,.hero-grunge::after{
+  content:"";position:absolute;top:0;bottom:0;width:110px;
+  background:
+    radial-gradient(ellipse at center,#080203 0 34%,transparent 36%) 0 0/45px 72px repeat-y;
+  filter:blur(.2px);
+}
+.hero-grunge::before{left:-28px}
+.hero-grunge::after{right:-28px;transform:scaleX(-1)}
+
+.hero-center{position:relative;z-index:10!important;max-width:1120px!important}
+.eyebrow-line{
+  font-family:"Space Grotesk",sans-serif!important;
+  color:#ffd19c!important;font-weight:700;letter-spacing:.45em!important;text-shadow:none!important;
+}
+h1.title{
+  font-family:"MONSTER","Space Grotesk",sans-serif!important;
+  font-size:clamp(72px,10.5vw,150px)!important;
+  line-height:.76!important;
+  color:#fff7e8!important;
+  margin-top:30px!important;
+  text-shadow:0 9px 0 rgba(74,0,7,.36),0 17px 28px rgba(0,0,0,.35)!important;
+}
+h1.title::before,h1.title::after{display:none!important}
+.game-wordmark{
+  font-family:"Space Grotesk",sans-serif!important;
+  color:#ffd4c5!important;letter-spacing:.4em!important;font-weight:700;margin-top:38px!important;
+}
+.game-wordmark span{color:#fff0d5!important}
+
+/* CSS spiderweb */
+.poster-web{
+  position:absolute;z-index:6;top:30px;left:14px;width:250px;height:250px;
+  opacity:.92;overflow:hidden;pointer-events:none;
+}
+.poster-web .ring{
+  position:absolute;left:0;top:0;border:2px solid #090203;border-radius:50%;
+  transform:translate(-50%,-50%);
+}
+.poster-web .r1{width:90px;height:90px}
+.poster-web .r2{width:150px;height:150px}
+.poster-web .r3{width:215px;height:215px}
+.poster-web .r4{width:280px;height:280px}
+.poster-web::before{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(45deg,transparent 49.4%,#090203 49.7% 50.3%,transparent 50.6%),
+    linear-gradient(22deg,transparent 49.4%,#090203 49.7% 50.3%,transparent 50.6%),
+    linear-gradient(68deg,transparent 49.4%,#090203 49.7% 50.3%,transparent 50.6%),
+    linear-gradient(90deg,transparent 49.4%,#090203 49.7% 50.3%,transparent 50.6%);
+  transform-origin:0 0;
+}
+
+/* CSS bats */
+.poster-bat{
+  position:absolute;z-index:7;width:34px;height:15px;pointer-events:none;
+}
+.poster-bat::before,.poster-bat::after{
+  content:"";position:absolute;top:2px;width:20px;height:12px;background:#080203;
+}
+.poster-bat::before{left:0;clip-path:polygon(100% 45%,55% 0,0 18%,30% 55%,0 100%,60% 80%)}
+.poster-bat::after{right:0;clip-path:polygon(0 45%,45% 0,100% 18%,70% 55%,100% 100%,40% 80%)}
+.poster-bat i{
+  position:absolute;left:14px;top:4px;width:7px;height:8px;border-radius:50%;background:#080203;
+}
+.b1{top:112px;right:19%;transform:rotate(-8deg) scale(1.15)}
+.b2{top:165px;right:10%;transform:rotate(8deg) scale(.75)}
+.b3{top:92px;right:7%;transform:rotate(-12deg) scale(.55)}
+.b4{top:205px;left:20%;transform:rotate(10deg) scale(.6)}
+
+/* Grave markers layered over foreground */
+.poster-cross{
+  position:absolute;z-index:8;bottom:70px;width:12px;height:88px;background:#070203;
+  transform-origin:bottom;
+}
+.poster-cross::before{
+  content:"";position:absolute;left:50%;top:20px;width:48px;height:11px;
+  transform:translateX(-50%);background:#070203;
+}
+.c1{left:69%;transform:rotate(8deg)}
+.c2{left:75%;bottom:55px;transform:rotate(-7deg) scale(.72)}
+.c3{left:28%;bottom:50px;transform:rotate(6deg) scale(.72)}
+.poster-tomb{
+  position:absolute;z-index:8;bottom:42px;width:72px;height:98px;background:#070203;
+  border-radius:36px 36px 0 0;
+}
+.t1{left:61%;transform:rotate(-2deg)}
+.t2{left:84%;bottom:31px;transform:scale(.72) rotate(5deg)}
+
+/* CSS pumpkins */
+.poster-pumpkin{
+  position:absolute;z-index:9;bottom:27px;width:110px;height:82px;
+  border-radius:48% 52% 46% 46%;
+  background:
+    radial-gradient(ellipse at 50% 50%,transparent 0 31%,rgba(91,17,3,.15) 32% 34%,transparent 35%),
+    linear-gradient(90deg,#d94b09,#ff8d18 25%,#f86f0f 50%,#ff8d18 75%,#d94b09);
+  box-shadow:0 0 22px rgba(255,92,10,.24);
+}
+.poster-pumpkin::before{
+  content:"";position:absolute;left:48px;top:-15px;width:14px;height:23px;background:#160503;
+  transform:rotate(7deg);
+}
+.poster-pumpkin .eye{
+  position:absolute;top:27px;width:0;height:0;
+  border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:17px solid #170304;
+}
+.poster-pumpkin .eye.l{left:24px}.poster-pumpkin .eye.r{right:24px}
+.poster-pumpkin .mouth{
+  position:absolute;left:27px;top:54px;width:57px;height:15px;background:#170304;
+  clip-path:polygon(0 0,15% 45%,29% 0,43% 50%,57% 0,72% 45%,87% 0,100% 45%,100% 100%,0 100%);
+}
+.p1{left:8%;transform:rotate(-5deg)}
+.p2{left:17%;bottom:18px;transform:rotate(5deg) scale(.7)}
+.p3{right:9%;transform:rotate(6deg) scale(.86)}
+
+/* Existing content below hero */
+.wrap{max-width:1100px!important;padding:48px 24px 90px!important}
+.menu-info-row{max-width:900px!important;gap:14px!important}
+.countdown-panel,.discord-link-panel,.words-guesser-panel,
+.tab-menu,.games-tab-menu,.game-card,.tournament-option,.panel,.login-panel,
+.round-card,.placeholder-panel,.snap-card,.merch-featured,.fc26-podium-card,.prize-tier{
+  background:#150507!important;border:1px solid #641019!important;border-radius:12px!important;box-shadow:none!important;
+}
+.menu-wrap{max-width:900px!important}
+.menu-featured{
+  background:linear-gradient(145deg,#1d0608,#100304)!important;
+  border:1px solid #76141e!important;border-radius:14px!important;box-shadow:none!important;
+}
+.menu-featured::before,.menu-featured::after{display:none!important}
+.featured-title,.section-title{
+  font-family:"MONSTER","Space Grotesk",sans-serif!important;
+}
+.featured-badge,.game-card-badge,.merch-featured-cta{
+  background:#ff7417!important;color:#1d0405!important;border-radius:999px!important;
+}
+.tab-bar,.games-tab-bar{background:#0d0203!important}
+.tab-btn,.games-tab-btn{font-family:"Space Grotesk",sans-serif!important;border-radius:8px!important}
+.tab-btn.active,.games-tab-btn.active{background:#8c101c!important;color:#fff1dc!important;box-shadow:none!important}
+.tab-link,.featured-arrow,.games-coming-soon{color:#ff9b42!important;text-shadow:none!important}
+.game-card:hover,.tournament-option.unlocked:hover,.menu-info-row>*:hover{
+  border-color:#ff7417!important;box-shadow:0 14px 35px rgba(0,0,0,.28)!important;
+}
+.back-btn{background:#150507!important;border:1px solid #641019!important;border-radius:999px!important}
+footer{font-family:"Space Grotesk",sans-serif!important;color:#a76a63!important}
+
+@media(max-width:700px){
+  .hero{min-height:590px!important;padding:100px 0 160px!important}
+  h1.title{font-size:clamp(58px,19vw,95px)!important}
+  .poster-web{width:150px;height:150px}
+  .poster-pumpkin{transform:scale(.65)!important}
+  .p2{display:none}
+}
+</style>
+
+
+<style id="halloween-hero-redo-final">
+/* ===== COMPACT HALLOWEEN HERO REDO ===== */
+.hero{
+  min-height:0!important;
+  height:510px!important;
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  border-bottom:3px solid #3f080c!important;
+  background:
+    radial-gradient(ellipse at 50% 45%,rgba(255,92,36,.95) 0%,rgba(216,31,28,.92) 31%,rgba(143,11,20,.96) 66%,#4c0309 100%)!important;
+}
+
+/* remove old Halloween layers that caused the huge black middle band */
+.hero::before,
+.hero::after,
+.hero-center::after{
+  display:none!important;
+}
+.hero-scene{display:none!important}
+
+/* subtle dirty poster texture */
+.hero-grunge{
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  opacity:.42!important;
+  background:
+    radial-gradient(circle at 8% 23%,#1a0002 0 2px,transparent 3px),
+    radial-gradient(circle at 17% 76%,#1a0002 0 3px,transparent 4px),
+    radial-gradient(circle at 30% 14%,#270003 0 2px,transparent 3px),
+    radial-gradient(circle at 42% 83%,#1b0002 0 2px,transparent 3px),
+    radial-gradient(circle at 59% 20%,#220003 0 2px,transparent 3px),
+    radial-gradient(circle at 73% 70%,#1b0002 0 3px,transparent 4px),
+    radial-gradient(circle at 91% 29%,#240003 0 2px,transparent 3px),
+    repeating-linear-gradient(90deg,transparent 0 34px,rgba(36,0,4,.17) 35px,transparent 38px),
+    repeating-linear-gradient(177deg,transparent 0 62px,rgba(255,173,118,.05) 63px,transparent 65px)!important;
+}
+
+/* rough dark vignette on the sides instead of a black stripe */
+.hero-grunge::before,
+.hero-grunge::after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  top:0!important;
+  bottom:0!important;
+  width:92px!important;
+  background:
+    radial-gradient(ellipse at center,#100002 0 35%,transparent 38%) 0 0/46px 78px repeat-y!important;
+  opacity:.78!important;
+}
+.hero-grunge::before{left:-30px!important}
+.hero-grunge::after{right:-30px!important;left:auto!important;transform:scaleX(-1)!important}
+
+/* title */
+.hero-center{
+  position:relative!important;
+  z-index:20!important;
+  width:100%!important;
+  max-width:1050px!important;
+  margin:0 auto!important;
+  padding:0 24px!important;
+transform: translateY(-5px) !important;
+}
+.eyebrow-line {
+  font-family: "LONEWARC", sans-serif !important;
+  color: #ffd9bd !important;
+
+  font-size: 16px !important;
+  letter-spacing: .32em !important;
+  line-height: 1 !important;
+
+  margin-bottom: 18px !important;
+
+  text-transform: uppercase;
+  text-shadow: 0 2px 5px rgba(0,0,0,.25) !important;
+  position: relative !important;
+  top: -15px !important;
+}
+h1.title{
+  font-family:"MONSTER","Space Grotesk",sans-serif!important;
+  font-weight:400!important;
+  font-size:clamp(62px,8vw,118px)!important;
+  line-height:.77!important;
+  letter-spacing:-.025em!important;
+  margin:22px 0 0!important;
+  color:#fff7e9!important;
+  text-shadow:0 7px 0 rgba(79,0,7,.30),0 13px 25px rgba(30,0,2,.28)!important;
+}
+h1.title::before,
+h1.title::after{display:none!important}
+.game-wordmark {
+  font-family: "LONEWARC", sans-serif !important;
+  color: #ffd9bd !important;
+
+  font-size: 17px !important;
+  letter-spacing: .28em !important;
+  line-height: 1 !important;
+
+  margin-top: 26px !important;
+
+  text-transform: uppercase;
+  text-shadow: 0 2px 5px rgba(0,0,0,.25) !important;
+  position: relative !important;
+  top: -15px !important;
+
+}
+
+.game-wordmark span {
+  color: inherit !important;
+}
+
+/* spiderweb stays tucked into corner */
+.poster-web{
+  top:-18px!important;
+  left:-18px!important;
+  width:185px!important;
+  height:185px!important;
+  opacity:.8!important;
+  z-index:8!important;
+}
+
+/* bats */
+.poster-bat{z-index:9!important}
+.b1{top:76px!important;right:20%!important;transform:rotate(-8deg) scale(.9)!important}
+.b2{top:122px!important;right:11%!important;transform:rotate(8deg) scale(.6)!important}
+.b3{top:57px!important;right:7%!important;transform:rotate(-12deg) scale(.45)!important}
+.b4{top:128px!important;left:20%!important;transform:rotate(10deg) scale(.48)!important}
+
+/* bottom graveyard silhouette — low enough to frame, never cross the title */
+.poster-cross,
+.poster-tomb,
+.poster-pumpkin{z-index:10!important}
+.poster-cross{bottom:19px!important}
+.c1{left:69%!important;transform:rotate(8deg) scale(.78)!important}
+.c2{left:75%!important;bottom:12px!important;transform:rotate(-7deg) scale(.58)!important}
+.c3{left:28%!important;bottom:10px!important;transform:rotate(6deg) scale(.58)!important}
+
+.poster-tomb{bottom:0!important}
+.t1{left:61%!important;transform:scale(.72) rotate(-2deg)!important;transform-origin:bottom!important}
+.t2{left:84%!important;bottom:-5px!important;transform:scale(.55) rotate(5deg)!important;transform-origin:bottom!important}
+
+.poster-pumpkin{bottom:12px!important}
+.p1{left:7%!important;transform:rotate(-5deg) scale(.72)!important;transform-origin:bottom!important}
+.p2{left:14%!important;bottom:7px!important;transform:rotate(5deg) scale(.50)!important;transform-origin:bottom!important}
+.p3{right:8%!important;bottom:8px!important;transform:rotate(6deg) scale(.61)!important;transform-origin:bottom!important}
+
+/* dark ground line */
+.hero .halloween-ground{
+  position:absolute;
+  z-index:7;
+  left:0;right:0;bottom:0;
+  height:48px;
+  background:#090102;
+  clip-path:polygon(0 58%,5% 40%,10% 52%,16% 34%,22% 50%,29% 39%,36% 55%,43% 38%,50% 52%,57% 35%,64% 50%,71% 38%,78% 53%,85% 34%,92% 48%,100% 37%,100% 100%,0 100%);
+}
+
+/* make content below start immediately like the original */
+.wrap{
+  padding-top:0!important;
+}
+.menu-header{
+  margin-top:0!important;
+  padding-top:12px!important;
+}
+
+@media(max-width:900px){
+  .hero{height:430px!important}
+  h1.title{font-size:clamp(54px,12vw,92px)!important}
+}
+@media(max-width:600px){
+  .hero{height:390px!important}
+  .poster-web{width:125px!important;height:125px!important}
+  .p2,.c3,.b4{display:none!important}
+  h1.title{font-size:clamp(48px,15vw,78px)!important}
+  .game-wordmark{font-size:10px!important;letter-spacing:.25em!important}
+}
+/* LONEWARC BODY FONT — KEEP AT BOTTOM */
+
+body,
+body * {
+  font-family: "LONEWARC", sans-serif !important;
+}
+
+/* Keep Halloween title as MONSTER */
+h1.title,
+h1.title *,
+.featured-title,
+.section-title {
+  font-family: "MONSTER", sans-serif !important;
+}
+</style>
+
+
+<style id="svg-pumpkin-replacement">
+/* ===== SVG PUMPKINS =====
+   Put your free SVG here: ./images/pumpkin.svg
+*/
+.poster-pumpkin{
+  background: url("./images/pumpkin.svg") center / contain no-repeat !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  width:130px !important;
+  height:110px !important;
+}
+.poster-pumpkin::before,
+.poster-pumpkin::after,
+.poster-pumpkin .eye,
+.poster-pumpkin .mouth{
+  display:none !important;
+}
+
+/* keep the three pumpkins in the same general spots, with slightly different sizes/angles */
+.p1{
+  left:6% !important;
+  bottom:4px !important;
+  transform:rotate(-7deg) scale(.78) !important;
+  transform-origin:bottom center !important;
+}
+.p2{
+  left:14% !important;
+  bottom:-1px !important;
+  transform:rotate(7deg) scale(.56) !important;
+  transform-origin:bottom center !important;
+}
+.p3{
+  right:7% !important;
+  bottom:2px !important;
+  transform:rotate(5deg) scale(.70) !important;
+  transform-origin:bottom center !important;
+}
+
+@media(max-width:600px){
+  .poster-pumpkin{width:115px !important;height:96px !important;}
+  .p2{display:none !important;}
+}
 
 </style>
+
+
+<style id="halloween-svg-pack-assets">
+/* ===== MATCHING HALLOWEEN SVG PACK ===== */
+
+/* Eye cursor */
+html,
+body,
+body * {
+  cursor: url("./images/Eye.svg") 16 16, auto !important;
+}
+input[type="text"],
+input[type="password"],
+textarea {
+  cursor: text !important;
+}
+
+/* Replace CSS bats with Bat.svg */
+.poster-bat{
+  width:92px !important;
+  height:58px !important;
+  background:url("./images/Bat.svg") center / contain no-repeat !important;
+}
+.poster-bat::before,
+.poster-bat::after,
+.poster-bat i{
+  display:none !important;
+}
+.b1{top:68px !important;right:19% !important;transform:rotate(-8deg) scale(.82) !important;}
+.b2{top:118px !important;right:10% !important;transform:rotate(8deg) scale(.58) !important;}
+.b3{top:48px !important;right:5% !important;transform:rotate(-12deg) scale(.46) !important;}
+.b4{top:124px !important;left:18% !important;transform:rotate(10deg) scale(.52) !important;}
+
+/* Replace CSS tombstones with Gravestone.svg */
+.poster-tomb{
+  width:105px !important;
+  height:125px !important;
+  background:url("./images/Gravestone.svg") center bottom / contain no-repeat !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+.poster-tomb::before,
+.poster-tomb::after{
+  display:none !important;
+}
+.t1{left:61% !important;bottom:-7px !important;transform:scale(.72) rotate(-3deg) !important;transform-origin:bottom center !important;}
+.t2 {
+  left: 78% !important;
+  right: auto !important;
+  bottom: -10px !important;
+  transform: scale(.58) rotate(5deg) !important;
+  transform-origin: bottom center !important;
+}
+/* Matching skull decorations */
+.poster-skull{
+  position:absolute;
+  z-index:11;
+  width:72px;
+  height:72px;
+  bottom:5px;
+  pointer-events:none;
+  background:url("./images/Skull.svg") center / contain no-repeat;
+}
+.poster-skull.s1{
+  left:24%;
+  transform:rotate(-10deg) scale(.68);
+  transform-origin:bottom center;
+}
+.poster-skull.s2{
+  right:25%;
+  bottom:0;
+  transform:rotate(9deg) scale(.52);
+  transform-origin:bottom center;
+}
+
+/* Use exact filename from your images folder */
+.poster-pumpkin{
+  background-image:url("./images/Pumpkin.svg") !important;
+}
+
+@media(max-width:600px){
+  .b4,
+  .poster-skull.s2{
+    display:none !important;
+  }
+  .poster-skull.s1{
+    left:26% !important;
+    transform:rotate(-10deg) scale(.52) !important;
+  }
+}
+/* ===== BIGGER SITE TEXT ===== */
+
+/* Logged in line */
+.menu-header p {
+  font-size: 15px !important;
+}
+
+/* Three top boxes */
+.countdown-label {
+  font-size: 14px !important;
+}
+
+.countdown-stream-name {
+  font-size: 17px !important;
+}
+
+.countdown-value {
+  font-size: 18px !important;
+}
+
+.words-guesser-panel .countdown-label {
+  font-size: 15px !important;
+}
+
+.words-guesser-panel .countdown-stream-name {
+  font-size: 18px !important;
+}
+
+/* Main GAMES card */
+.featured-badge {
+  font-size: 15px !important;
+}
+
+.featured-title {
+  font-size: 32px !important;
+}
+
+.featured-sub {
+  font-size: 18px !important;
+  line-height: 1.6 !important;
+}
+
+.featured-arrow {
+  font-size: 17px !important;
+}
+
+/* Other cards / general text */
+.game-card-title {
+  font-size: 18px !important;
+}
+
+.game-card-desc {
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+.game-card-badge {
+  font-size: 13px !important;
+
+}.discord-link-panel .countdown-stream-name {
+  font-size: 17px !important;
+  line-height: 1.4 !important;
+}
+.discord-link-panel {
+  font-size: 18px !important;
+}
+
+.discord-link-panel * {
+  font-size: inherit !important;
+}
+
+.discord-link-panel .countdown-label {
+  font-size: 16px !important;
+}
+
+.discord-link-panel .countdown-stream-name {
+  font-size: 18px !important;
+  line-height: 1.4 !important;
+}
+
+</style>
+
 </head>
 <body>
 
@@ -557,8 +1474,8 @@
 
 <div class="ticker">
   <div class="ticker-track">
-    <span>CHAMBER 🌐 TOURNAMENTS · STREAM · GAMES · MERCH · SOCIAL 🌐 CHAMBER 🌐 TOURNAMENTS · STREAM · GAMES · MERCH · SOCIAL 🌐</span>
-    <span>CHAMBER 🌐 TOURNAMENTS · STREAM · GAMES · MERCH · SOCIAL 🌐 CHAMBER 🌐 TOURNAMENTS · STREAM · GAMES · MERCH · SOCIAL 🌐</span>
+    <span>CHAMBER 🎃 TOURNAMENTS · STREAM · GAMES · MERCH · SOCIAL ☠ CHAMBER 🎃 TOURNAMENTS · STREAM · GAMES · MERCH · SOCIAL ☠</span>
+    <span>CHAMBER 🎃 TOURNAMENTS · STREAM · GAMES · MERCH · SOCIAL ☠ CHAMBER 🎃 TOURNAMENTS · STREAM · GAMES · MERCH · SOCIAL ☠</span>
   </div>
 </div>
 
@@ -594,7 +1511,29 @@
       </g>
     </svg>
   </div>
-  <div class="hero-center">
+  
+<div class="hero-grunge"></div>
+<div class="halloween-ground"></div>
+<div class="poster-web">
+  <span class="ring r1"></span><span class="ring r2"></span>
+  <span class="ring r3"></span><span class="ring r4"></span>
+</div>
+<div class="poster-bat b1"><i></i></div>
+<div class="poster-bat b2"><i></i></div>
+<div class="poster-bat b3"><i></i></div>
+<div class="poster-bat b4"><i></i></div>
+<div class="poster-cross c1"></div>
+<div class="poster-cross c2"></div>
+<div class="poster-cross c3"></div>
+<div class="poster-tomb t1"></div>
+<div class="poster-tomb t2"></div>
+<div class="poster-pumpkin p1"><i class="eye l"></i><i class="eye r"></i><i class="mouth"></i></div>
+<div class="poster-pumpkin p2"><i class="eye l"></i><i class="eye r"></i><i class="mouth"></i></div>
+<div class="poster-pumpkin p3"><i class="eye l"></i><i class="eye r"></i><i class="mouth"></i></div>
+<div class="poster-skull s1"></div>
+<div class="poster-skull s2"></div>
+
+<div class="hero-center">
     <div class="eyebrow-line">ChristinaAndAmber</div>
     <h1 class="title" data-text="CHAMBER TOURNAMENTS">CHAMBER TOURNAMENTS</h1>
     <div class="game-wordmark"><span>IT'S NOT</span> A PHASE</div>
@@ -631,7 +1570,7 @@
 
     <div class="menu-wrap">
       <button class="menu-featured" onclick="showSection('krispysgames')">
-        <div class="featured-badge">🎮 Play Now</div>
+        <div class="featured-badge">🎃 Play Now</div>
         <div class="featured-title">Games</div>
         <div class="featured-sub">Words Guesser, Reactions Test and Typing Race — play along with chat. Caption This v.2 is coming soon.</div>
         <div class="featured-arrow">Enter →</div>
