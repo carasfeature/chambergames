@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#211524">
+<title>Words Guesser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/ui.css">
+<style>
+:root{
+  --ink:#241820; --paper:#fff6df; --pumpkin:#ff9b3d; --gold:#ffd77b;
+  --hit:#6e9d60; --near:#d9a047; --miss:#5c5362; --empty:#2d2331; --edge:#786477;
+}
+body{
+  background:radial-gradient(circle at 50% 15%,#673c42 0,#342334 38%,#211524 75%);
+  color:var(--paper);
+}
+.back{background:var(--pumpkin); color:#261924; border-color:#261924}
+.game{
+  position:relative; width:100%; max-width:560px; overflow:hidden;
+  border:2px solid #b86939; border-radius:24px;
+  background:linear-gradient(180deg,#3f2934 0,#251c2c 48%,#1e1825 100%);
+  box-shadow:0 0 38px #e5733430,0 20px 0 -7px #160e1b;
+}
+.game::before{
+  content:""; position:absolute; inset:0 0 auto; height:245px; pointer-events:none;
+  background:radial-gradient(circle at 50% -28%,#f0a64b42,transparent 72%);
+}
+.autumn-scene{height:96px; position:relative; overflow:hidden; pointer-events:none}
+.moon{
+  position:absolute; width:62px; height:62px; left:calc(50% - 31px); top:19px;
+  border-radius:50%; background:#ffe0a0; box-shadow:0 0 24px #ffc266a8,0 0 62px #ff8a3566;
+}
+.moon::after{content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:#d99d68aa; left:17px; top:18px}
+.pumpkin{
+  position:absolute; top:26px; font-size:58px; line-height:1;
+  filter:drop-shadow(0 0 9px #ffb34c) drop-shadow(0 0 23px #f56626);
+  animation:pumpkin-glow 3.5s ease-in-out infinite alternate;
+}
+.pumpkin.left{left:35px; transform:rotate(-11deg)}
+.pumpkin.right{right:35px; transform:rotate(10deg); animation-delay:1.2s}
+.leaf{position:absolute; top:16px; font-size:21px; opacity:.8; animation:drift 5s ease-in-out infinite alternate}
+.leaf.one{left:29%; transform:rotate(-24deg)}
+.leaf.two{right:26%; top:56px; animation-delay:1.7s}
+@keyframes pumpkin-glow{from{filter:drop-shadow(0 0 5px #ffb34c) drop-shadow(0 0 14px #f56626)}to{filter:drop-shadow(0 0 13px #ffce68) drop-shadow(0 0 32px #f56626)}}
+@keyframes drift{to{translate:8px 9px; rotate:24deg}}
+.title{
+  position:relative; margin:0; padding:2px 16px 0; text-align:center;
+  font-family:Bungee,cursive; font-size:clamp(27px,7.5vw,42px);
+  font-weight:400; line-height:1.15; letter-spacing:.015em; color:var(--gold);
+  text-shadow:0 3px #6b302f,0 0 20px #ff8a4570;
+}
+.season-copy{
+  position:relative; max-width:440px; margin:5px auto 0; padding:0 16px;
+  text-align:center; color:#f5d8b3; font-size:13px; font-weight:900; line-height:1.5;
+}
+.status-bar{
+  display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap;
+  padding:14px 15px 0; color:#e7c7ac; font-size:13px; font-weight:900;
+}
+.status-bar span{border:1px solid #b36c4a88; background:#2b202d; border-radius:999px; padding:6px 12px}
+.status-bar b{font-family:Bungee,cursive; font-weight:400; color:var(--gold); padding-left:6px}
+.board{display:grid; gap:7px; padding:18px 0 12px; justify-content:center}
+.row{display:grid; grid-template-columns:repeat(5,1fr); gap:7px}
+.tile{
+  width:clamp(48px,13vw,62px); aspect-ratio:1; display:grid; place-items:center; padding:0;
+  border:3px solid var(--edge); border-radius:9px; background:var(--empty);
+  box-shadow:inset 0 2px 0 #ffffff10; color:var(--paper);
+  font-family:Bungee,cursive; font-size:clamp(23px,6vw,31px); text-transform:uppercase;
+}
+.tile.filled{border-color:#e6ad67}
+.tile.hit{background:var(--hit); border-color:#b5d19a}
+.tile.near{background:var(--near); border-color:#ffe0a0; color:var(--ink)}
+.tile.miss{background:var(--miss); border-color:#817484}
+.board .tile:hover{transform:none; box-shadow:inset 0 2px 0 #ffffff10}
+.tile.flip{animation:flip .38s ease-in-out both}
+@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.row.shake{animation:shake .3s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.toast{min-height:27px; text-align:center; font-weight:900; font-size:14px; color:var(--gold); padding:0 16px}
+.keys{display:grid; gap:7px; padding:7px 9px 20px}
+.krow{display:flex; justify-content:center; gap:5px}
+.key{
+  flex:1; max-width:44px; height:51px; border:0; border-radius:7px; cursor:pointer;
+  background:#776073; color:var(--paper); font:900 15px Nunito,sans-serif; text-transform:uppercase;
+  box-shadow:0 3px 0 #160f1a;
+}
+.key.wide{max-width:70px; font-size:12px}
+.key.hit{background:var(--hit)} .key.near{background:var(--near); color:var(--ink)}
+.key.miss{background:#3b3340; color:#b0a3ad}
+.key:focus-visible,.btn:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
+.key:disabled{cursor:default; opacity:.55}
+.veil{
+  position:absolute; inset:0; display:none; place-items:center; padding:24px;
+  background:#1b1423ed; text-align:center; z-index:5;
+}
+.veil.on{display:grid}
+.card{max-width:420px}
+.card h2{font-family:Bungee,cursive; font-weight:400; font-size:28px; margin:0 0 12px; color:var(--gold)}
+.answer{font-family:Bungee,cursive; font-size:44px; letter-spacing:.08em; margin:4px 0 7px; text-transform:uppercase}
+.answer.win{color:#a9d093} .answer.lose{color:#ffaf7a}
+.sub{font-size:15px; line-height:1.55; opacity:.9; margin:0 0 20px}
+.btn{
+  font-family:Bungee,cursive; font-size:15px; background:var(--pumpkin); color:var(--ink);
+  border:3px solid var(--ink); border-radius:12px; padding:11px 24px; cursor:pointer;
+  box-shadow:0 5px 0 #100c13;
+}
+.btn:hover{transform:translateY(2px); box-shadow:0 3px 0 #100c13}
+.note{max-width:560px; text-align:center; color:#e5c7ae; line-height:1.5}
+@media(max-width:430px){
+  .pumpkin{font-size:48px}.pumpkin.left{left:14px}.pumpkin.right{right:14px}
+  .moon{width:52px;height:52px;left:calc(50% - 26px)}
+  .board,.row{gap:5px}.keys{gap:5px;padding-inline:5px}.krow{gap:3px}
+  .key{height:46px}
+}
+@media(prefers-reduced-motion:reduce){.pumpkin,.leaf,.tile.flip,.row.shake{animation:none}}
+</style>
+</head>
+<body>
+<nav class="topbar"><a class="back" href="../../index.html#section=krispysgames"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
+
+<main class="game" id="game">
+  <div class="autumn-scene" aria-hidden="true">
+    <span class="pumpkin left">🎃</span><span class="moon"></span><span class="pumpkin right">🎃</span>
+    <span class="leaf one">🍁</span><span class="leaf two">🍂</span>
+  </div>
+  <h1 class="title">Words Guesser</h1>
+  <p class="season-copy">Autumn and Halloween theme, new word each day 12AM EST 🍁🎃</p>
+  <div class="status-bar"><span>Streak <b id="stStreak">0</b> 🔥</span></div>
+  <div class="board" id="board" aria-label="Six guesses of five letters"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="keys" id="keys" aria-label="Letter keyboard"></div>
+
+  <div class="veil" id="veilEnd" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="card">
+      <h2 id="endTitle">—</h2>
+      <div class="answer" id="endWord">—</div>
+      <p class="sub" id="endSub">—</p>
+      <button class="btn" id="btnLook" type="button">See board</button>
+    </div>
+  </div>
+</main>
+<p class="note" id="footNote"></p>
+
+<script type="module">
+import { GAMES } from "../../shared/config.js";
+const CFG = GAMES.wordwlw;
+const TRIES = CFG.guesses;
+const DAYS = CFG.dailyWords;
+const DATES = Object.keys(DAYS).sort();
+const FIRST = DATES[0], LAST = DATES[DATES.length - 1];
+const STATS_KEY = "wordsGuesser:autumn2026:stats";
+const PROGRESS_KEY = day => `wordsGuesser:autumn2026:${day}`;
+const $ = id => document.getElementById(id);
+const board = $("board"), keysEl = $("keys"), toast = $("toast"), veilEnd = $("veilEnd");
+const layout = ["qwertyuiop", "asdfghjkl", "*zxcvbnm<"];
+keysEl.innerHTML = layout.map(line => `<div class="krow">${[...line].map(key =>
+  key === "*" ? '<button class="key wide" type="button" data-k="Enter">Enter</button>' :
+  key === "<" ? '<button class="key wide" type="button" data-k="Backspace" aria-label="Delete">⌫</button>' :
+  `<button class="key" type="button" data-k="${key}">${key}</button>`).join("")}</div>`).join("");
+
+const nyDate = new Intl.DateTimeFormat("en-US", {
+  timeZone:"America/New_York", year:"numeric", month:"2-digit", day:"2-digit"
+});
+function dateKey(){
+  const parts = Object.fromEntries(nyDate.formatToParts(new Date()).map(p => [p.type, p.value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+// Maple is playable immediately, even before New York reaches September 28.
+function effectiveDay(){ const day = dateKey(); return day < FIRST ? FIRST : day; }
+function yesterday(day){ return new Date(Date.parse(`${day}T00:00:00Z`) - 86400000).toISOString().slice(0,10); }
+function read(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch{ return fallback; } }
+function write(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); }catch{} }
+const blank = () => ({ guesses:[], draft:"", done:false, won:false });
+let stats = read(STATS_KEY, { streak:0, lastWonDate:null });
+if(!stats || typeof stats !== "object") stats = { streak:0, lastWonDate:null };
+let day = "", answer = "", progress = blank(), state = "playing", timer = null;
+
+function validProgress(value){
+  return value && Array.isArray(value.guesses) &&
+    value.guesses.length <= TRIES && value.guesses.every(g => /^[a-z]{5}$/.test(g)) &&
+    typeof value.draft === "string" && /^[a-z]{0,5}$/.test(value.draft) &&
+    typeof value.done === "boolean" && typeof value.won === "boolean";
+}
+function persist(){ write(PROGRESS_KEY(day), progress); }
+function showStreak(){
+  if(stats.lastWonDate !== day && stats.lastWonDate !== yesterday(day) && stats.streak){
+    stats.streak = 0; write(STATS_KEY, stats);
+  }
+  $("stStreak").textContent = stats.streak || 0;
+}
+function score(guess, target){
+  const result = Array(5).fill("miss"), left = {};
+  for(let i=0;i<5;i++){
+    if(guess[i] === target[i]) result[i] = "hit";
+    else left[target[i]] = (left[target[i]] || 0) + 1;
+  }
+  for(let i=0;i<5;i++){
+    if(result[i] !== "hit" && left[guess[i]] > 0){ result[i] = "near"; left[guess[i]]--; }
+  }
+  return result;
+}
+function paint(animateLast=false){
+  const best = {}, rank = { miss:0, near:1, hit:2 };
+  board.innerHTML = Array.from({length:TRIES}, (_, row) => {
+    const guess = progress.guesses[row] || (row === progress.guesses.length ? progress.draft : "");
+    const result = row < progress.guesses.length ? score(guess, answer) : null;
+    return `<div class="row">${Array.from({length:5}, (_, col) => {
+      const letter = guess[col] || "";
+      if(result && (!best[letter] || rank[result[col]] > rank[best[letter]])) best[letter] = result[col];
+      const classes = ["tile", letter && !result ? "filled" : "", result ? result[col] : "", animateLast && row === progress.guesses.length - 1 ? "flip" : ""].filter(Boolean).join(" ");
+      const delay = animateLast && row === progress.guesses.length - 1 ? ` style="animation-delay:${col * 90}ms"` : "";
+      return `<div class="${classes}"${delay}>${letter}</div>`;
+    }).join("")}</div>`;
+  }).join("");
+  keysEl.querySelectorAll(".key").forEach(key => {
+    key.classList.remove("hit","near","miss");
+    if(best[key.dataset.k]) key.classList.add(best[key.dataset.k]);
+    key.disabled = state !== "playing";
+  });
+}
+function resultOverlay(){
+  $("endTitle").textContent = progress.won ? "Congratulations!" : "The forest wins this one";
+  $("endWord").textContent = answer;
+  $("endWord").className = "answer " + (progress.won ? "win" : "lose");
+  $("endSub").textContent = progress.won
+    ? `Solved in ${progress.guesses.length} of ${TRIES} guesses. Come back tomorrow and keep your streak going!`
+    : "A new word arrives at midnight New York time.";
+  veilEnd.classList.add("on");
+}
+function startDay(){
+  if(timer){ clearTimeout(timer); timer = null; }
+  day = effectiveDay();
+  answer = String(DAYS[day] || "").toLowerCase();
+  veilEnd.classList.remove("on");
+  toast.textContent = "";
+  progress = blank();
+  if(!answer){
+    state = "season-end";
+    $("footNote").hidden = false;
+    $("footNote").textContent = "This season is complete. New words coming soon!";
+    paint();
+    return;
+  }
+  const saved = read(PROGRESS_KEY(day), null);
+  if(validProgress(saved)) progress = saved;
+  // If the last guess was saved just before a reload, finish it once.
+  if(!progress.done && progress.guesses.length && (
+    progress.guesses.at(-1) === answer || progress.guesses.length >= TRIES
+  )) finish(progress.guesses.at(-1) === answer, false);
+  state = progress.done ? "done" : "playing";
+  showStreak();
+  paint();
+  $("footNote").hidden = progress.done;
+  $("footNote").textContent = progress.done ? "" :
+    "Guess the five-letter word in six tries. Green is right; gold is in the word; grey is absent.";
+  if(progress.done) resultOverlay();
+}
+function finish(won, show=true){
+  if(progress.done) return;
+  progress.done = true;
+  progress.won = won;
+  progress.draft = "";
+  persist();
+  if(won){
+    stats.streak = stats.lastWonDate === yesterday(day) ? (Number(stats.streak) || 0) + 1 : 1;
+    stats.lastWonDate = day;
+  }else{
+    stats.streak = 0;
+    stats.lastWonDate = null;
+  }
+  write(STATS_KEY, stats);
+  state = "done";
+  showStreak();
+  paint();
+  $("footNote").textContent = "";
+  $("footNote").hidden = true;
+  if(show) timer = setTimeout(() => { if(day === effectiveDay()) resultOverlay(); }, 900);
+}
+function flash(message){
+  toast.textContent = message;
+  const row = board.children[progress.guesses.length];
+  if(row){ row.classList.remove("shake"); void row.offsetWidth; row.classList.add("shake"); }
+}
+function submit(){
+  if(progress.draft.length < 5) return flash("Not enough letters");
+  const guess = progress.draft;
+  progress.guesses.push(guess);
+  progress.draft = "";
+  persist();
+  toast.textContent = "";
+  if(guess === answer || progress.guesses.length >= TRIES){
+    finish(guess === answer);
+  }else{
+    paint(true);
+  }
+}
+function press(key){
+  if(effectiveDay() !== day){ startDay(); return; }
+  if(state !== "playing") return;
+  if(key === "Enter") return submit();
+  if(key === "Backspace") progress.draft = progress.draft.slice(0,-1);
+  else if(/^[a-z]$/.test(key) && progress.draft.length < 5) progress.draft += key;
+  else return;
+  persist(); paint();
+}
+keysEl.addEventListener("click", event => {
+  const button = event.target.closest(".key");
+  if(button){ press(button.dataset.k); button.blur(); }
+});
+document.addEventListener("keydown", event => {
+  if(event.ctrlKey || event.metaKey || event.altKey || state !== "playing") return;
+  const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+  if(key === "Enter" || key === "Backspace" || /^[a-z]$/.test(key)){
+    event.preventDefault(); press(key);
+  }
+});
+$("btnLook").addEventListener("click", () => veilEnd.classList.remove("on"));
+function refreshDay(){ if(effectiveDay() !== day) startDay(); }
+setInterval(refreshDay, 1000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) refreshDay(); });
+window.addEventListener("focus", refreshDay);
+startDay();
+</script>
+<footer class="site-copyright" style="max-width:1180px;margin:24px auto 12px;padding:14px 20px;border-top:1px solid #6b111b;color:#d9aaa0;font:500 12px/1.5 'Space Grotesk',Arial,sans-serif;letter-spacing:.08em;text-align:center">© 2026 Car0lyke. All rights reserved.</footer>
+</body>
+</html>

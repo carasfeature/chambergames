@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#190f16">
+  <title>Subway Hoopers · Chamber Games</title>
+  <link rel="stylesheet" href="style.css?v=15">
+</head>
+<body>
+  <main>
+    <section class="heading"><h1>Subway <em>Hoopers</em></h1><div class="best"><span>PERSONAL BEST</span><strong id="best">0 <small>m</small></strong><span>ON THIS DEVICE</span></div></section>
+    <section class="game-shell" aria-label="Subway Hoopers game">
+      <canvas id="game" tabindex="0" aria-label="Three-lane subway runner. Move with arrow keys or A and D, jump with Space or W. Esc pauses."></canvas>
+      <div class="hud"><div class="distance"><span>DISTANCE</span><strong id="distance">0000 <small>m</small></strong></div><div id="powers" class="powers" aria-live="off"></div><button id="pause" class="icon-button" aria-label="Pause game" disabled>Ⅱ</button></div>
+      <div id="toast" class="toast" role="status"></div>
+      <div id="overlay" class="overlay">
+        <div class="intro-art"><div class="art-circle"></div><img src="assets/christina-clown.png" alt="Christina in a grey Halloween clown costume with orange hair, a ruffled collar and red pompoms"><span class="character-tag">YOUR RUNNER <b>CHRISTINA</b></span></div>
+        <div class="intro-copy"><p class="eyebrow">NEXT STOP: ABSOLUTE CHAOS</p><h2 id="overlay-title">All dressed up.<br>Run for it.</h2><p id="overlay-description">Halloween on the New York tracks. Get clown Christina past the kangaroos, cactuses and red sand banks.</p><div class="character-picker" role="group" aria-label="Choose your runner"><button type="button" data-character="christina" aria-pressed="true">CHRISTINA</button><button type="button" data-character="amber" aria-pressed="false">AMBER</button></div><div id="result" hidden></div><button class="start-button" id="start">LET’S RUN <span>↗</span></button><p class="quick-help" id="quick-help">← → switch lanes &nbsp; · &nbsp; SPACE jump<br>On mobile: swipe to move or jump.</p></div>
+      </div>
+      <button class="location instructions-button" id="instructions-open" aria-haspopup="dialog">INSTRUCTIONS</button>
+    </section>
+    <section class="leaderboard" aria-labelledby="leaderboard-title"><h2 id="leaderboard-title">LEADERBOARD</h2><p id="board-status" role="status">Connecting to leaderboard…</p><div class="board-columns"><ol id="board-left"></ol><ol id="board-right" start="11"></ol></div><div id="board-self" hidden></div><p id="score-status" role="status"></p><button id="board-retry" type="button">RETRY CONNECTION</button></section>
+  </main>
+  <dialog id="instructions" aria-labelledby="instructions-title">
+    <h2 id="instructions-title">INSTRUCTIONS:</h2>
+    <p>Switch lanes to avoid Kangaroos. Jump over cactuses and heaps of red sand (cannot jump over kangaroos).</p>
+    <p>←→ - CHANGE LANE<br>SPACE - JUMP<br>ESC - PAUSE</p>
+    <h3>Powers - active 5 seconds:</h3>
+    <p>Vegimite Toast - Slide faster between the lanes<br>Maccas Burger shoes - Jump over everything (including kangaroos)<br>Corona's Jetpack - Fly over obstacles</p>
+    <form method="dialog"><button class="start-button">GOT IT</button></form>
+  </dialog>
+  <script type="module" src="game.js?v=16"></script>
+  <footer class="site-copyright" style="max-width:1180px;margin:24px auto 12px;padding:14px 20px;border-top:1px solid #6b111b;color:#d9aaa0;font:500 12px/1.5 'Space Grotesk',Arial,sans-serif;letter-spacing:.08em;text-align:center">© 2026 Car0lyke. All rights reserved.</footer>
+</body>
+</html>
