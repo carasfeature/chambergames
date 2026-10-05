@@ -83,10 +83,40 @@
 .note{font-size:13px; opacity:.6; margin-top:12px; line-height:1.5}
 @media(prefers-reduced-motion:reduce){.slice.on{animation:none}}
 </style>
+
+<style id="carolyke-halloween">
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@font-face{font-family:MONSTER;src:url('../../fonts/MONSTER.woff2') format('woff2');font-display:swap}
+@font-face{font-family:LONEWARC;src:url('../../fonts/LONEWARC.woff2') format('woff2');font-display:swap}
+body.carolyke-halloween{background:radial-gradient(ellipse at 50% 0,#490a10 0,transparent 55%),#210205}
+.carolyke-halloween>.topbar .back{font-family:'Space Grotesk',Arial,sans-serif;font-weight:700;background:#ff7417;color:#210205;border:1px solid #ff9b42;border-radius:999px;box-shadow:0 4px 14px #0004}
+.carolyke-halloween>.head{color:#fff3df;font-family:'Space Grotesk',Arial,sans-serif;border-bottom:1px solid #6b111b;padding-bottom:20px}
+.carolyke-halloween>.head h1{font:400 clamp(32px,5.4vw,52px)/1.1 MONSTER,Arial,sans-serif;color:#fff3df;letter-spacing:.015em;margin:0 0 10px}
+.carolyke-halloween>.head p{color:#d9aaa0;opacity:1;font-size:14px;line-height:1.6;margin:0}
+.carolyke-halloween>.head .season-label{font:400 12px LONEWARC,Arial,sans-serif;color:#ff9b42;letter-spacing:.18em;margin-bottom:12px}
+.carolyke-halloween>.grid>.tile{background:#160507;border:2px solid #6b111b;border-radius:12px;box-shadow:0 12px 30px #0004;color:#fff3df}
+.carolyke-halloween>.grid>.tile:hover{border-color:#ff7417}
+.carolyke-halloween>.grid>.tile h2{font:400 28px/1.15 MONSTER,Arial,sans-serif}
+.carolyke-halloween>.grid>.tile p{font:500 14px/1.6 'Space Grotesk',Arial,sans-serif;color:#d9aaa0;opacity:1}
+.carolyke-halloween>.grid>.tile .badge{align-self:center;margin-top:auto;padding:10px 22px;background:#ff7417;color:#210205;font:700 14px 'Space Grotesk',Arial,sans-serif}
+.carolyke-halloween>section.board,.carolyke-halloween>.boards>.board{background:#160507;border:2px solid #6b111b;border-radius:12px;box-shadow:0 10px 28px #0004;padding:20px;color:#fff3df;font-family:'Space Grotesk',Arial,sans-serif}
+.carolyke-halloween>section.board h2,.carolyke-halloween>.boards>.board h2{font:400 clamp(22px,3vw,28px)/1.2 MONSTER,Arial,sans-serif;color:#ff9b42;margin:0 0 18px}
+.carolyke-halloween>section.board li,.carolyke-halloween>.boards>.board li{background:#28090d;border:1px solid #400a10;border-radius:6px;color:#fff3df}
+.carolyke-halloween>section.board li.me,.carolyke-halloween>.boards>.board li.me{background:#ff6a1620;box-shadow:inset 0 0 0 1px #ff7417}
+.carolyke-halloween>section.board .rank,.carolyke-halloween>.boards .rank,.carolyke-halloween>section.board .ms,.carolyke-halloween>.boards .wpm{font-family:'Space Grotesk',Arial,sans-serif;font-weight:700;color:#ffad43}
+.carolyke-halloween>section.board .your-rank,.carolyke-halloween>.boards .your-rank{border-color:#6b111b}
+.carolyke-halloween>section.board .your-rank-label,.carolyke-halloween>.boards .your-rank-label{font-family:LONEWARC,Arial,sans-serif;color:#ffad43}
+.carolyke-halloween>section.board .your-rank-row,.carolyke-halloween>.boards .your-rank-row{background:#ff6a161a;box-shadow:inset 0 0 0 1px #ff7417;color:#fff3df}
+.carolyke-halloween>.boards>.board.current{border-color:#ff7417}
+.carolyke-halloween>section.board .note,.carolyke-halloween>.note{color:#d9aaa0;opacity:1;font-family:'Space Grotesk',Arial,sans-serif}
+.carolyke-halloween>.site-copyright{display:block;position:static;width:100%;max-width:1000px;margin:0 auto;padding:18px 12px;border-top:1px solid #6b111b;color:#d9aaa0;text-align:center;font:500 12px/1.6 'Space Grotesk',Arial,sans-serif;letter-spacing:.03em}
+@media(max-width:480px){.carolyke-halloween>section.board,.carolyke-halloween>.boards>.board{padding:14px}}
+</style>
 </head>
-<body>
+<body class="carolyke-halloween">
 
 <nav class="topbar"><a class="back" href="index.html" onclick="try{if(document.referrer&&new URL(document.referrer).origin===location.origin){history.back();return false;}}catch(e){}"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
+<header class="head"><p class="season-label">CAR0LYKE'S GAMES</p><h1>Aim Tester</h1><p>Pizzeria · Twenty targets. Make every click count.</p></header>
 
 <div class="wrap" id="wrap">
   <!-- deliberately low-contrast pizzeria so the slices are the only thing that pops -->
@@ -166,6 +196,8 @@
   <div class="your-rank" id="yourRank"></div>
   <p class="note" id="boardNote"></p>
 </section>
+
+<footer class="site-copyright">© 2026 Car0lyke. All rights reserved.</footer>
 
 <script type="module">
 import { watchBoardWithRetry, submitScore, RANGES } from "../../shared/leaderboard.js";
