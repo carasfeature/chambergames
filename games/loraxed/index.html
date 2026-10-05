@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CHAMBER: LORAXED</title>
+  <style>
+@font-face {
+  font-family: "Gruesome";
+  src: url("assets/fonts/Gruesome.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #020202;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+h1,
+#startScreen h1,
+#pauseScreen h1,
+#gameOverScreen h1,
+#winScreen h1 {
+  font-family: "Gruesome", sans-serif;
+  font-weight: normal;
+  
+  color: #C58A27;
+
+}
+
+#game {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#game canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hidden {
+  display: none !important;
+}
+
+
+
+.screen {
+  position: absolute;
+  inset: 0;
+
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  pointer-events: auto;
+
+ 
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(0, 0, 0, 0.25) 0%,
+      rgba(0, 0, 0, 0.62) 55%,
+      rgba(0, 0, 0, 0.96) 100%
+    );
+}
+
+.screen::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 25%,
+      rgba(0, 0, 0, 0.18) 45%,
+      rgba(0, 0, 0, 0.82) 100%
+    );
+
+  z-index: 1;
+}
+
+
+.screen::after {
+  content: "";
+
+  position: absolute;
+  inset: -50%;
+
+  width: 200%;
+  height: 200%;
+
+  pointer-events: none;
+
+  opacity: 0.055;
+
+  z-index: 2;
+
+  background-image:
+    repeating-radial-gradient(
+      circle at 17% 32%,
+      rgba(255,255,255,.45) 0px,
+      rgba(255,255,255,.45) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+
+  background-size: 5px 5px;
+
+  animation: noiseMove 0.18s steps(2) infinite;
+}
+
+@keyframes noiseMove {
+
+  0% {
+    transform: translate(0, 0);
+  }
+
+  20% {
+    transform: translate(-2%, 2%);
+  }
+
+  40% {
+    transform: translate(2%, -1%);
+  }
+
+  60% {
+    transform: translate(-1%, -2%);
+  }
+
+  80% {
+    transform: translate(1%, 2%);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+
+}
+
+
+
+
+.panel {
+  position: relative;
+
+  z-index: 5;
+
+  width: min(900px, 92vw);
+
+  padding: 40px;
+
+  text-align: center;
+
+  /* remove old menu box */
+  background: transparent;
+}
+
+
+.eyebrow {
+  margin-bottom: 22px;
+
+  color: rgba(255, 255, 255, 0.38);
+
+  font-size: 16px;
+  font-weight: 800;
+font-family: "WisterGraffiti", sans-serif;
+  letter-spacing: 11px;
+
+  text-transform: uppercase;
+
+  animation: eyebrowFlicker 5s infinite;
+}
+
+@keyframes eyebrowFlicker {
+
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+
+  93% {
+    opacity: 0.25;
+  }
+
+  94% {
+    opacity: 0.9;
+  }
+
+  95% {
+    opacity: 0.1;
+  }
+
+  96% {
+    opacity: 1;
+  }
+
+}
+
+h1 {
+  position: relative;
+
+  margin: 0 0 34px;
+
+  font-size: clamp(90px, 16vw, 210px);
+
+  font-weight: 900;
+
+  line-height: 0.72;
+
+  letter-spacing: -9px;
+
+  color: #f1f1ed;
+
+  text-shadow:
+    0 0 2px rgba(255,255,255,.25),
+    0 8px 40px rgba(0,0,0,.95);
+
+  animation: titleBreath 4s ease-in-out infinite;
+}
+
+@keyframes titleBreath {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.96;
+  }
+
+  50% {
+    transform: scale(1.008);
+    opacity: 1;
+  }
+
+}
+
+
+#startScreen h1 {
+  animation:
+    titleBreath 4s ease-in-out infinite,
+    titleTwitch 7s infinite;
+    
+}
+
+@keyframes titleTwitch {
+
+  0%,
+  88%,
+  91%,
+  100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+
+  89% {
+    transform: translate(-3px, 1px);
+    filter: blur(0.7px);
+  }
+
+  89.5% {
+    transform: translate(4px, -1px);
+  }
+
+  90% {
+    transform: translate(-1px, 0);
+  }
+
+}
+
+
+.panel p {
+  margin: 0 0 44px;
+font-family: "WisterGraffiti", sans-serif;
+  color: rgba(255,255,255,.72);
+
+  font-size: 14px;
+  font-weight: 600;
+
+  letter-spacing: 7px;
+
+  text-transform: uppercase;
+}
+
+button {
+  position: relative;
+
+  z-index: 101;
+
+  min-width: 190px;
+
+  padding: 16px 30px;
+
+  border: 1px solid rgba(255,255,255,.45);
+
+  background: rgba(0,0,0,.38);
+
+  color: rgba(255,255,255,.92);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 7px;
+
+  cursor: pointer;
+
+  pointer-events: auto;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    letter-spacing 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+button:hover {
+
+  background: rgba(235,235,228,.95);
+
+  color: #080808;
+
+  border-color: #fff;
+
+  letter-spacing: 9px;
+
+  transform: scale(1.025);
+
+  box-shadow:
+    0 0 35px rgba(255,255,255,.09);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+
+button::before,
+button::after {
+  content: "";
+
+  position: absolute;
+
+  top: 50%;
+
+  width: 35px;
+  height: 1px;
+
+  background: rgba(255,255,255,.25);
+
+  transition:
+    width .2s ease,
+    background .2s ease;
+}
+
+button::before {
+  right: calc(100% + 16px);
+}
+
+button::after {
+  left: calc(100% + 16px);
+}
+
+button:hover::before,
+button:hover::after {
+  width: 55px;
+  background: rgba(255,255,255,.65);
+}
+
+
+small {
+  display: block;
+
+  margin-top: 45px;
+
+  color: rgba(255,255,255,.32);
+
+  font-size: 9px;
+
+  font-weight: 600;
+
+  letter-spacing: 3px;
+
+  line-height: 2;
+
+  text-transform: uppercase;
+}
+
+
+#startScreen {
+  animation: menuAppear 1.2s ease both;
+}
+
+@keyframes menuAppear {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+
+}
+
+
+#gameOverScreen {
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(70, 0, 0, 0.20),
+      rgba(10, 0, 0, 0.74) 58%,
+      rgba(0, 0, 0, 0.98)
+    );
+}
+
+#gameOverScreen h1 {
+  color: #d9d3ce;
+
+  text-shadow:
+    0 0 20px rgba(100,0,0,.35),
+    0 8px 50px #000;
+
+  animation: caughtShake 0.14s linear 4;
+}
+
+#gameOverScreen .eyebrow {
+  color: rgba(180, 55, 55, 0.7);
+}
+
+@keyframes caughtShake {
+
+  0% {
+    transform: translate(0);
+  }
+
+  25% {
+    transform: translate(-4px, 1px);
+  }
+
+  50% {
+    transform: translate(3px, -1px);
+  }
+
+  75% {
+    transform: translate(-2px, 0);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+
+}
+
+
+#winScreen {
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(65, 58, 39, 0.18),
+      rgba(0,0,0,.76) 60%,
+      rgba(0,0,0,.98)
+    );
+}
+
+#winScreen h1 {
+  color: #ece9df;
+
+  text-shadow:
+    0 0 35px rgba(220,200,150,.12),
+    0 8px 50px #000;
+}
+
+#winScreen .eyebrow {
+  color: rgba(218, 201, 150, 0.58);
+}
+
+
+#hud {
+  position: absolute;
+
+  z-index: 10;
+
+  left: 50%;
+  top: 22px;
+
+  transform: translateX(-50%);
+
+  text-align: center;
+
+  pointer-events: none;
+}
+
+#timer {
+  font-size: 13px;
+
+  font-weight: 800;
+
+  letter-spacing: 4px;
+
+  color: rgba(255,255,255,.82);
+
+  text-shadow:
+    0 2px 12px #000;
+}
+
+.made-by {
+  margin-top: 22px;
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+}
+
+
+#crosshair {
+  position: absolute;
+
+  z-index: 8;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  color: rgba(255,255,255,.65);
+
+  opacity: .32;
+
+  font-size: 15px;
+
+  pointer-events: none;
+}
+
+
+#lockMessage {
+
+  position: absolute;
+
+  z-index: 15;
+
+  left: 50%;
+  bottom: 70px;
+
+  transform: translateX(-50%);
+
+  padding: 11px 17px;
+
+  border: 1px solid rgba(255,255,255,.12);
+
+  background: rgba(0,0,0,.78);
+
+  color: rgba(255,255,255,.7);
+
+  font-size: 9px;
+
+  letter-spacing: 4px;
+}
+
+#danger {
+
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 7;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 35%,
+      rgba(95, 0, 0, 0.22) 65%,
+      rgba(125, 0, 0, 0.68) 100%
+    );
+
+  transition: opacity .08s linear;
+}
+#sprintBar {
+
+  position: fixed;
+
+  bottom: 35px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: 220px;
+  height: 8px;
+
+  background: rgba(0,0,0,.72);
+
+  border: 1px solid rgba(255,255,255,.48);
+
+  overflow: hidden;
+
+  z-index: 200;
+
+  display: block !important;
+
+  opacity: 1 !important;
+}
+
+#sprintFill {
+
+  width: 100%;
+  height: 100%;
+
+  background: #e8e8e3;
+
+  transform-origin: left center;
+
+  transform: scaleX(1);
+
+  transition:
+    transform .05s linear,
+    background .15s linear;
+}
+
+@media (max-width: 650px) {
+
+  .panel {
+    padding: 20px;
+    
+  }
+
+  h1 {
+    font-size: clamp(80px, 25vw, 130px);
+
+    letter-spacing: -6px;
+  }
+
+  .eyebrow {
+    letter-spacing: 6px;
+    
+  }
+
+  .panel p {
+    font-size: 9px;
+
+    letter-spacing: 4px;
+  }
+
+  small {
+    font-size: 7px;
+
+    letter-spacing: 2px;
+  }
+
+  button {
+    min-width: 155px;
+  }
+
+}
+
+.tutorial-panel {
+  max-width: 680px;
+}
+
+#tutorialScreen h1 {
+  font-size: clamp(55px, 9vw, 115px);
+  letter-spacing: -3px;
+  margin-bottom: 28px;
+}
+
+.tutorial-description {
+  font-size: 11px;
+  line-height: 1.9;
+  letter-spacing: 3px;
+  margin-bottom: 30px;
+}
+
+.tutorial-controls {
+  width: min(390px, 90vw);
+  margin: 0 auto 30px;
+}
+
+.tutorial-controls > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 10px 0;
+
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.tutorial-controls kbd {
+  min-width: 90px;
+
+  padding: 7px 10px;
+
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 3px;
+
+  background: rgba(0,0,0,.4);
+  color: #fff;
+
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+
+.tutorial-controls span {
+  color: rgba(255,255,255,.65);
+
+  font-size: 10px;
+  letter-spacing: 3px;
+}
+
+.tutorial-warning {
+  margin: 0 auto 28px;
+
+  font-size: 9px;
+  line-height: 1.7;
+  letter-spacing: 2px;
+}
+
+.tutorial-warning strong {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #b94b43;
+  letter-spacing: 4px;
+}
+
+.tutorial-warning span {
+  color: rgba(255,255,255,.42);
+}
+
+#tutorialStartBtn {
+  margin-top: 4px;
+}
+.made-by a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+   font-family: "WisterGraffiti", sans-serif;
+  font-size: 17px;
+}
+
+.made-by a:hover {
+  color: #C58A27;
+  text-shadow: 0 0 8px rgba(197, 138, 39, 0.5);
+  font-family: "WisterGraffiti", sans-serif;
+  font-size: 17px;
+}
+#objectiveCard {
+  font-family: "Gruesome", sans-serif !important;
+}
+
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="hud" class="hidden">
+      <div id="timer">00:00.00</div>
+      <div id="sprintBar"><div id="sprintFill"></div></div>
+    </div>
+
+    <div id="crosshair" class="hidden">+</div>
+    <div id="danger"></div>
+<section id="startScreen" class="screen">
+  <div class="panel">
+    <div class="eyebrow">KRISPY'S GAMES PRESENT</div>
+    <h1>CHAMBER: LORAXED</h1>
+    <p>DON'T LET THEM CATCH YOU</p>
+
+    <button id="startBtn">ENTER</button>
+
+    <div class="made-by">
+  MADE BY <a href="https://www.twitch.tv/krispyfryy" target="_blank" rel="noopener noreferrer">KRISPY</a>
+</div>
+  </div>
+</section>
+
+<section id="tutorialScreen" class="screen hidden">
+  <div class="panel tutorial-panel">
+    <div class="eyebrow">BEFORE YOU ENTER</div>
+    <h1>HOW TO SURVIVE</h1>
+
+    <p class="tutorial-description">
+      FIND THE HIDDEN DOOR BEFORE THE LORAX CATCHES YOU<br>
+    </p>
+
+    <div class="tutorial-controls">
+      <div><kbd>WASD</kbd><span>MOVE</span></div>
+      <div><kbd>MOUSE</kbd><span>LOOK</span></div>
+      <div><kbd>SHIFT</kbd><span>SPRINT</span></div>
+      <div><kbd>ESC</kbd><span>PAUSE</span></div>
+    </div>
+
+    <div class="tutorial-warning">
+      <strong>SPRINT WISELY.</strong>
+      <span>
+        IF YOU COMPLETELY DRAIN YOUR STAMINA,<br>
+        YOU MUST WAIT FOR IT TO FULLY RECHARGE
+      </span>
+    </div>
+
+    <button id="tutorialStartBtn">START RUN</button>
+
+    <small>FIND THE DOOR. DON'T GET CAUGHT</small>
+  </div>
+</section>
+
+    <section id="gameOverScreen" class="screen hidden">
+      <div class="panel">
+        <div class="eyebrow">TOO SLOW U PUSSY</div>
+        <h1>CAUGHT.</h1>
+        <p id="finalTime">SURVIVED 00:00.00</p>
+        <button id="retryBtn">RUN AGAIN</button>
+      </div>
+    </section>
+
+    <section id="winScreen" class="screen hidden">
+      <div class="panel">
+        <div class="eyebrow">YOU FOUND IT.</div>
+        <h1>ESCAPED.</h1>
+        <p id="winTime">ESCAPED IN 00:00.00</p>
+        <button id="playAgainBtn">RUN AGAIN</button>
+      </div>
+    </section>
+
+    <div id="lockMessage" class="hidden">CLICK TO KEEP RUNNING</div>
+  </div>
+
+  <audio id="ambienceAudio" src="assets/sounds/gregoryallenbrown-creeping-dark-ambience-189391.mp3" loop preload="auto"></audio>
+  <audio id="monsterAudio" src="assets/sounds/dragon-studio-creepy-monster-growling-472378.mp3" loop preload="auto"></audio>
+  <audio id="breathingAudio" src="assets/sounds/hasin2004-breathing-fast-247449.mp3" loop preload="auto"></audio>
+<audio id="jumpscareAudio"
+       src="assets/sounds/jumpscare.mp3"
+       preload="auto"></audio>
+
+<audio id="doorAudio"
+       src="assets/sounds/door.mp3"
+       preload="auto"></audio>
+
+<audio id="scareAudio"
+       src="assets/sounds/scare.mp3"
+       preload="auto"></audio>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js"
+    }
+  }
+  </script>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
