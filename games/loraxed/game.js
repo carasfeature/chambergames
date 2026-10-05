@@ -1,40 +1,10 @@
+Final after testing
 import * as THREE from "three";
 const game = document.getElementById("game");
 const startScreen = document.getElementById("startScreen");
 const gameOverScreen = document.getElementById("gameOverScreen");
 const winScreen = document.getElementById("winScreen");
 const startBtn = document.getElementById("startBtn");
-
-// delete this once ur done with testing with karol
-const LORAXED_TESTERS = [
-  "krispyfryy", // mine
-  "car0lyke",   // karol
-];
-
-function getPlaytestUser() {
-  try {
-    return JSON.parse(localStorage.getItem("twitchUser") || "null");
-  } catch {
-    return null;
-  }
-}
-
-const playtestUser = getPlaytestUser();
-
-const testerTwitchLogin = String(
-  playtestUser?.login || playtestUser?.twitch_login || ""
-).trim().toLowerCase();
-
-const allowedToPlay =
-  LORAXED_TESTERS.includes(testerTwitchLogin);
-
-if (!allowedToPlay) {
-  startBtn.textContent = playtestUser
-    ? "PRIVATE PLAYTEST"
-    : "LOGIN TO PLAY";
-
-  startBtn.disabled = true;
-}
 
 const loraxedDesktopOnly =
   window.matchMedia("(pointer: coarse)").matches ||
@@ -398,6 +368,7 @@ async function autoSubmitLoraxedScore() {
   }
 }
 
+// ===== END LEADERBOARD =====
 
 const fxLayer = document.createElement("div");
 fxLayer.id = "fxLayer";
