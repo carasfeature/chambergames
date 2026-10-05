@@ -7,8 +7,8 @@ const startBtn = document.getElementById("startBtn");
 
 // delete this once ur done with testing with karol
 const LORAXED_TESTERS = [
-  "693152658", // mine
-  "93026816",  // karol
+  "krispyfryy", // mine
+  "car0lyke",   // karol
 ];
 
 function getPlaytestUser() {
@@ -21,12 +21,12 @@ function getPlaytestUser() {
 
 const playtestUser = getPlaytestUser();
 
-const testerTwitchId = String(
-  playtestUser?.id || playtestUser?.twitch_id || ""
-);
+const testerTwitchLogin = String(
+  playtestUser?.login || playtestUser?.twitch_login || ""
+).trim().toLowerCase();
 
 const allowedToPlay =
-  LORAXED_TESTERS.includes(testerTwitchId);
+  LORAXED_TESTERS.includes(testerTwitchLogin);
 
 if (!allowedToPlay) {
   startBtn.textContent = playtestUser
@@ -2528,7 +2528,7 @@ lockedDoorMessageTimeout = setTimeout(
 }
 const exitDoor = new THREE.Group();
 const exitDoorTexture = new THREE.TextureLoader().load(
-"assets/environment/Door.png"
+"assets/environment/door.png"
 );
 exitDoorTexture.colorSpace = THREE.SRGBColorSpace;
 exitDoorTexture.anisotropy = Math.min(
