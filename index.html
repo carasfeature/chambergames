@@ -1454,6 +1454,20 @@ textarea {
 
 </style>
 
+<style>
+/* Scoped exclusively to Car0lyke's panel. */
+#gamesPanelCaroline .carolyke-live{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+#gamesPanelCaroline .carolyke-next{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+#gamesPanelCaroline .game-card{min-width:0;min-height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 16px}
+#gamesPanelCaroline .game-card-title{font-size:clamp(17px,2.1vw,26px);line-height:1.25;overflow-wrap:anywhere}
+#gamesPanelCaroline .game-card-badge{margin-top:20px}
+#gamesPanelCaroline .word-glow{border-color:#875735;box-shadow:0 0 18px rgba(139,75,28,.18),inset 0 0 20px rgba(139,75,28,.08)}
+#gamesPanelCaroline .word-glow:hover{border-color:#a16b44;box-shadow:0 0 22px rgba(139,75,28,.25)}
+#gamesPanelCaroline .carolyke-coming{text-align:center;font-family:'Archivo Black',sans-serif;font-size:clamp(26px,5vw,48px);letter-spacing:.08em;margin:48px 0 24px;color:#d6bb98}
+#gamesPanelCaroline [aria-disabled]{cursor:default!important;opacity:.8}
+#gamesPanelCaroline [aria-disabled]:hover{transform:none;box-shadow:none}
+@media(max-width:650px){#gamesPanelCaroline .carolyke-live,#gamesPanelCaroline .carolyke-next{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 
@@ -1779,7 +1793,7 @@ textarea {
     <div class="section-title">Games</div>
     <div class="games-tab-menu">
       <div class="games-tab-bar">
-        <button class="games-tab-btn active" data-gtab="caroline" onclick="switchGamesTab('caroline')">Carolyke's Games</button>
+        <button class="games-tab-btn active" data-gtab="caroline" onclick="switchGamesTab('caroline')">Car0lyke's Games</button>
         <button class="games-tab-btn" data-gtab="krispy" onclick="switchGamesTab('krispy')">Krispy's Games</button>
       </div>
       <div class="games-tab-panel" id="gamesPanelCaroline">
@@ -1929,35 +1943,22 @@ const TAB_DATA = {
     linkText:'Enter →', section:'social'
   }
 };
-// Caroline's games — order here is the order on screen.
-// `href` = built and playable. No href = greyed-out "Soon" card.
-// `wide: true` = card spans both columns.
-const CAROLINE_GAMES = [
-  { title:'Words Guesser',   desc:'A new autumn and Halloween word every day at midnight New York time.', href:'games/wordwlw/index.html' },
-  { title:'Reactions Test',  desc:'Reflexes, aim and memory. Three quick tests, see how good you are compared to others!', href:'games/reactions/index.html' },
-  { title:'Typing Race',     desc:'Race across Australia. Three levels, ranked by words per minute.', href:'games/typing/index.html' },
-  { title:'Caption This v.2', desc:'A new version is on its way. Christina and Amber pick a winner!', href:null }
-];
-
+// Car0lyke's collections. Shared/Krispy markup and styling stay unchanged.
 function renderCarolineGames(){
   const el = document.getElementById('carolineGamesList');
   if(!el) return;
-  if(!CAROLINE_GAMES.length){
-    el.className = '';
-    el.innerHTML = '<div class="games-empty">No games added yet — check back soon.</div>';
-    return;
-  }
-  el.className = 'games-list';
-  el.innerHTML = CAROLINE_GAMES.map(g => {
-    const body = `
-      <div class="game-card-title">${escapeHtml(g.title)}</div>
-      <div class="game-card-desc">${escapeHtml(g.desc || '')}</div>
-      <div class="game-card-badge">${g.href ? 'Play →' : 'Coming soon'}</div>`;
-    const wide = g.wide ? ' wide' : '';
-    return g.href
-      ? `<a class="game-card${wide}" href="${escapeHtml(g.href)}">${body}</a>`
-      : `<div class="game-card soon${wide}">${body}</div>`;
-  }).join('');
+  el.className = 'carolyke-collections';
+  el.innerHTML = `
+    <div class="carolyke-live">
+      <a class="game-card" href="games/reactions/index.html"><div class="game-card-title">Reaction Tests</div><span class="game-card-badge">PLAY</span></a>
+      <a class="game-card word-glow" href="games/wordwlw/index.html"><div class="game-card-title">Words Guesser</div><span class="game-card-badge">PLAY</span></a>
+      <a class="game-card" href="games/typing/index.html"><div class="game-card-title">Typing Race</div><span class="game-card-badge">PLAY</span></a>
+    </div>
+    <h2 class="carolyke-coming">COMING SOON</h2>
+    <div class="carolyke-next">
+      <div class="game-card" aria-disabled="true"><div class="game-card-title">Subway Hoopers</div><span class="game-card-badge">COMING SOON</span></div>
+      <div class="game-card" aria-disabled="true"><div class="game-card-title">Scary Game</div><div class="game-card-desc">Under The Bed</div><span class="game-card-badge">COMING SOON</span></div>
+    </div>`;
 }
 
 function switchGamesTab(key){
