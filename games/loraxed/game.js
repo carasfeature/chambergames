@@ -1,4 +1,3 @@
-Final after testing
 import * as THREE from "three";
 const game = document.getElementById("game");
 const startScreen = document.getElementById("startScreen");
