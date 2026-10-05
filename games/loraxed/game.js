@@ -2263,7 +2263,6 @@ lockerUI.innerHTML = `
 <div class="locker-slat s2"></div>
 <div class="locker-slat s3"></div>
 <div class="locker-slat s4"></div>
-<div id="lockerUses" class="locker-uses">LOCKERS 3 / 3</div>
 <div class="locker-exit">E — EXIT LOCKER</div>
 </div>
 `;
@@ -2283,11 +2282,8 @@ lockerStyle.textContent = `
 document.head.appendChild(lockerStyle);
 const lockerPrompt = document.getElementById("lockerPrompt");
 const lockerView = document.getElementById("lockerView");
-const lockerUses = document.getElementById("lockerUses");
-const MAX_LOCKER_USES = 3;
 const LOCKER_REENTRY_COOLDOWN = 4;
 const LOCKER_LOOK_LIMIT = 0.16;
-let lockerUsesRemaining = MAX_LOCKER_USES;
 let lockerCooldownUntil = 0;
 let lockerStatusTimeout = null;
 let isHiding = false;
@@ -2328,30 +2324,48 @@ if (!candidates.length) return { col: 1, row: 1 };
 return candidates[Math.floor(Math.random() * candidates.length)];
 }
 function enterLocker(locker) {
-if (!running || paused || isHiding || !locker) return;
-if (lockerUsesRemaining <= 0 || performance.now() < lockerCooldownUntil) return;
-lockerUsesRemaining--;
-if (lockerUses) lockerUses.textContent = `LOCKERS ${lockerUsesRemaining} / ${MAX_LOCKER_USES}`;
-isHiding = true;
-activeLocker = locker;
-hidingStartedAt = performance.now();
-preHidePosition.copy(camera.position);
-preHideYaw = yaw;
-preHidePitch = pitch;
-clearMovementKeys();
-const p = cellToWorld(locker.col, locker.row);
-camera.position.set(p.x, CAMERA_HEIGHT, p.z);
-yaw = locker.group.rotation.y + Math.PI;
-pitch = 0;
-camera.rotation.set(pitch, yaw, 0);
-lockerPrompt.classList.add("hidden");
-lockerView.classList.remove("hidden");
-crosshair.classList.add("hidden");
-antiCampTarget = chooseAntiCampTarget();
-antiCampRetargetTimer = 3.5;
-monsterPath = [];
-monsterPathIndex = 0;
-pathTimer = 0;
+  if (!running || paused || isHiding || !locker) return;
+
+  // Don't allow instant re-entry after leaving.
+  if (performance.now() < lockerCooldownUntil) return;
+
+  isHiding = true;
+  activeLocker = locker;
+  hidingStartedAt = performance.now();
+
+  preHidePosition.copy(camera.position);
+  preHideYaw = yaw;
+  preHidePitch = pitch;
+
+  clearMovementKeys();
+
+  const p = cellToWorld(locker.col, locker.row);
+
+  camera.position.set(
+    p.x,
+    CAMERA_HEIGHT,
+    p.z
+  );
+
+  yaw = locker.group.rotation.y + Math.PI;
+  pitch = 0;
+
+  camera.rotation.set(
+    pitch,
+    yaw,
+    0
+  );
+
+  lockerPrompt.classList.add("hidden");
+  lockerView.classList.remove("hidden");
+  crosshair.classList.add("hidden");
+
+  antiCampTarget = chooseAntiCampTarget();
+  antiCampRetargetTimer = 3.5;
+
+  monsterPath = [];
+  monsterPathIndex = 0;
+  pathTimer = 0;
 }
 function leaveLocker(forced = false) {
 if (!isHiding) return;
@@ -2370,34 +2384,39 @@ monsterPathIndex = 0;
 pathTimer = 0;
 }
 function resetLockerState() {
-isHiding = false;
-lockerUsesRemaining = MAX_LOCKER_USES;
-lockerCooldownUntil = 0;
-clearTimeout(lockerStatusTimeout);
-if (lockerUses) lockerUses.textContent = `LOCKERS ${lockerUsesRemaining} / ${MAX_LOCKER_USES}`;
-activeLocker = null;
-antiCampTarget = null;
-hidingStartedAt = 0;
-lockerPrompt?.classList.add("hidden");
-lockerView?.classList.add("hidden");
+  isHiding = false;
+  lockerCooldownUntil = 0;
+
+  clearTimeout(lockerStatusTimeout);
+
+  activeLocker = null;
+  antiCampTarget = null;
+  hidingStartedAt = 0;
+
+  lockerPrompt?.classList.add("hidden");
+  lockerView?.classList.add("hidden");
 }
 function updateLockerSystem() {
-if (!running || paused) {
-lockerPrompt.classList.add("hidden");
-return;
-}
-if (isHiding) {
-lockerPrompt.classList.add("hidden");
-return;
-}
-const locker = nearestLocker();
-const coolingDown = performance.now() < lockerCooldownUntil;
-if (!locker || coolingDown || lockerUsesRemaining <= 0) {
-lockerPrompt.classList.add("hidden");
-} else {
-lockerPrompt.textContent = `E — HIDE  •  ${lockerUsesRemaining} LEFT`;
-lockerPrompt.classList.remove("hidden");
-}
+  if (!running || paused) {
+    lockerPrompt.classList.add("hidden");
+    return;
+  }
+
+  if (isHiding) {
+    lockerPrompt.classList.add("hidden");
+    return;
+  }
+
+  const locker = nearestLocker();
+  const coolingDown =
+    performance.now() < lockerCooldownUntil;
+
+  if (!locker || coolingDown) {
+    lockerPrompt.classList.add("hidden");
+  } else {
+    lockerPrompt.textContent = "E — HIDE";
+    lockerPrompt.classList.remove("hidden");
+  }
 }
 function calculateMonsterPathTo(targetCell) {
 const monsterCell = worldToCell(monster.position.x, monster.position.z);
