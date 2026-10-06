@@ -36,6 +36,7 @@ footer:before,footer:after{content:'';height:1px;flex:1;background:#6b111b}
 :focus-visible{outline:2px solid #ffad43;outline-offset:5px}
 dialog{color:var(--paper);background:#160507;border:3px solid #ff7417;border-radius:0;width:min(480px,calc(100% - 40px));padding:30px;box-shadow:8px 8px 0 #090203}
 dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-size:36px}dialog p{line-height:1.7;color:#d9aaa0}
+.coin-game{text-align:center;margin:22px 0 8px}.coin-game[hidden]{display:none}.coin{display:grid;place-items:center;width:100px;height:100px;margin:0 auto 12px;border:4px solid #ffad43;border-radius:50%;background:radial-gradient(circle at 35% 25%,#ffbf62,#d97921 65%,#86420f);box-shadow:inset 0 0 0 5px #713308,inset 0 0 0 7px #ffbf62,0 6px 0 #57260c;color:#220205;font:700 50px 'Space Grotesk',sans-serif}.coin.flipping{animation:coin-flip .9s ease-out}@keyframes coin-flip{from{transform:rotateY(0)}to{transform:rotateY(1080deg)}}.coin-button{padding:8px 14px;background:#ff7417;color:#210205;border:1px solid #ffad43;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer}.coin-button:disabled{opacity:.55;cursor:wait}.coin-result{min-height:24px;font-size:13px!important;margin:10px 0 0!important}
 @media(max-width:700px){main{margin:12px;padding:18px 14px 24px}.stage{grid-template-columns:1fr;gap:22px}.wheel-wrap{max-width:430px}.panel{text-align:center;padding:20px 16px}h2{margin:8px 0}footer{line-height:1.6;text-align:center;font-size:9px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 </style></head>
@@ -58,6 +59,7 @@ dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-s
 </main>
 <dialog id="result" aria-labelledby="result-title" aria-describedby="result-description">
 <span class="small">Your fate is decided</span><h2 id="result-title"></h2><p id="result-description"></p>
+<div class="coin-game" id="result-coin" hidden><div class="coin" aria-hidden="true">C</div><button class="coin-button" type="button">flip the coin</button><p class="coin-result" role="status" aria-live="polite"></p></div>
 <form method="dialog"><button class="spin" autofocus>BACK TO THE WHEEL</button></form></dialog>
 <script>
 const challenges = [
@@ -106,7 +108,19 @@ spin.addEventListener('click',async()=>{
  describe(selected);
  document.getElementById('result-title').textContent=challenges[selected].name;
  document.getElementById('result-description').textContent=challenges[selected].description;
+ document.getElementById('result-coin').hidden=challenges[selected].name!=='The Other Pays';
  result.showModal();
+});
+document.querySelectorAll('.coin-game').forEach(widget=>{
+ const coin=widget.querySelector('.coin'),button=widget.querySelector('.coin-button'),status=widget.querySelector('.coin-result');
+ button.addEventListener('click',()=>{
+  if(button.disabled)return;
+  const face=randomIndex(10)<7?'C':'A';
+  button.disabled=true;status.textContent='Flipping…';
+  const reveal=()=>{coin.classList.remove('flipping');coin.textContent=face;status.textContent=face+' — '+(face==='C'?'Christina':'Amber')+' gets the treat!';button.disabled=false;};
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){reveal();return;}
+  coin.classList.add('flipping');setTimeout(reveal,900);
+ });
 });
 result.addEventListener('close',()=>spin.focus());
 </script></body></html>
