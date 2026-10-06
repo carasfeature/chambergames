@@ -3624,7 +3624,9 @@ crosshair.classList.add("hidden");
 applyModeHUD();
 setSpawn();
 timerEl.textContent = "00:00.00";
-renderer.domElement.requestPointerLock();
+if (document.pointerLockElement !== renderer.domElement) {
+  renderer.domElement.requestPointerLock();
+}
 objectiveCard.classList.remove("hidden");
 setTimeout(() => {
 if (paused || endingSequence || !objectiveCard || !objectiveCard.isConnected) return;
@@ -3804,6 +3806,9 @@ hardModeBtn.addEventListener("click", () => chooseDifficulty("hard"));
 tutorialStartBtn.addEventListener("click", () => {
 
   tutorialScreen.classList.add("hidden");
+
+  // Lock the mouse NOW while we're still inside the player's click.
+  renderer.domElement.requestPointerLock();
 
   startGameWithLoading();
 
