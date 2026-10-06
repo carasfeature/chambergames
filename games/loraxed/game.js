@@ -90,6 +90,385 @@ const lockMessage = document.getElementById("lockMessage");
 const dangerEl = document.getElementById("danger");
 const tutorialScreen = document.getElementById("tutorialScreen");
 const tutorialStartBtn = document.getElementById("tutorialStartBtn");
+// ===== REAL GAME LOADING SCREEN =====
+
+const loadingScreen = document.createElement("section");
+loadingScreen.id = "loadingScreen";
+loadingScreen.className = "screen hidden";
+
+loadingScreen.innerHTML = `
+  <div class="loraxed-loading">
+    <h1>ENTERING THE MAZE...</h1>
+
+    <div class="loading-track">
+      <div id="loadingFill"></div>
+    </div>
+
+    <div id="loadingPercent">0%</div>
+
+    <div class="loading-warning">
+      DON'T LET THEM CATCH YOU.
+    </div>
+
+    <button id="loadingRetryBtn" class="hidden" type="button">
+      RETRY
+    </button>
+  </div>
+`;
+
+game.appendChild(loadingScreen);
+
+const loadingStyle = document.createElement("style");
+
+loadingStyle.textContent = `
+#loadingScreen{
+  position:absolute;
+  inset:0;
+  z-index:9998;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#000;
+}
+
+#loadingScreen.hidden{
+  display:none;
+}
+
+.loraxed-loading{
+  width:min(620px,82vw);
+  text-align:center;
+}
+
+.loraxed-loading h1{
+  margin:0 0 38px;
+  color:#c58a27;
+  font-family:"Gruesome",sans-serif;
+  font-size:clamp(42px,7vw,82px);
+  letter-spacing:6px;
+  font-weight:normal;
+}
+
+.loading-track{
+  width:100%;
+  height:5px;
+  background:rgba(197,138,39,.16);
+  border:1px solid rgba(197,138,39,.38);
+  overflow:hidden;
+}
+
+#loadingFill{
+  width:0%;
+  height:100%;
+  background:#c58a27;
+  transition:width .15s ease;
+}
+
+#loadingPercent{
+  margin-top:14px;
+  color:#c58a27;
+  font-family:monospace;
+  font-size:12px;
+  letter-spacing:4px;
+}
+
+.loading-warning{
+  margin-top:34px;
+  color:rgba(255,255,255,.38);
+  font-family:monospace;
+  font-size:10px;
+  letter-spacing:4px;
+}
+
+#loadingRetryBtn{
+  margin:28px auto 0;
+  min-width:150px;
+}
+
+#loadingRetryBtn.hidden{
+  display:none;
+}
+`;
+
+document.head.appendChild(loadingStyle);
+
+const loadingFill =
+  loadingScreen.querySelector("#loadingFill");
+
+const loadingPercent =
+  loadingScreen.querySelector("#loadingPercent");
+
+const loadingRetryBtn =
+  loadingScreen.querySelector("#loadingRetryBtn");
+
+
+const GAME_ASSETS = [
+
+  // MONSTERS
+  "assets/characters/monster.png",
+  "assets/characters/monster2.png",
+
+  // ENVIRONMENT
+  "assets/environment/door.png",
+  "assets/environment/key.png",
+
+  // FLOOR
+  "assets/textures/floor/floor_diffuse.jpg",
+  "assets/textures/floor/floor_normal.png",
+  "assets/textures/floor/floor_roughness.png",
+
+  // CEILING
+  "assets/textures/ceiling/ceiling_diffuse.jpg",
+  "assets/textures/ceiling/ceiling_normal.png",
+  "assets/textures/ceiling/ceiling_roughness.jpg",
+
+  // WALLS
+  "assets/textures/wall/wall_diffuse.png",
+  "assets/textures/wall/wall_normal.jpg",
+  "assets/textures/wall/wall_roughness.jpg",
+
+  // POSTERS
+  "assets/posters/poster1.png",
+  "assets/posters/poster2.png",
+  "assets/posters/poster3.png",
+  "assets/posters/poster4.png",
+  "assets/posters/poster5.png",
+  "assets/posters/poster6.png",
+  "assets/posters/poster7.png",
+  "assets/posters/poster8.png",
+  "assets/posters/poster9.png",
+  "assets/posters/poster10.png",
+  "assets/posters/poster11.png",
+  "assets/posters/poster12.png",
+  "assets/posters/poster13.png",
+  "assets/posters/poster14.png",
+  "assets/posters/poster15.png",
+  "assets/posters/poster16.png",
+
+  // SOUNDS CREATED IN GAME.JS
+  "assets/sounds/jumpscare.mp3",
+  "assets/sounds/door.mp3",
+  "assets/sounds/scare.mp3"
+];
+
+
+let gameAssetsLoaded = false;
+
+
+function updateLoadingProgress(done, total) {
+
+  const percent =
+    Math.round((done / total) * 100);
+
+  loadingFill.style.width =
+    `${percent}%`;
+
+  loadingPercent.textContent =
+    `${percent}%`;
+}
+
+
+function preloadFile(url) {
+
+  return fetch(url, {
+    cache: "force-cache"
+  }).then(response => {
+
+    if (!response.ok) {
+      throw new Error(
+        `${url} returned ${response.status}`
+      );
+    }
+
+    return response.blob();
+  });
+}
+
+
+function waitForAudio(audio) {
+
+  return new Promise((resolve, reject) => {
+
+    if (!audio) {
+      resolve();
+      return;
+    }
+
+    if (audio.readyState >= 3) {
+      resolve();
+      return;
+    }
+
+    const loaded = () => {
+      cleanup();
+      resolve();
+    };
+
+    const failed = () => {
+      cleanup();
+      reject(
+        new Error(
+          `Audio failed: ${audio.currentSrc || audio.src}`
+        )
+      );
+    };
+
+    const cleanup = () => {
+      audio.removeEventListener(
+        "canplay",
+        loaded
+      );
+
+      audio.removeEventListener(
+        "error",
+        failed
+      );
+    };
+
+    audio.addEventListener(
+      "canplay",
+      loaded,
+      { once:true }
+    );
+
+    audio.addEventListener(
+      "error",
+      failed,
+      { once:true }
+    );
+
+    audio.load();
+  });
+}
+
+
+async function loadGameAssets() {
+
+  if (gameAssetsLoaded) {
+    updateLoadingProgress(1, 1);
+    return;
+  }
+
+  loadingRetryBtn.classList.add("hidden");
+
+  loadingPercent.textContent = "0%";
+  loadingFill.style.width = "0%";
+
+  const tasks = [];
+
+
+  // Files referenced directly in game.js
+  for (const url of GAME_ASSETS) {
+
+    tasks.push(() =>
+      preloadFile(url)
+    );
+  }
+
+
+  // Audio elements from index.html
+  document
+    .querySelectorAll("audio")
+    .forEach(audio => {
+
+      tasks.push(() =>
+        waitForAudio(audio)
+      );
+
+    });
+
+
+  // Wait for the browser fonts too
+  if (document.fonts?.ready) {
+
+    tasks.push(() =>
+      document.fonts.ready
+    );
+
+  }
+
+
+  let completed = 0;
+
+  updateLoadingProgress(
+    completed,
+    tasks.length
+  );
+
+
+  await Promise.all(
+
+    tasks.map(async task => {
+
+      await task();
+
+      completed++;
+
+      updateLoadingProgress(
+        completed,
+        tasks.length
+      );
+
+    })
+
+  );
+
+
+  gameAssetsLoaded = true;
+
+  updateLoadingProgress(1, 1);
+}
+
+
+async function startGameWithLoading() {
+
+  loadingScreen.classList.remove("hidden");
+
+  try {
+
+    await loadGameAssets();
+
+    loadingPercent.textContent = "100%";
+    loadingFill.style.width = "100%";
+
+    await new Promise(resolve =>
+      setTimeout(resolve, 250)
+    );
+
+    loadingScreen.classList.add("hidden");
+
+    beginGame();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "[LORAXED] ASSET LOAD FAILED:",
+      error
+    );
+
+    loadingPercent.textContent =
+      "LOAD FAILED";
+
+    loadingRetryBtn.classList.remove(
+      "hidden"
+    );
+
+  }
+}
+
+
+loadingRetryBtn.addEventListener(
+  "click",
+  () => {
+
+    startGameWithLoading();
+
+  }
+);
+
+// ===== END REAL GAME LOADING SCREEN =====
 const pauseScreen = document.createElement("section");
 pauseScreen.id = "pauseScreen";
 pauseScreen.className = "screen hidden";
@@ -3423,8 +3802,11 @@ tutorialScreen.classList.remove("hidden");
 easyModeBtn.addEventListener("click", () => chooseDifficulty("easy"));
 hardModeBtn.addEventListener("click", () => chooseDifficulty("hard"));
 tutorialStartBtn.addEventListener("click", () => {
-tutorialScreen.classList.add("hidden");
-beginGame();
+
+  tutorialScreen.classList.add("hidden");
+
+  startGameWithLoading();
+
 });
 mainMenuBtn.addEventListener("click", returnToMainMenu);
 addEventListener("keydown", event => {
