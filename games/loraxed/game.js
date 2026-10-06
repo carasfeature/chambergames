@@ -807,6 +807,9 @@ const jumpScare = document.getElementById("jumpScare");
 const jumpscareAudio = new Audio("assets/sounds/jumpscare.mp3");
 const doorAudio = new Audio("assets/sounds/door.mp3");
 const scareAudio = new Audio("assets/sounds/scare.mp3");
+const keyAudio = new Audio("assets/sounds/key.mp3");
+keyAudio.preload = "auto";
+keyAudio.volume = 0.8;
 jumpscareAudio.volume = 0.95;
 doorAudio.volume = 0.75;
 scareAudio.volume = 0.55;
@@ -2881,8 +2884,11 @@ const dx = camera.position.x - mazeKey.position.x;
 const dz = camera.position.z - mazeKey.position.z;
 if (Math.hypot(dx, dz) < 0.78) {
 hasKey = true;
+keyAudio.currentTime = 0;
+keyAudio.play().catch(() => {});
 mazeKey.visible = false;
 updateKeyHUD();
+
 if (lockMessage) {
 lockMessage.textContent = "KEY FOUND";
 lockMessage.classList.remove("hidden");
