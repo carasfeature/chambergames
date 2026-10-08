@@ -27,7 +27,8 @@ export class Run {
    const patterns=[['roo','cactus'],['sand','roo'],['cactus','sand'],['roo','roo'],['cactus','cactus']];
    let pattern=Math.floor(this.random()*patterns.length);if(pattern===this.lastPattern)pattern=(pattern+1)%patterns.length;this.lastPattern=pattern;
    const row={id:this.rowId++,at:this.nextRow,safe:this.safeLane};this.rows.push(row);
-   if(row.at>=200&&row.id%4===0)this.pickups.push({type:['toast','burger','beer'][Math.floor(row.id/4)%3],x:row.safe*LANE_WIDTH,at:row.at});
+   const pickupInterval=row.at<1000?5:4;
+   if(row.at>=200&&row.id%pickupInterval===0)this.pickups.push({type:['toast','burger','beer'][Math.floor(row.id/pickupInterval)%3],x:row.safe*LANE_WIDTH,at:row.at});
    const lanes=[-1,0,1].filter(l=>l!==row.safe);
    if(this.random()<.5)lanes.reverse();
    const types=patterns[pattern];

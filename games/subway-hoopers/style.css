@@ -15,3 +15,5 @@ dialog{width:min(940px,calc(100% - 28px));max-height:calc(100dvh - 36px);overflo
 #instructions .power-guide p{font-size:14px}
 #instructions .touch-help{font-size:12px}
 #instructions-start{display:block;width:min(320px,100%);margin:24px auto 0;background:#7d1623;font-size:20px;font-weight:700}
+.copyright{font-size:22px}
+@media(max-width:640px){.copyright{font-size:18px}}

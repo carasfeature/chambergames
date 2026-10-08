@@ -45,6 +45,7 @@ export function decorateTunnel(sections){
    for(const side of [-1,1])blob(g,side*.046,.215,-.23,.022,.018,.015,eyeMat);
    const legs=[];
    for(const side of [-1,1])for(let k=0;k<4;k++){const leg=new T.Group();g.add(leg);const z=-.17+k*.1;limb(leg,[side*.07,.18,z],[side*.28,.29,z+(k-1.5)*.07]);limb(leg,[side*.28,.29,z+(k-1.5)*.07],[side*.46,.035,z+(k-1.5)*.14]);legs.push({leg,k,side});}
+   g.scale.setScalar(.6);
    spiders.push({g,legs,phase:index*1.7+j*2.1,z:-4-j*7});
   }
  });

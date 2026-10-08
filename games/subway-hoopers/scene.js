@@ -2,15 +2,15 @@ import * as T from './vendor/three.module.js';
 import {currentPlayer,submitRun} from './leaderboard.mjs?v=leaderboard-1';
 import {loadCharacter} from './character.js?v=gameplay-fixes-1';
 import {setupPowers} from './powers.js?v=crimson-1';
-import {decorateTunnel} from './tunnel-halloween.js?v=gameplay-fixes-1';
-import {Run,SAND_RINGS} from './physics.mjs?v=powers-after-200';
+import {decorateTunnel} from './tunnel-halloween.js?v=camera-powers-2';
+import {Run,SAND_RINGS} from './physics.mjs?v=camera-powers-2';
 const run=new Run();
 const canvas=document.querySelector('#scene');
 let renderer;
 try{renderer=new T.WebGLRenderer({canvas,antialias:true});}catch(error){document.querySelector('#error').hidden=false;throw error;}
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
 const scene=new T.Scene();scene.background=new T.Color('#26383b');scene.fog=new T.Fog('#26383b',26,112);
-const camera=new T.PerspectiveCamera(64,1,.1,160);camera.position.set(0,4.5,8.5);camera.lookAt(0,1.8,-24);
+const camera=new T.PerspectiveCamera(64,1,.1,160);camera.position.set(0,5.5,8.5);camera.lookAt(0,1,-18);
 scene.add(new T.HemisphereLight('#f3e4c9','#4b403a',2.4));const sun=new T.DirectionalLight('#ffe2b4',2.1);sun.position.set(-4,9,5);scene.add(sun);
 const mat=(color,roughness=.85)=>new T.MeshStandardMaterial({color,roughness});
 const concrete=mat('#686258'),steel=mat('#405957',.55),rail=mat('#a3ada6',.4),wood=mat('#4b4037'),sand=mat('#be623c'),green=mat('#608164'),rust=mat('#9f6950'),orange=mat('#e58a3d');
@@ -183,6 +183,6 @@ renderer.setAnimationLoop(now=>{
  powerVisuals.update(run,dt,character);
  animateTunnel(run.time);
  shadow.position.set(run.x,run.surface+.02,0);shadow.material.opacity=Math.max(.08,.4-(run.y-run.surface)*.055);
- camera.position.y+=(4.5+run.y*.5-camera.position.y)*(1-Math.exp(-8*dt));camera.lookAt(0,1.8+run.y*.6,-24);
+ camera.position.y+=(5.5+run.y*.5-camera.position.y)*(1-Math.exp(-8*dt));camera.lookAt(0,1+run.y*.6,-18);
  document.querySelector('#distance').textContent=String(Math.floor(run.distance)).padStart(4,'0')+' M';renderer.render(scene,camera);
 });
