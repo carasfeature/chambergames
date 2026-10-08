@@ -144,7 +144,7 @@ async function selectCharacter(name){
 const shadow=new T.Mesh(new T.CircleGeometry(.6,24),new T.MeshBasicMaterial({color:'#182321',transparent:true,opacity:.4,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.015;scene.add(shadow);
 
 const panel=document.querySelector('#play-panel'),title=document.querySelector('#play-title'),message=document.querySelector('#play-message'),start=document.querySelector('#start'),pause=document.querySelector('#motion');
-let last=0,runPlayer=null,scoreSubmitted=false;
+let last=0,runPlayer=null,scoreSubmitted=false,flightVisualOffset=0;
 function showPanel(){panel.hidden=run.status==='running';pause.disabled=run.status==='ready'||run.status==='over';pause.textContent=run.status==='paused'?'Resume':'Pause';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
 function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';last=0;showPanel();sync();canvas.focus();}
@@ -177,7 +177,9 @@ renderer.setAnimationLoop(now=>{
   sync();if(run.status==='over'){if(!scoreSubmitted){scoreSubmitted=true;submitRun(runPlayer,Math.floor(run.distance));}showPanel();}
  }
  const blend=1-Math.exp(-12*dt),lean=(run.lane*LANE_WIDTH-run.x)*(run.powers.toast>0?-.22:-.12);
- runner.position.set(run.x,run.y,0);
+ const flightVisualTarget=run.powers.beer>0?1.6*Math.min(1,run.y/6.2):0;
+ flightVisualOffset+=(flightVisualTarget-flightVisualOffset)*(1-Math.exp(-6*dt));
+ runner.position.set(run.x,run.y-flightVisualOffset,0);
  runner.rotation.z+=(lean-runner.rotation.z)*blend;runner.scale.y=1-run.landing*.08;
  character?.update(run,dt);
  powerVisuals.update(run,dt,character);
