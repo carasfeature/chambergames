@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<title>Blessing Or Curse · Christina and Amber</title>
+<title>For Stream · Christina and Amber</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @font-face{font-family:MONSTER;src:url('../fonts/MONSTER.woff2') format('woff2');font-display:swap}
@@ -39,8 +39,11 @@ dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-s
 .coin-game{text-align:center;margin:22px 0 8px}.coin-game[hidden]{display:none}.coin{display:grid;place-items:center;width:100px;height:100px;margin:0 auto 12px;border:4px solid #ffad43;border-radius:50%;background:radial-gradient(circle at 35% 25%,#ffbf62,#d97921 65%,#86420f);box-shadow:inset 0 0 0 5px #713308,inset 0 0 0 7px #ffbf62,0 6px 0 #57260c;color:#220205;font:700 50px 'Space Grotesk',sans-serif}.coin.flipping{animation:coin-flip .9s ease-out}@keyframes coin-flip{from{transform:rotateY(0)}to{transform:rotateY(1080deg)}}.coin-button{padding:8px 14px;background:#ff7417;color:#210205;border:1px solid #ffad43;font:700 12px 'Space Grotesk',sans-serif;cursor:pointer}.coin-button:disabled{opacity:.55;cursor:wait}.coin-result{min-height:24px;font-size:13px!important;margin:10px 0 0!important}
 @media(max-width:700px){main{margin:12px;padding:18px 14px 24px}.stage{grid-template-columns:1fr;gap:22px}.wheel-wrap{max-width:430px}.panel{text-align:center;padding:20px 16px}h2{margin:8px 0}footer{line-height:1.6;text-align:center;font-size:9px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+[hidden]{display:none!important}.stream-menu{max-width:780px;margin:70px auto}.stream-links{display:grid;gap:18px;margin:32px 0 10px}.stream-link{display:block;width:100%;padding:28px 22px;background:#28090d;border:2px solid #6b111b;color:#fff3df;text-decoration:none;text-align:center;font:700 clamp(20px,4vw,28px) 'Space Grotesk',sans-serif;cursor:pointer}.stream-link:hover{background:#401019;border-color:#b54a51}.menu-back{display:inline-block;margin-bottom:18px;background:transparent;border:1px solid #6b111b;color:#d9aaa0;padding:12px 18px;font:600 14px 'Space Grotesk',sans-serif;cursor:pointer}
 </style></head>
-<body><main>
+<body>
+<main id="stream-menu" class="stream-menu"><header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>For Stream</h1></header><nav class="stream-links" aria-label="Stream activities"><button class="stream-link" id="open-wheel">Wheel Of Fortune</button><a class="stream-link" href="../games/words-guesser-after-dark/">NSFW Words Guesser</a></nav></main>
+<main id="wheel-page" hidden><button class="menu-back" id="back-menu">← For Stream menu</button>
 <header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>Blessing <em>Or</em> Curse</h1></header>
 <section class="stage" aria-label="Halloween wheel">
 <div class="wheel-wrap"><div class="pointer" aria-hidden="true"></div>
@@ -62,6 +65,11 @@ dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-s
 <div class="coin-game" id="result-coin" hidden><div class="coin" aria-hidden="true">C</div><button class="coin-button" type="button">flip the coin</button><p class="coin-result" role="status" aria-live="polite"></p></div>
 <form method="dialog"><button class="spin" autofocus>BACK TO THE WHEEL</button></form></dialog>
 <script>
+const menu=document.getElementById('stream-menu'),wheelPage=document.getElementById('wheel-page');
+function route(){const showWheel=location.hash==='#wheel';menu.hidden=showWheel;wheelPage.hidden=!showWheel;}
+document.getElementById('open-wheel').onclick=()=>{location.hash='wheel';};
+document.getElementById('back-menu').onclick=()=>{location.hash='menu';};
+window.addEventListener('hashchange',()=>{route();(location.hash==='#wheel'?document.getElementById('back-menu'):document.getElementById('open-wheel')).focus();});route();
 const challenges = [
  {name:"Mystery Shot",lines:["Mystery","Shot"],description:"A shot made from condiments picked beforehand. One prepares it for the other, keeping the mixture a mystery."},
  {name:"The Other Pays",lines:["The Other","Pays"],description:"Shopping spree on stream! A coin flip decides who gets the treat, and the other pays."},
