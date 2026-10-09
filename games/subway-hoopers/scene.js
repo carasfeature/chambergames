@@ -3,7 +3,7 @@ import {currentPlayer,submitRun} from './leaderboard.mjs?v=leaderboard-1';
 import {loadCharacter} from './character.js?v=gameplay-fixes-1';
 import {setupPowers} from './powers.js?v=crimson-1';
 import {decorateTunnel} from './tunnel-halloween.js?v=vault-final-4';
-import {Run,SAND_RINGS} from './physics.mjs?v=camera-powers-2';
+import {Run,SAND_RINGS} from './physics.mjs?v=powers-10-8-weighted';
 const run=new Run();
 const canvas=document.querySelector('#scene');
 let renderer;
@@ -159,7 +159,7 @@ function showPanel(){panel.hidden=run.status==='running';pause.disabled=run.stat
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
 function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';last=0;showPanel();sync();canvas.focus();}
 function togglePause(){if(run.status==='running'){run.status='paused';showPanel();}else if(run.status==='paused')begin();}
-start.onclick=()=>{if(run.status==='paused')begin();else openInstructions();};pause.onclick=togglePause;
+start.onclick=()=>{if(run.status==='paused'||run.status==='over')begin();else openInstructions();};pause.onclick=togglePause;
 const instructions=document.querySelector('#instructions');
 function openInstructions(){if(run.status==='running'){run.status='paused';showPanel();}const go=document.querySelector('#instructions-start');go.textContent=run.status==='paused'?'RESUME':'START';go.disabled=loadingCharacter||!character;instructions.showModal();}
 document.querySelector('#instructions-open').onclick=openInstructions;
