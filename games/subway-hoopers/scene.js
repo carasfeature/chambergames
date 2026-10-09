@@ -16,7 +16,7 @@ const vaultFill=new T.DirectionalLight('#dfc8a5',1.3);vaultFill.position.set(0,2
 const mat=(color,roughness=.85)=>new T.MeshStandardMaterial({color,roughness});
 const concrete=mat('#686258'),steel=mat('#405957',.55),rail=mat('#a3ada6',.4),wood=mat('#4b4037'),sand=mat('#be623c'),green=mat('#608164'),rust=mat('#9f6950'),orange=mat('#e58a3d');
 const ceilingJoint=mat('#534331',1);
-const ceilingMat=mat('#6A5436',.98);ceilingMat.side=T.DoubleSide;ceilingMat.emissive.set('#6A5436');ceilingMat.emissiveIntensity=.35;
+const ceilingMat=mat('#807566',.98);ceilingMat.side=T.DoubleSide;ceilingMat.emissive.set('#807566');ceilingMat.emissiveIntensity=.35;
 function box(parent,w,h,d,x,y,z,material){const o=new T.Mesh(new T.BoxGeometry(w,h,d),material);o.position.set(x,y,z);parent.add(o);return o;}
 function sphere(parent,r,x,y,z,material,sx=1,sy=1,sz=1){const o=new T.Mesh(new T.SphereGeometry(r,24,18),material);o.position.set(x,y,z);o.scale.set(sx,sy,sz);parent.add(o);return o;}
 function texture(draw,w=1024,h=512){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return tex;}
