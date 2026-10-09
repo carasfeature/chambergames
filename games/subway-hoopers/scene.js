@@ -3,7 +3,7 @@ import {currentPlayer,submitRun} from './leaderboard.mjs?v=leaderboard-1';
 import {loadCharacter} from './character.js?v=gameplay-fixes-1';
 import {setupPowers} from './powers.js?v=crimson-1';
 import {decorateTunnel} from './tunnel-halloween.js?v=vault-final-4';
-import {Run,SAND_RINGS} from './physics.mjs?v=powers-10-8-weighted';
+import {Run,SAND_RINGS} from './physics.mjs?v=intro-100m';
 const run=new Run();
 const canvas=document.querySelector('#scene');
 let renderer;

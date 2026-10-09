@@ -13,12 +13,13 @@ export function sandSurface(x,z){
 }
 export class Run {
  constructor(random=Math.random){this.random=random;this.reset();}
- reset(){this.landingGrace=0;this.powers={toast:0,burger:0,beer:0};this.pickups=[];this.burgerJump=false;this.flightLanding=false;this.status='ready';this.x=0;this.lane=0;this.y=0;this.vy=0;this.distance=0;this.time=0;this.grounded=true;this.surface=0;this.reason='';this.landing=0;this.rows=[];this.obstacles=[];this.nextRow=38;this.safeLane=0;this.rowId=0;this.lastPattern=-1;this.fillTrack();}
- get level(){return Math.floor(this.distance/200);}
+ reset(){this.landingGrace=0;this.powers={toast:0,burger:0,beer:0};this.pickups=[];this.burgerJump=false;this.flightLanding=false;this.status='ready';this.x=0;this.lane=0;this.y=0;this.vy=0;this.distance=0;this.time=0;this.grounded=true;this.surface=0;this.reason='';this.landing=0;this.rows=[];this.obstacles=[];this.nextRow=100;this.safeLane=0;this.rowId=0;this.lastPattern=-1;this.fillTrack();}
+ get progressionDistance(){return Math.max(0,this.distance-100);}
+ get level(){return Math.floor(this.progressionDistance/200);}
  powers={toast:0,burger:0,beer:0};
  pickups=[];
  collect(type){this.powers[type]=5;if(type==='beer'){this.vy=0;this.grounded=false;this.flightLanding=true;}}
- get speed(){return Math.min(28,18.975+this.level*.6)*1.1*(this.distance>=200?1.12:1);}
+ get speed(){return Math.min(28,18.975+this.level*.6)*1.1*(this.progressionDistance>=200?1.12:1);}
  fillTrack(){
   while(this.nextRow<this.distance+230){
    // The guaranteed clear lane only moves one lane between rows.
@@ -27,8 +28,8 @@ export class Run {
    const patterns=[['roo','cactus'],['sand','roo'],['cactus','sand'],['roo','roo'],['cactus','cactus']];
    let pattern=Math.floor(this.random()*patterns.length);if(pattern===this.lastPattern)pattern=(pattern+1)%patterns.length;this.lastPattern=pattern;
    const row={id:this.rowId++,at:this.nextRow,safe:this.safeLane};this.rows.push(row);
-   const pickupInterval=row.at<1000?10:8;
-   if(row.at>=200&&row.id%pickupInterval===0){
+   const pickupInterval=row.at<1100?10:8;
+   if(row.at>=300&&row.id%pickupInterval===0){
     const roll=this.random();
     this.pickups.push({type:roll<.5?'toast':roll<.75?'burger':'beer',x:row.safe*LANE_WIDTH,at:row.at});
    }
@@ -40,7 +41,7 @@ export class Run {
    lanes.slice(0,single?1:2).forEach((lane,i)=>this.obstacles.push({type:types[i],x:lane*LANE_WIDTH,z:-row.at+this.distance,at:row.at,row:row.id}));
    // Rows are generated ahead: apply extra density by row position.
    // Dividing spacing by 1.1 produces 10% more rows per metre.
-   this.nextRow+=Math.max(26,30-this.level*.4)/1.1/(row.at>=200?1.1:1);
+   this.nextRow+=Math.max(26,30-this.level*.4)/1.1/(row.at>=300?1.1:1);
   }
  }
  move(d){if(this.status==='running')this.lane=Math.max(-1,Math.min(1,this.lane+d));}
