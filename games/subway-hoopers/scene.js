@@ -2,7 +2,7 @@ import * as T from './vendor/three.module.js';
 import {currentPlayer,submitRun} from './leaderboard.mjs?v=leaderboard-1';
 import {loadCharacter} from './character.js?v=gameplay-fixes-1';
 import {setupPowers} from './powers.js?v=crimson-1';
-import {decorateTunnel} from './tunnel-halloween.js?v=camera-powers-2';
+import {decorateTunnel} from './tunnel-halloween.js?v=vault-final-4';
 import {Run,SAND_RINGS} from './physics.mjs?v=camera-powers-2';
 const run=new Run();
 const canvas=document.querySelector('#scene');
@@ -12,14 +12,20 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=T
 const scene=new T.Scene();scene.background=new T.Color('#26383b');scene.fog=new T.Fog('#26383b',26,112);
 const camera=new T.PerspectiveCamera(64,1,.1,160);camera.position.set(0,5.5,8.5);camera.lookAt(0,1,-18);
 scene.add(new T.HemisphereLight('#f3e4c9','#4b403a',2.4));const sun=new T.DirectionalLight('#ffe2b4',2.1);sun.position.set(-4,9,5);scene.add(sun);
+const vaultFill=new T.DirectionalLight('#dfc8a5',1.3);vaultFill.position.set(0,2,4);vaultFill.target.position.set(0,10,-20);scene.add(vaultFill,vaultFill.target);
 const mat=(color,roughness=.85)=>new T.MeshStandardMaterial({color,roughness});
 const concrete=mat('#686258'),steel=mat('#405957',.55),rail=mat('#a3ada6',.4),wood=mat('#4b4037'),sand=mat('#be623c'),green=mat('#608164'),rust=mat('#9f6950'),orange=mat('#e58a3d');
+const ceilingJoint=mat('#534331',1);
+const ceilingMat=mat('#6A5436',.98);ceilingMat.side=T.DoubleSide;ceilingMat.emissive.set('#6A5436');ceilingMat.emissiveIntensity=.35;
 function box(parent,w,h,d,x,y,z,material){const o=new T.Mesh(new T.BoxGeometry(w,h,d),material);o.position.set(x,y,z);parent.add(o);return o;}
 function sphere(parent,r,x,y,z,material,sx=1,sy=1,sz=1){const o=new T.Mesh(new T.SphereGeometry(r,24,18),material);o.position.set(x,y,z);o.scale.set(sx,sy,sz);parent.add(o);return o;}
 function texture(draw,w=1024,h=512){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const tex=new T.CanvasTexture(c);tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return tex;}
 const tiles=texture((c,w,h)=>{c.fillStyle='#b6b4a0';c.fillRect(0,0,w,h);for(let y=0;y<h;y+=64)for(let x=-128;x<w;x+=128){const xx=x+(y%128?64:0);c.fillStyle=['#b9baa7','#b0b19f','#c1c0ab'][(Math.floor(x/128)+Math.floor(y/64)+30)%3];c.fillRect(xx+2,y+2,124,60);}c.fillStyle='#315a52';c.fillRect(0,340,w,72);c.fillStyle='#d4ac67';c.fillRect(0,336,w,4);});
 tiles.wrapS=tiles.wrapT=T.RepeatWrapping;tiles.repeat.set(3,1);
 const wallmat=new T.MeshStandardMaterial({map:tiles,roughness:.94});
+const plaster=texture((c,w,h)=>{c.fillStyle='#aa9278';c.fillRect(0,0,w,h);for(let i=0;i<14000;i++){c.fillStyle=i%2?'#5c48300b':'#e0c7a210';c.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*3,1+Math.random()*3);}c.strokeStyle='#65513d38';c.lineWidth=2;for(let y=0;y<h;y+=128){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}});
+plaster.wrapS=plaster.wrapT=T.RepeatWrapping;plaster.repeat.set(3,2);ceilingMat.bumpMap=plaster;ceilingMat.bumpScale=.025;
+function curvedRoof(){const positions=[],uv=[],indices=[],segments=64;for(let z=0;z<2;z++)for(let i=0;i<=segments;i++){const a=i/segments*Math.PI;positions.push(-6.52*Math.cos(a),7+4.4*Math.sin(a),z? -24.04:0);uv.push(i/segments,z);}for(let i=0;i<segments;i++){const a=i,b=i+segments+1;indices.push(a,b,a+1,a+1,b,b+1);}const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();return new T.Mesh(geometry,ceilingMat);}
 function graffiti(index){return texture((c,w,h)=>{c.clearRect(0,0,w,h);c.save();c.translate(w/2,h/2);c.rotate(-.07);c.textAlign='center';c.font='italic 900 116px Arial';c.lineWidth=18;c.strokeStyle='#202e31';c.strokeText(['BOO!','NIGHT SHIFT','NO SLEEP','TRICK / TREAT'][index],0,20);c.fillStyle=index%2?'#b7ce83':'#e9984f';c.fillText(['BOO!','NIGHT SHIFT','NO SLEEP','TRICK / TREAT'][index],0,20);c.font='bold 28px Arial';c.fillStyle='#e7d6aa';c.fillText('CHAMBER • NYC • 31 OCT',0,80);for(let i=0;i<11;i++){c.fillStyle='#e9984f';c.fillRect(-360+i*69,95+(i%3)*8,3,14+(i%4)*10);}c.restore();c.fillStyle='#eadfc5';c.beginPath();c.arc(880,118,47,Math.PI,0);c.lineTo(927,180);c.lineTo(900,162);c.lineTo(880,183);c.lineTo(858,162);c.lineTo(833,180);c.closePath();c.fill();c.fillStyle='#273837';c.fillRect(852,112,12,19);c.fillRect(885,112,12,19);});}
 const graffitiMats=[0,1,2,3].map(i=>new T.MeshBasicMaterial({map:graffiti(i),transparent:true,depthWrite:false,side:T.DoubleSide}));
 const signtex=texture((c,w,h)=>{c.fillStyle='#15272a';c.fillRect(0,0,w,h);c.fillStyle='#e7e2d2';c.font='bold 115px Arial';c.fillText('CANAL ST',55,195);c.font='44px Arial';c.fillText('DOWNTOWN & BROOKLYN',60,280);c.fillStyle='#e18c38';c.beginPath();c.arc(875,190,75,0,Math.PI*2);c.fill();c.fillStyle='#202a2a';c.font='bold 90px Arial';c.fillText('C',842,221);});
@@ -31,13 +37,17 @@ for(let i=0;i<count;i++){
  const g=new T.Group();scene.add(g);sections.push(g);g.position.z=12-i*length;g.scale.x=TRACK_WIDTH_SCALE;
  box(g,14,.25,24,0,-.22,-12,concrete);
  for(const side of [-1,1]){
-  box(g,.35,7.8*1.4,24,side*6.7,3.7*1.4,-12,wallmat);box(g,1,.35,24,side*6.2,.06,-12,concrete);
+  box(g,.35,7.2,24,side*6.7,3.4,-12,wallmat);box(g,1,.35,24,side*6.2,.06,-12,concrete);
   box(g,.12,.12,24,side*6.4,5.8,-12,steel);
-  for(const z of [-1,-13]){box(g,.24,7.4*1.4,.3,side*6.35,3.6*1.4,z,steel);box(g,.55,.12,3.3,side*5.7,6.45*1.4,z,glow);}
+  for(const z of [-1,-13]){box(g,.24,6.8,.3,side*6.35,3.4,z,steel);box(g,.55,.12,3.3,side*5.7,6.85,z,glow);}
   const art=new T.Mesh(new T.PlaneGeometry(9,4.5),graffitiMats[(i+(side>0?1:0))%4]);art.position.set(side*6.49,3.2,-12);art.rotation.y=side>0?-Math.PI/2:Math.PI/2;g.add(art);
  }
- box(g,13.5,.3*1.4,24,0,7.5*1.4,-12,concrete);
- for(const z of [-1,-13])box(g,13,.3*1.4,.38,0,7.1*1.4,z,steel);
+ g.add(curvedRoof());
+ // Thin plaster expansion joints follow the real vault curvature.
+ for(const z of [-6,-12,-18,-24]){
+  const seam=curvedRoof();seam.scale.z=.003;seam.position.z=z;
+  seam.position.y=-.018;seam.material=ceilingJoint;g.add(seam);
+ }
  for(const lane of [-3.5,0,3.5]){
   for(const dx of [-.82,.82])box(g,.12,.13,24,lane+dx,.08,-12,rail);
   for(let z=-.5;z>-24;z-=1.5)box(g,2.2,.1,.25,lane,-.02,z,wood);
@@ -183,7 +193,7 @@ renderer.setAnimationLoop(now=>{
  runner.rotation.z+=(lean-runner.rotation.z)*blend;runner.scale.y=1-run.landing*.08;
  character?.update(run,dt);
  powerVisuals.update(run,dt,character);
- animateTunnel(run.time);
+ animateTunnel(run.time,run.distance);
  shadow.position.set(run.x,run.surface+.02,0);shadow.material.opacity=Math.max(.08,.4-(run.y-run.surface)*.055);
  camera.position.y+=(5.5+run.y*.5-camera.position.y)*(1-Math.exp(-8*dt));camera.lookAt(0,1+run.y*.6,-18);
  document.querySelector('#distance').textContent=String(Math.floor(run.distance)).padStart(4,'0')+' M';renderer.render(scene,camera);
