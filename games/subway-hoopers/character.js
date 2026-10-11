@@ -13,7 +13,9 @@ export async function loadCharacter(parent,name='christina'){
  let active='',wasGrounded=true,wasLane=0,dodge=0,landing=0,previousStatus='ready';
  function play(name){if(name===active)return;const next=actions[name];if(!next)return;next.reset().fadeIn(.12).play();if(actions[active])actions[active].fadeOut(.12);active=name;}
  play('Idle');
- return {model,mixer,feet,update(run,dt){
+ const footfalls=[];
+ return {model,mixer,feet,footfalls,update(run,dt){
+  footfalls.length=0;
   updateShoes(run);
   if(run.status==='paused')return;
   const sideways=run.status==='running'&&run.powers.toast>0&&run.grounded&&!run.powers.beer;
@@ -28,6 +30,16 @@ export async function loadCharacter(parent,name='christina'){
    if(!run.grounded)play('Jump');else if(landing>0){play('Land');landing-=dt;}else if(dodge>0){dodge-=dt;}else play('Run');
   }else play(run.status==='over'?'Crash':'Idle');
   if(actions.Run)actions.Run.setEffectiveTimeScale(Math.min(1.4,Math.max(.9,(run.speed||18.975)/18.975)));
+  const runAction=actions.Run,previousTime=runAction?.time;
   wasGrounded=run.grounded;previousStatus=run.status;mixer.update(dt);
+  if(active==='Run'&&run.status==='running'&&run.grounded&&runAction){
+   const time=runAction.time,duration=runAction.getClip().duration;
+   // Measured sole-contact frames in both character clips: frames 2 and 14 at 30fps.
+   [2/30,14/30].forEach((contact,side)=>{
+    const end=time<previousTime?time+duration:time;
+    const marker=contact<=previousTime?contact+duration:contact;
+    if(marker>previousTime&&marker<=end)footfalls.push(side);
+   });
+  }
  }};
 }

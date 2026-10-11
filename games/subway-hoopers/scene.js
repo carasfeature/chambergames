@@ -1,10 +1,18 @@
 import * as T from './vendor/three.module.js';
+import {createAmbience} from './ambience.js?v=complete-audio-20261011';
 import {currentPlayer,submitRun} from './leaderboard.mjs?v=leaderboard-1';
-import {loadCharacter} from './character.js?v=gameplay-fixes-1';
+import {loadCharacter} from './character.js?v=footsteps-2';
 import {setupPowers} from './powers.js?v=crimson-1';
 import {decorateTunnel} from './tunnel-halloween.js?v=vault-final-4';
 import {Run,SAND_RINGS} from './physics.mjs?v=intro-100m';
 const run=new Run();
+const ambience=createAmbience(document.querySelector('#sound-toggle'));
+// Wrap accepted actions so keyboard, buttons and touch share the same audio cues.
+const originalMove=run.move.bind(run),originalJump=run.jump.bind(run);
+run.move=direction=>{const lane=run.lane;originalMove(direction);if(run.lane!==lane)ambience.movement('lane',Math.sign(direction));};
+run.jump=()=>{const grounded=run.grounded;originalJump();if(grounded&&!run.grounded)ambience.movement(run.burgerJump?'burgerJump':'jump');};
+const originalCollect=run.collect.bind(run);
+run.collect=type=>{originalCollect(type);ambience.pickup(type);};
 const canvas=document.querySelector('#scene');
 let renderer;
 try{renderer=new T.WebGLRenderer({canvas,antialias:true});}catch(error){document.querySelector('#error').hidden=false;throw error;}
@@ -155,9 +163,9 @@ const shadow=new T.Mesh(new T.CircleGeometry(.6,24),new T.MeshBasicMaterial({col
 
 const panel=document.querySelector('#play-panel'),title=document.querySelector('#play-title'),message=document.querySelector('#play-message'),start=document.querySelector('#start'),pause=document.querySelector('#motion');
 let last=0,runPlayer=null,scoreSubmitted=false,flightVisualOffset=0;
-function showPanel(){panel.hidden=run.status==='running';pause.disabled=run.status==='ready'||run.status==='over';pause.textContent=run.status==='paused'?'Resume':'Pause';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
+function showPanel(){ambience.setRunning(run.status==='running');panel.hidden=run.status==='running';pause.disabled=run.status==='ready'||run.status==='over';pause.textContent=run.status==='paused'?'Resume':'Pause';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
-function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';last=0;showPanel();sync();canvas.focus();}
+function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';ambience.start();last=0;showPanel();sync();canvas.focus();}
 function togglePause(){if(run.status==='running'){run.status='paused';showPanel();}else if(run.status==='paused')begin();}
 start.onclick=()=>{if(run.status==='paused'||run.status==='over')begin();else openInstructions();};pause.onclick=togglePause;
 const instructions=document.querySelector('#instructions');
@@ -182,7 +190,12 @@ renderer.setAnimationLoop(now=>{
  const dt=last?Math.min((now-last)/1000,.1):0;last=now;
  if(run.status==='paused'){renderer.render(scene,camera);return;}
  if(run.status==='running'){
-  const distance=run.distance;run.update(dt);const step=run.distance-distance;
+  ambience.update(dt,run.speed);
+  const distance=run.distance,wasGrounded=run.grounded,previousLevel=run.level;run.update(dt);const step=run.distance-distance;
+  if(run.status==='over')ambience.gameOver();
+  else if(run.level>previousLevel)ambience.difficulty();
+  if(!wasGrounded&&run.grounded&&run.status==='running')ambience.movement('land',0,run.surface>.05);
+  ambience.kangaroos(run);
   for(const g of sections){g.position.z+=step;if(g.position.z>36)g.position.z-=count*length;}
   sync();if(run.status==='over'){if(!scoreSubmitted){scoreSubmitted=true;submitRun(runPlayer,Math.floor(run.distance));}showPanel();}
  }
@@ -192,6 +205,8 @@ renderer.setAnimationLoop(now=>{
  runner.position.set(run.x,run.y-flightVisualOffset,0);
  runner.rotation.z+=(lean-runner.rotation.z)*blend;runner.scale.y=1-run.landing*.08;
  character?.update(run,dt);
+ ambience.powers(run);
+ if(character)ambience.footsteps(run,character.footfalls);
  powerVisuals.update(run,dt,character);
  animateTunnel(run.time,run.distance);
  shadow.position.set(run.x,run.surface+.02,0);shadow.material.opacity=Math.max(.08,.4-(run.y-run.surface)*.055);
