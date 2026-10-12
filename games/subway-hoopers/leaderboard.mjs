@@ -50,6 +50,6 @@ export function submitRun(name,score){
 }
 if(typeof document!=='undefined'){
   try{const stored=JSON.parse(localStorage.getItem(pendingKey));if(stored&&typeof stored==='object')pending=stored;}catch{}
-  $('board-retry').addEventListener('click',connect);window.addEventListener('online',connect);
+  window.addEventListener('online',connect);
   window.addEventListener('storage',()=>{render();flush();});render();connect();
 }

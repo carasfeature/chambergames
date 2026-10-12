@@ -1,12 +1,12 @@
 import * as T from './vendor/three.module.js';
-import {createAmbience} from './ambience.js?v=complete-audio-20261011';
-import {currentPlayer,submitRun} from './leaderboard.mjs?v=leaderboard-1';
+import {createAmbience} from './ambience.js?v=mp3-volume-20261012';
+import {currentPlayer,submitRun} from './leaderboard.mjs?v=auto-retry-20261012';
 import {loadCharacter} from './character.js?v=footsteps-2';
 import {setupPowers} from './powers.js?v=crimson-1';
 import {decorateTunnel} from './tunnel-halloween.js?v=vault-final-4';
 import {Run,SAND_RINGS} from './physics.mjs?v=intro-100m';
 const run=new Run();
-const ambience=createAmbience(document.querySelector('#sound-toggle'));
+const ambience=createAmbience(document.querySelector('#sound-toggle'),document.querySelector('#sound-volume'));
 // Wrap accepted actions so keyboard, buttons and touch share the same audio cues.
 const originalMove=run.move.bind(run),originalJump=run.jump.bind(run);
 run.move=direction=>{const lane=run.lane;originalMove(direction);if(run.lane!==lane)ambience.movement('lane',Math.sign(direction));};
@@ -161,20 +161,20 @@ async function selectCharacter(name){
 }
 const shadow=new T.Mesh(new T.CircleGeometry(.6,24),new T.MeshBasicMaterial({color:'#182321',transparent:true,opacity:.4,depthWrite:false}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.015;scene.add(shadow);
 
-const panel=document.querySelector('#play-panel'),title=document.querySelector('#play-title'),message=document.querySelector('#play-message'),start=document.querySelector('#start'),pause=document.querySelector('#motion');
+const panel=document.querySelector('#play-panel'),title=document.querySelector('#play-title'),message=document.querySelector('#play-message'),start=document.querySelector('#start');
 let last=0,runPlayer=null,scoreSubmitted=false,flightVisualOffset=0;
-function showPanel(){ambience.setRunning(run.status==='running');panel.hidden=run.status==='running';pause.disabled=run.status==='ready'||run.status==='over';pause.textContent=run.status==='paused'?'Resume':'Pause';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
+function showPanel(){ambience.setRunning(run.status==='running');ambience.setScreen(run.status);panel.hidden=run.status==='running';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
 function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';ambience.start();last=0;showPanel();sync();canvas.focus();}
 function togglePause(){if(run.status==='running'){run.status='paused';showPanel();}else if(run.status==='paused')begin();}
-start.onclick=()=>{if(run.status==='paused'||run.status==='over')begin();else openInstructions();};pause.onclick=togglePause;
+start.onclick=()=>{if(run.status==='paused'||run.status==='over')begin();else openInstructions();};
 const instructions=document.querySelector('#instructions');
-function openInstructions(){if(run.status==='running'){run.status='paused';showPanel();}const go=document.querySelector('#instructions-start');go.textContent=run.status==='paused'?'RESUME':'START';go.disabled=loadingCharacter||!character;instructions.showModal();}
+function openInstructions(){if(run.status==='running'){run.status='paused';showPanel();}const go=document.querySelector('#instructions-start');go.textContent=run.status==='paused'?'RESUME':'START';go.disabled=loadingCharacter||!character;instructions.showModal();ambience.setScreen('instructions');}
 document.querySelector('#instructions-open').onclick=openInstructions;
 document.querySelector('#instructions-start').onclick=()=>{instructions.close();begin();};
 document.querySelector('#instructions-close').onclick=()=>instructions.close();
-document.addEventListener('keydown',e=>{if(instructions.open)return;if(e.target instanceof HTMLButtonElement&&e.code==='Space')return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();});
-document.querySelector('#left').onclick=()=>run.move(-1);document.querySelector('#right').onclick=()=>run.move(1);document.querySelector('#jump').onclick=()=>run.jump();
+instructions.addEventListener('close',()=>ambience.setScreen(run.status));
+document.addEventListener('keydown',e=>{if(instructions.open)return;if(e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();});
 let touch;canvas.addEventListener('pointerdown',e=>{touch={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
 canvas.addEventListener('pointerup',e=>{if(!touch)return;const dx=e.clientX-touch.x,dy=e.clientY-touch.y;touch=null;if(Math.abs(dx)>25&&Math.abs(dx)>Math.abs(dy))run.move(Math.sign(dx));else if(dy< -25||Math.hypot(dx,dy)<12)run.jump();});
 canvas.addEventListener('pointercancel',()=>touch=null);
@@ -190,7 +190,6 @@ renderer.setAnimationLoop(now=>{
  const dt=last?Math.min((now-last)/1000,.1):0;last=now;
  if(run.status==='paused'){renderer.render(scene,camera);return;}
  if(run.status==='running'){
-  ambience.update(dt,run.speed);
   const distance=run.distance,wasGrounded=run.grounded,previousLevel=run.level;run.update(dt);const step=run.distance-distance;
   if(run.status==='over')ambience.gameOver();
   else if(run.level>previousLevel)ambience.difficulty();
