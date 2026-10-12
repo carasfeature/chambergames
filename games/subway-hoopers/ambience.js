@@ -5,7 +5,7 @@ export function createAmbience(button,slider){
  let volume=70,lastVolume=70,screen="ready",unlocked=false;
  const tracks={menu:new Audio(new URL("./audio/menus.mp3",import.meta.url)),game:new Audio(new URL("./audio/game.mp3",import.meta.url))};
  const clickAudio=new Audio(new URL("./audio/buttons.mp3",import.meta.url));
- Object.values(tracks).forEach(a=>{a.loop=true;a.preload="auto";});clickAudio.preload="auto";
+ Object.values(tracks).forEach(a=>{a.loop=true;a.preload="none";a.setAttribute('playsinline','');});clickAudio.preload="auto";
  for(const a of [...Object.values(tracks),clickAudio]){a.hidden=true;document.body.append(a);}
  const rooBeats=new WeakMap();
  let lastRooBeat=-1;
@@ -78,7 +78,7 @@ export function createAmbience(button,slider){
  }
  function reconcile(){if(!ctx)return;const t=ctx.currentTime;bus.gain.cancelScheduledValues(t);bus.gain.setTargetAtTime(wanted&&!muted&&!document.hidden?1:0,t,.12);endingBus.gain.setTargetAtTime(ending&&!muted&&!document.hidden?1:0,t,.008);}
  document.addEventListener('visibilitychange',()=>{reconcile();syncMusic();if(document.hidden)clickAudio.pause();});
- async function unlock(){try{init();unlocked=true;await ctx.resume();reconcile();syncMusic();}catch(error){console.warn('Audio could not start',error);}}
+ async function unlock(){try{init();unlocked=true;const resume=ctx.resume();syncMusic();await resume;reconcile();}catch(error){console.warn('Audio could not start',error);}}
  button.onclick=()=>{setVolume(muted?lastVolume:0);unlock();};
  slider.addEventListener('input',()=>{setVolume(slider.value);unlock();});
  document.addEventListener('pointerdown',()=>unlock(),{once:true});

@@ -1,5 +1,6 @@
 import * as T from './vendor/three.module.js';
-import {createAmbience} from './ambience.js?v=mp3-volume-20261012';
+import {createAmbience} from './ambience.js?v=mobile-20261012';
+import {bindSwipes} from './touch.mjs';
 import {currentPlayer,submitRun} from './leaderboard.mjs?v=auto-retry-20261012';
 import {loadCharacter} from './character.js?v=footsteps-2';
 import {setupPowers} from './powers.js?v=crimson-1';
@@ -15,8 +16,11 @@ const originalCollect=run.collect.bind(run);
 run.collect=type=>{originalCollect(type);ambience.pickup(type);};
 const canvas=document.querySelector('#scene');
 let renderer;
-try{renderer=new T.WebGLRenderer({canvas,antialias:true});}catch(error){document.querySelector('#error').hidden=false;throw error;}
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
+const mobile=matchMedia('(pointer:coarse)').matches;
+canvas.setAttribute('aria-label','Swipe left or right to change lanes; swipe up to jump. Keyboard: arrows, Space and Escape.');
+let renderScale=Math.min(devicePixelRatio,mobile?1.25:2);
+try{renderer=new T.WebGLRenderer({canvas,antialias:!mobile,powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
+renderer.setPixelRatio(renderScale);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
 const scene=new T.Scene();scene.background=new T.Color('#26383b');scene.fog=new T.Fog('#26383b',26,112);
 const camera=new T.PerspectiveCamera(64,1,.1,160);camera.position.set(0,5.5,8.5);camera.lookAt(0,1,-18);
 scene.add(new T.HemisphereLight('#f3e4c9','#4b403a',2.4));const sun=new T.DirectionalLight('#ffe2b4',2.1);sun.position.set(-4,9,5);scene.add(sun);
@@ -163,7 +167,7 @@ const shadow=new T.Mesh(new T.CircleGeometry(.6,24),new T.MeshBasicMaterial({col
 
 const panel=document.querySelector('#play-panel'),title=document.querySelector('#play-title'),message=document.querySelector('#play-message'),start=document.querySelector('#start');
 let last=0,runPlayer=null,scoreSubmitted=false,flightVisualOffset=0;
-function showPanel(){ambience.setRunning(run.status==='running');ambience.setScreen(run.status);panel.hidden=run.status==='running';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
+function showPanel(){ambience.setRunning(run.status==='running');ambience.setScreen(run.status);panel.hidden=run.status==='running';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':mobile?'Swipe left / right to change lanes. Swipe up to jump.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
 function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';ambience.start();last=0;showPanel();sync();canvas.focus();}
 function togglePause(){if(run.status==='running'){run.status='paused';showPanel();}else if(run.status==='paused')begin();}
@@ -175,10 +179,9 @@ document.querySelector('#instructions-start').onclick=()=>{instructions.close();
 document.querySelector('#instructions-close').onclick=()=>instructions.close();
 instructions.addEventListener('close',()=>ambience.setScreen(run.status));
 document.addEventListener('keydown',e=>{if(instructions.open)return;if(e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();});
-let touch;canvas.addEventListener('pointerdown',e=>{touch={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
-canvas.addEventListener('pointerup',e=>{if(!touch)return;const dx=e.clientX-touch.x,dy=e.clientY-touch.y;touch=null;if(Math.abs(dx)>25&&Math.abs(dx)>Math.abs(dy))run.move(Math.sign(dx));else if(dy< -25||Math.hypot(dx,dy)<12)run.jump();});
-canvas.addEventListener('pointercancel',()=>touch=null);
-new ResizeObserver(()=>{const r=canvas.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();}).observe(canvas);
+bindSwipes(canvas,action=>action==='jump'?run.jump():run.move(action==='left'?-1:1),()=>run.status==='running');
+new ResizeObserver(()=>{const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.fov=camera.aspect<1?Math.min(94,64/camera.aspect):64;camera.updateProjectionMatrix();}).observe(canvas);
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(run.status==='running'){run.status='paused';showPanel();}document.querySelector('#error').hidden=false;document.querySelector('#error').textContent='Graphics interrupted. Reload the page to restart the game.';});
 document.addEventListener('visibilitychange',()=>{last=0;if(document.hidden&&run.status==='running'){run.status='paused';showPanel();}});
 const chooser=document.createElement('div');chooser.className='character-choice';chooser.setAttribute('role','group');chooser.setAttribute('aria-label','Choose your runner');
 for(const name of ['christina','amber']){const button=document.createElement('button');button.type='button';button.dataset.character=name;button.textContent=name[0].toUpperCase()+name.slice(1);button.addEventListener('click',()=>selectCharacter(name));chooser.append(button);}
@@ -186,7 +189,17 @@ start.before(chooser);
 const originalShowPanel=showPanel;
 showPanel=function(){originalShowPanel();canvas.parentElement.dataset.status=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+selectedCharacter+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+(selectedCharacter==='amber'?'amber-halloween':'christina-clown')+'.png';portrait.alt=selectedCharacter+' in her Halloween costume';document.querySelector('#runner-name').textContent=selectedCharacter;for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
 showPanel();sync();selectCharacter('amber');
+let lastFrame=0,slowTime=0,samples=0,sampleTime=0;
+const distanceLabel=document.querySelector('#distance');let displayedDistance=-1;
 renderer.setAnimationLoop(now=>{
+ if(document.hidden){last=0;return;}
+ const gap=now-lastFrame;
+ if(gap<(run.status==='running'?1000/60:1000/30)-1)return;
+ lastFrame=now;
+ if(mobile&&run.status==='running'){
+  samples++;sampleTime+=gap;
+  if(sampleTime>=3000){slowTime=sampleTime/samples>23?slowTime+1:0;samples=0;sampleTime=0;if(slowTime>=2&&renderScale>.75){renderScale=Math.max(.75,renderScale-.25);renderer.setPixelRatio(renderScale);slowTime=0;}}
+ }else{samples=0;sampleTime=0;}
  const dt=last?Math.min((now-last)/1000,.1):0;last=now;
  if(run.status==='paused'){renderer.render(scene,camera);return;}
  if(run.status==='running'){
@@ -210,5 +223,5 @@ renderer.setAnimationLoop(now=>{
  animateTunnel(run.time,run.distance);
  shadow.position.set(run.x,run.surface+.02,0);shadow.material.opacity=Math.max(.08,.4-(run.y-run.surface)*.055);
  camera.position.y+=(5.5+run.y*.5-camera.position.y)*(1-Math.exp(-8*dt));camera.lookAt(0,1+run.y*.6,-18);
- document.querySelector('#distance').textContent=String(Math.floor(run.distance)).padStart(4,'0')+' M';renderer.render(scene,camera);
+ const distance=Math.floor(run.distance);if(distance!==displayedDistance){displayedDistance=distance;distanceLabel.textContent=String(distance).padStart(4,'0')+' M';}renderer.render(scene,camera);
 });

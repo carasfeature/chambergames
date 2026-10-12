@@ -25,3 +25,10 @@ dialog{width:min(940px,calc(100% - 28px));max-height:calc(100dvh - 36px);overflo
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:800px){.game-controls{grid-template-columns:1fr;gap:12px}.game-controls #instructions-open,.volume-control{grid-column:1;justify-self:center}#sound-volume{width:160px;max-width:45vw}}
 @media(max-width:640px){.copyright{font-size:18px}}
+/* Phone layouts: safe areas, usable landscape height and swipe-only play. */
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#scene{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#sound-volume{min-height:44px}
+@media(pointer:coarse){.key-guide{display:none}.touch-help{font-size:15px!important}.viewport{overscroll-behavior:contain}}
+@media(max-width:640px){h1{font-size:34px;margin:4px 0 14px}.viewport{height:72svh;min-height:340px}.runner-card{grid-template-columns:minmax(70px,30%) minmax(0,1fr);gap:12px}.intro-copy h2{font-size:26px}.character-choice button,#start{font-size:13px}.leaderboard h2{font-size:30px}.power-hud{padding:8px}.copyright{font-size:16px}}
+@media(orientation:landscape) and (max-height:550px){main{padding:8px 12px}.viewport{height:82svh;min-height:240px}#play-panel{padding:12px}.runner-card{grid-template-columns:110px 1fr;gap:18px;width:min(600px,100%)}.intro-art img{height:140px}.intro-art p,.eyebrow{display:none}.intro-copy h2{font-size:26px;margin:0 0 8px}.character-choice{flex-direction:row;margin:8px 0}.intro-copy>p{margin:4px 0;font-size:11px}.overlay{top:8px;left:8px}.overlay span{padding:8px;font-size:14px}}
