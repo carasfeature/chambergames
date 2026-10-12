@@ -779,6 +779,13 @@ small {
   font-family: "Gruesome", sans-serif !important;
 }
 
+#startScreen .menu-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
   </style>
 </head>
 <body>
@@ -796,8 +803,13 @@ small {
     <h1>CHAMBER: LORAXED</h1>
     <p>DON'T LET THEM CATCH YOU</p>
 
-    <button id="startBtn">ENTER</button>
+   <div class="menu-buttons">
+  <button id="startBtn">ENTER</button>
 
+  <button type="button" onclick="window.location.href='/#section=krispysgames'">
+    BACK TO SITE
+  </button>
+</div>
     <div class="made-by">
   MADE BY <a href="https://www.twitch.tv/krispyfryy" target="_blank" rel="noopener noreferrer">KRISPY</a>
 </div>
