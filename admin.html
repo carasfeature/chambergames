@@ -139,22 +139,6 @@ body{
   <p class="msg" id="loginMsg"></p>
 </section>
 
-<!-- ================= GAME RELEASE ================= -->
-<section class="panel" id="releasePanel" hidden>
-  <h2>Next games release</h2>
-  <p class="step">Set the homepage countdown, including the release hour and minute.</p>
-  <form id="releaseForm">
-    <label class="field">Release date and time <input id="releaseAt" type="datetime-local" step="60" required></label>
-    <p class="step" id="releaseTimezone"></p>
-    <div class="row" style="margin-top:16px">
-      <button class="btn" type="submit" id="releaseSave" disabled>Save countdown</button>
-      <button class="btn ghost" type="button" id="releaseClear" disabled>Set to TBA</button>
-    </div>
-  </form>
-  <p class="step" id="releaseCurrent">Loading release settings…</p>
-  <p class="msg" id="releaseMsg" role="status"></p>
-</section>
-
 <!-- ================= CAPTION THIS ================= -->
 <section class="panel" id="capPanel" hidden>
   <div class="row spread">
@@ -210,59 +194,10 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 let round = { phase:"idle" }, entries = [], unwatch = null, closing = false, busy = false;
-let releaseDb, releaseRef, releaseApi, releaseLoaded = false, releaseBusy = false, releaseDirty = false;
-const localZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-$("releaseTimezone").textContent = `Time zone: ${localZone}. Everyone sees a countdown to the same moment.`;
-$("releaseAt").addEventListener("input", () => { releaseDirty = true; });
-function releaseButtons(){
-  $("releaseSave").disabled = $("releaseClear").disabled = !releaseLoaded || releaseBusy;
-}
-async function initRelease(){
-  const [{getApp}, api] = await Promise.all([
-    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
-    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js")
-  ]);
-  releaseApi = api;
-  releaseDb = api.getDatabase(getApp("caption"));
-  releaseRef = api.ref(releaseDb, "tournament/gameRelease");
-  api.onValue(releaseRef, snapshot => {
-    releaseLoaded = true; releaseButtons();
-    const at = snapshot.val()?.at;
-    const valid = typeof at === "number" && Number.isFinite(at) && !isNaN(new Date(at).getTime());
-    $("releaseCurrent").textContent = valid ? `Current release: ${new Date(at).toLocaleString([], {dateStyle:"full",timeStyle:"short"})} (${localZone})` : "Current release: TBA";
-    if(!releaseDirty){
-      const date = valid ? new Date(at) : null;
-      const pad = n => String(n).padStart(2,"0");
-      $("releaseAt").value = date ? `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}` : "";
-    }
-  }, error => {
-    releaseLoaded = false; releaseButtons();
-    $("releaseMsg").className = "msg bad"; $("releaseMsg").textContent = "Couldn't load release settings: " + error.message;
-  });
-}
-async function saveRelease(clear = false){
-  if(!releaseLoaded || releaseBusy) return;
-  const date = new Date($("releaseAt").value);
-  if(!clear && !Number.isFinite(date.getTime())) return;
-  releaseBusy = true; releaseButtons();
-  $("releaseMsg").className = "msg"; $("releaseMsg").textContent = "Saving…";
-  try{
-    await releaseApi.set(releaseRef, clear ? null : {at:date.getTime(), timeZone:localZone});
-    releaseDirty = false;
-    if(clear) $("releaseAt").value = "";
-    $("releaseMsg").className = "msg ok";
-    $("releaseMsg").textContent = clear ? "Saved. The homepage shows TBA." : "Saved. The homepage countdown updates automatically.";
-  }catch(error){
-    $("releaseMsg").className = "msg bad"; $("releaseMsg").textContent = "Couldn't save: " + error.message;
-  }finally{releaseBusy = false; releaseButtons();}
-}
-$("releaseForm").addEventListener("submit", event => { event.preventDefault(); saveRelease(); });
-$("releaseClear").onclick = () => saveRelease(true);
 
 /* ================= LOGIN ================= */
 function showLoggedIn(user){
   $("loginPanel").hidden = !!user;
-  $("releasePanel").hidden = !user;
   $("capPanel").hidden = !user;
   $("linksSec").hidden = !user;
   $("who").innerHTML = user
@@ -432,7 +367,6 @@ onClockChange(() => runClock());
   for (;;) {
     try{
       await initCaption(FIREBASE);
-      await initRelease();
       await onAdmin(user => showLoggedIn(user));
       watchRound(r => {
         if (r.roundId !== round.roundId){
