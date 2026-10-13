@@ -2,8 +2,11 @@ export const LANE_WIDTH=3.85, SAND_HEIGHT=3.675*.9, SAND_HALF_WIDTH=1.875;
 // Stretch the jump by 5% without increasing its peak height.
 export const JUMP_SPEED=14.6/1.05, GRAVITY=28/(1.05*1.05), MAX_FEET_HEIGHT=6.95*1.4-2.5;
 export const SAND_RINGS=[[0,1,8.8],[.03,.98,8.55],[.23,.93,8.1],[.66,.83,7.3],[.93,.71,6.65],[1,.58,6.3]].map(([y,x,z])=>[y*SAND_HEIGHT,x*SAND_HALF_WIDTH,z]);
+// Keep the approach (+Z) unchanged; compress the exit slope from 2.5m to .35m.
+// Shared by the visible mesh and collision surface so there is no invisible tail.
+export const sandDepth = (radius,z) => z < 0 ? 6.3 + (radius - 6.3) * .14 : radius;
 export function sandSurface(x,z){
- const inside=([h,rx,rz])=>Math.pow(Math.abs(x)/rx,2/.55)+Math.pow(Math.abs(z)/rz,2/.55)<=1;
+ const inside=([h,rx,rz])=>Math.pow(Math.abs(x)/rx,2/.55)+Math.pow(Math.abs(z)/sandDepth(rz,z),2/.55)<=1;
  if(!inside(SAND_RINGS[0]))return null;
  if(inside(SAND_RINGS.at(-1)))return SAND_HEIGHT;
  for(let i=1;i<SAND_RINGS.length;i++)if(!inside(SAND_RINGS[i])){

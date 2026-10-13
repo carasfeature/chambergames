@@ -5,7 +5,7 @@ import {currentPlayer,submitRun} from './leaderboard.mjs?v=auto-retry-20261012';
 import {loadCharacter} from './character.js?v=footsteps-2';
 import {setupPowers} from './powers.js?v=crimson-1';
 import {decorateTunnel} from './tunnel-halloween.js?v=vault-final-4';
-import {Run,SAND_RINGS} from './physics.mjs?v=intro-100m';
+import {Run,SAND_RINGS,sandDepth} from './physics.mjs?v=sand-back-20261013';
 const run=new Run();
 const ambience=createAmbience(document.querySelector('#sound-toggle'),document.querySelector('#sound-volume'));
 // Wrap accepted actions so keyboard, buttons and touch share the same audio cues.
@@ -102,7 +102,7 @@ function sandBank(parent){
  rings.forEach(([height,rx,rz],row)=>{for(let i=0;i<=segments;i++){
   const a=i/segments*Math.PI*2,co=Math.cos(a),si=Math.sin(a);
   const ripple=0;
-  positions.push(Math.sign(co)*Math.pow(Math.abs(co),.55)*Math.min(SAND_HALF_WIDTH,rx+ripple),height,Math.sign(si)*Math.pow(Math.abs(si),.55)*(rz+ripple));uvs.push(i/segments*4,height/3);
+  positions.push(Math.sign(co)*Math.pow(Math.abs(co),.55)*Math.min(SAND_HALF_WIDTH,rx+ripple),height,Math.sign(si)*Math.pow(Math.abs(si),.55)*sandDepth(rz+ripple,si));uvs.push(i/segments*4,height/3);
  }});
  for(let row=0;row<rings.length-1;row++)for(let i=0;i<segments;i++){const a=row*(segments+1)+i,b=a+segments+1;indices.push(a,b,a+1,a+1,b,b+1);}
  const top=positions.length/3;positions.push(0,SAND_HEIGHT,0);uvs.push(.5,.5);
