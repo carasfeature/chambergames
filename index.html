@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="/images/favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chamber Games — Halloween TEST</title>
+<title>Chamber Games</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -1632,7 +1632,7 @@ textarea {
 
 <div class="hero-center">
     <div class="eyebrow-line">ChristinaAndAmber</div>
-    <h1 class="title" data-text="CHAMBER TOURNAMENTS">CHAMBER TOURNAMENTS</h1>
+    <h1 class="title" data-text="CHAMBER GAMES">CHAMBER GAMES</h1>
     <div class="game-wordmark"><span>IT'S NOT</span> A PHASE</div>
   </div>
 </div>
@@ -1654,10 +1654,9 @@ textarea {
         <div class="countdown-label">Community</div>
         <div class="discord-link-title">Join Chamber Discord</div>
       </a>
-      <div class="countdown-panel" id="nextStreamPanel" style="display:none;">
-        <div class="countdown-label">Next Stream</div>
-        <div class="countdown-stream-name" id="nextStreamName"></div>
-        <div class="countdown-value" id="nextStreamCountdown">—</div>
+      <div class="countdown-panel" id="gameReleasePanel">
+        <div class="countdown-label">NEXT GAMES RELEASES IN</div>
+        <div class="countdown-value" id="gameReleaseCountdown" role="timer">Loading…</div>
       </div>
       <a class="words-guesser-panel" href="games/wordwlw/index.html">
         <div class="countdown-label">Word Guesser</div>
@@ -2178,7 +2177,7 @@ async function init(){
   });
 
   startListening();
-  startNextStreamCountdown();
+  startGameReleaseCountdown();
 
   const hash = window.location.hash;
   if(hash.includes('access_token')){
@@ -2274,6 +2273,7 @@ function saveNametag(){
 function startListening(){
   fbDb.ref('tournament').on('value', (snapshot) => {
     tournamentData = snapshot.val();
+    tickGameReleaseCountdown();
     if(!tournamentData) return;
     updateLiveBanner();
     updateRoundLiveIndicators();
@@ -2282,6 +2282,7 @@ function startListening(){
     if(currentUser) render();
   }, (error) => {
     console.error('Firebase read error:', error);
+    document.getElementById('gameReleaseCountdown').textContent = 'Unavailable';
   });
 }
 
@@ -2334,47 +2335,32 @@ function updateTournamentSelectCards(){
   }
 }
 
-let nextStreamTimer = null;
-function startNextStreamCountdown(){
-  if(nextStreamTimer) clearInterval(nextStreamTimer);
-  tickNextStreamCountdown();
-  nextStreamTimer = setInterval(tickNextStreamCountdown, 1000);
+let gameReleaseTimer = null, releaseClockOffset = 0;
+function startGameReleaseCountdown(){
+  if(gameReleaseTimer) clearInterval(gameReleaseTimer);
+  fbDb.ref('.info/serverTimeOffset').on('value', snapshot => {
+    releaseClockOffset = Number(snapshot.val()) || 0;
+    tickGameReleaseCountdown();
+  });
+  tickGameReleaseCountdown();
+  gameReleaseTimer = setInterval(tickGameReleaseCountdown, 1000);
 }
-function tickNextStreamCountdown(){
-  const panel = document.getElementById('nextStreamPanel');
-  const valEl = document.getElementById('nextStreamCountdown');
-  const nameEl = document.getElementById('nextStreamName');
-  if(!panel || !valEl || !tournamentData){ if(panel) panel.style.display = 'none'; return; }
-
-  const name = tournamentData.nextStreamName || '';
-  const isTBA = !!tournamentData.nextStreamTBA;
-  const hasDate = !!tournamentData.nextStreamAt;
-
-  if(!name && !isTBA && !hasDate){
-    panel.style.display = 'none';
-    return;
-  }
-  panel.style.display = 'block';
-  if(nameEl) nameEl.textContent = name;
-
-  if(isTBA){
+function tickGameReleaseCountdown(){
+  const valEl = document.getElementById('gameReleaseCountdown');
+  if(!valEl) return;
+  const target = tournamentData?.gameRelease?.at;
+  if(typeof target !== 'number' || !Number.isFinite(target)){
     valEl.textContent = 'TBA';
     return;
   }
-  if(!hasDate){
-    valEl.textContent = '—';
-    return;
-  }
-  const target = new Date(tournamentData.nextStreamAt).getTime();
-  const diff = target - Date.now();
-  if(diff <= 0){
-    valEl.innerHTML = '<span class="live-dot" style="width:10px;height:10px;background:var(--red);"></span>Live now';
-    return;
-  }
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  valEl.textContent = `${d}d ${h}h ${m}m`;
+  const diff = target - (Date.now() + releaseClockOffset);
+  if(diff <= 0){ valEl.textContent = 'OUT NOW'; return; }
+  const seconds = Math.ceil(diff / 1000);
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor(seconds % 86400 / 3600);
+  const m = Math.floor(seconds % 3600 / 60);
+  const s = seconds % 60;
+  valEl.textContent = `${d}d ${h}h ${m}m ${s}s`;
 }
 
 function updateRoundLiveIndicators(){
