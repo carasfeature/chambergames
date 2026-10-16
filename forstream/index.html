@@ -108,7 +108,7 @@ function randomIndex(n){
 }
 spin.addEventListener('click',async()=>{
  if(busy)return;busy=true;spin.disabled=true;spin.textContent='SPINNING…';rotor.classList.add('spinning');
- const selected=challenges.findIndex(item=>item.name==="Dancing Challenge"),target=(360-selected*step)%360;
+ const selected=challenges.findIndex(item=>item.name==="Flour Ghost"),target=(360-selected*step)%360;
  const delta=(target-rotation%360+360)%360,finish=rotation+360*6+delta;
  const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?150:5500;
  const animation=rotor.animate([{transform:'rotate('+rotation+'deg)'},{transform:'rotate('+finish+'deg)'}],{duration,easing:'cubic-bezier(.12,.65,.12,1)',fill:'forwards'});
