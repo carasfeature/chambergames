@@ -78,7 +78,7 @@ const challenges = [
  {name:"Slide into DMs",lines:["Slide into","DMs"],description:"Pick a celebrity and DM them a funny line."},
  {name:"Social Sabotage",lines:["Social","Sabotage"],description:"Both post from each other's social media account without the other knowing what it is. One post each."},
  {name:"Hairdresser Extravaganza",lines:["Hairdresser","Extravaganza"],description:"Chat picks colors combo that Christina And Amber have to dye their hair using 1-Day Coloring Hair Spray. Both have to do it for upcoming Stream/Just Chatting Stream."},
- {name:"Pie in The Face",lines:["Pie in","The Face"],description:"A whipped cream pie in the face. Both have to do it."},
+ {name:"Eyebrow Slit",lines:["Eyebrow","Slit"],description:"Christina has to get the eyebrow slit. Amber has to give her the eyebrow slit"},
  {name:"Dancing Challenge",lines:["Dancing","Challenge"],description:"Both do a TikTok dance, separately or as a duo. It has to be posted."},
  {name:"Tattoo or Piercing?",lines:["Tattoo or","Piercing?"],description:"Christina and Amber decide between themselves who gets a tattoo, piercing or tooth gem of their choice. Only one needs to do it."},
  {name:"Chat Picks Date Night",lines:["Chat Picks","Date Night"],description:"Chat gets a few options for a date night stream. Their pick!"},
@@ -108,7 +108,7 @@ function randomIndex(n){
 }
 spin.addEventListener('click',async()=>{
  if(busy)return;busy=true;spin.disabled=true;spin.textContent='SPINNING…';rotor.classList.add('spinning');
- const selected=randomIndex(challenges.length),target=(360-selected*step)%360;
+ const selected=challenges.findIndex(item=>item.name==="Dancing Challenge"),target=(360-selected*step)%360;
  const delta=(target-rotation%360+360)%360,finish=rotation+360*6+delta;
  const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?150:5500;
  const animation=rotor.animate([{transform:'rotate('+rotation+'deg)'},{transform:'rotate('+finish+'deg)'}],{duration,easing:'cubic-bezier(.12,.65,.12,1)',fill:'forwards'});
