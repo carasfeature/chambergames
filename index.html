@@ -1463,10 +1463,14 @@ textarea {
 #gamesPanelCaroline .game-card-badge{margin-top:20px}
 #gamesPanelCaroline .word-glow{border-color:#875735;box-shadow:0 0 18px rgba(139,75,28,.18),inset 0 0 20px rgba(139,75,28,.08)}
 #gamesPanelCaroline .word-glow:hover{border-color:#a16b44;box-shadow:0 0 22px rgba(139,75,28,.25)}
+#gamesPanelCaroline .subway-new{grid-column:2;grid-row:2;border-color:#b32a45!important;box-shadow:0 0 26px 4px rgba(164,20,49,.42),inset 0 0 24px rgba(128,12,35,.18)!important}
+#gamesPanelCaroline .subway-new:hover{border-color:#d1425d!important;box-shadow:0 0 34px 5px rgba(184,25,58,.52),inset 0 0 26px rgba(147,16,43,.22)!important}
+#gamesPanelCaroline .game-new-label{font-family:"LONEWARC",sans-serif;font-size:22px;font-weight:900;letter-spacing:.08em;color:#ffb4c2;text-shadow:0 0 12px rgba(205,32,70,.55);margin-top:4px}
 #gamesPanelCaroline .carolyke-coming{text-align:center;font-family:'Archivo Black',sans-serif;font-size:clamp(26px,5vw,48px);letter-spacing:.08em;margin:48px 0 24px;color:#d6bb98}
 #gamesPanelCaroline [aria-disabled]{cursor:default!important;opacity:.8}
 #gamesPanelCaroline [aria-disabled]:hover{transform:none;box-shadow:none}
 @media(max-width:650px){#gamesPanelCaroline .carolyke-live,#gamesPanelCaroline .carolyke-next{grid-template-columns:1fr}}
+@media(max-width:650px){#gamesPanelCaroline .subway-new{grid-column:auto;grid-row:auto}}
 </style>
 <style>
 /* Creator credit uses a readable, non-seasonal typeface. */
@@ -2034,7 +2038,7 @@ function renderCarolineGames(){
       <a class="game-card" href="games/reactions/index.html"><div class="game-card-title">Reaction Tests</div><span class="game-card-badge">PLAY</span></a>
       <a class="game-card word-glow" href="games/wordwlw/index.html"><div class="game-card-title">Words Guesser</div><span class="game-card-badge">PLAY</span></a>
       <a class="game-card" href="games/typing/index.html"><div class="game-card-title">Typing Race</div><span class="game-card-badge">PLAY</span></a>
-      <a class="game-card" href="games/subway-hoppers/"><div class="game-card-title">Subway Hoppers</div><span class="game-card-badge">PLAY</span></a>
+      <a class="game-card subway-new" href="games/subway-hoppers/"><div class="game-card-title">Subway Hoppers</div><span class="game-new-label">NEW!</span><span class="game-card-badge">PLAY</span></a>
     </div>
     <h2 class="carolyke-coming">COMING SOON</h2>
     <div class="carolyke-next">
