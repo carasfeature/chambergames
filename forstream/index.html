@@ -145,6 +145,7 @@ spin.addEventListener('click',async()=>{
  const duration=matchMedia('(prefers-reduced-motion: reduce)').matches?150:5500;
  await animateWheel(rotation,finish,duration);
  rotation=finish%360;positionWheel(rotation);
+ await new Promise(resolve=>setTimeout(resolve,2000));
  busy=false;rotor.classList.remove('spinning');spin.disabled=false;spin.textContent='SPIN THE WHEEL';
  describe(selected);
  document.getElementById('result-title').textContent=challenges[selected].name;
