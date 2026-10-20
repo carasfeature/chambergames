@@ -1,6 +1,11 @@
 // Keep a full-viewport fallback for phones without native fullscreen.
 export function createMobilePlay({distance,onPause}){
  const root=document.documentElement;
+ const pauseButton=document.createElement('button');
+ pauseButton.type='button';pauseButton.className='run-pause';
+ pauseButton.textContent='Ⅱ';pauseButton.setAttribute('aria-label','Pause game');
+ pauseButton.hidden=true;distance.closest('.viewport').append(pauseButton);
+ pauseButton.addEventListener('click',event=>{event.stopPropagation();onPause();});
  const mobile=()=>matchMedia('(pointer:coarse), (max-width:700px)').matches;
  let active=false,ownsFullscreen=false,generation=0,savedX=0,savedY=0;
  const attributes=['role','tabindex','aria-label'];
@@ -69,5 +74,5 @@ export function createMobilePlay({distance,onPause}){
  window.addEventListener('resize',measure);
  window.visualViewport?.addEventListener('resize',measure);
  window.visualViewport?.addEventListener('scroll',measure);
- return {enter,sync:status=>{if(status!=='running')exit();}};
+ return {enter,sync:status=>{pauseButton.hidden=status!=='running';if(status!=='running')exit();}};
 }

@@ -37,6 +37,7 @@ body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-i
 html.mobile-playing{overflow:hidden!important;overscroll-behavior:none!important}
 html.mobile-playing body{position:fixed!important;top:var(--run-scroll-top,0px)!important;left:0!important;width:100%!important;height:100%!important;overflow:hidden!important;overscroll-behavior:none!important;touch-action:none}
 html.mobile-playing .viewport{position:fixed!important;top:var(--run-top,0px)!important;left:var(--run-left,0px)!important;width:var(--run-width,100vw)!important;height:var(--run-height,100dvh)!important;min-height:0!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;z-index:1000;touch-action:none;overscroll-behavior:none}
+.run-pause{position:absolute;z-index:20;top:max(18px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));width:48px;height:48px;padding:0;border:1px solid var(--line);border-radius:6px;background:#160507ed;color:#fff;font:700 26px/1 system-ui,sans-serif;cursor:pointer;touch-action:manipulation;pointer-events:auto}
 html.mobile-playing #scene{touch-action:none}
 html.mobile-playing .overlay{pointer-events:auto;top:max(18px,env(safe-area-inset-top));left:max(18px,env(safe-area-inset-left))}
 html.mobile-playing #distance{cursor:pointer;touch-action:manipulation;min-width:80px;min-height:44px;text-align:center}

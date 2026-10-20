@@ -1,7 +1,7 @@
 import * as T from './vendor/three.module.js';
 import {createAmbience} from './ambience.js?v=mobile-20261012';
 import {bindSwipes} from './touch.mjs';
-import {createMobilePlay} from './mobile-play.mjs?v=20261020';
+import {createMobilePlay} from './mobile-play.mjs?v=pause-20261020';
 import {currentPlayer,submitRun} from './leaderboard.mjs?v=auto-retry-20261012';
 import {loadCharacter} from './character.js?v=footsteps-2';
 import {setupPowers} from './powers.js?v=crimson-1';
