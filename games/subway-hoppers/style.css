@@ -33,6 +33,13 @@ dialog{width:min(940px,calc(100% - 28px));max-height:calc(100dvh - 36px);overflo
 /* Phone layouts: safe areas, usable landscape height and swipe-only play. */
 body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 #scene{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+/* Active mobile runs cover the visual viewport and cannot scroll the page. */
+html.mobile-playing{overflow:hidden!important;overscroll-behavior:none!important}
+html.mobile-playing body{position:fixed!important;top:var(--run-scroll-top,0px)!important;left:0!important;width:100%!important;height:100%!important;overflow:hidden!important;overscroll-behavior:none!important;touch-action:none}
+html.mobile-playing .viewport{position:fixed!important;top:var(--run-top,0px)!important;left:var(--run-left,0px)!important;width:var(--run-width,100vw)!important;height:var(--run-height,100dvh)!important;min-height:0!important;max-height:none!important;margin:0!important;border:0!important;border-radius:0!important;z-index:1000;touch-action:none;overscroll-behavior:none}
+html.mobile-playing #scene{touch-action:none}
+html.mobile-playing .overlay{pointer-events:auto;top:max(18px,env(safe-area-inset-top));left:max(18px,env(safe-area-inset-left))}
+html.mobile-playing #distance{cursor:pointer;touch-action:manipulation;min-width:80px;min-height:44px;text-align:center}
 #sound-volume{min-height:44px}
 @media(pointer:coarse){.key-guide{display:none}.touch-help{font-size:15px!important}.viewport{overscroll-behavior:contain}}
 @media(max-width:640px){h1{font-size:34px;margin:4px 0 14px}.viewport{height:72svh;min-height:340px}.runner-card{grid-template-columns:minmax(70px,30%) minmax(0,1fr);gap:12px}.intro-copy h2{font-size:26px}.character-choice button,#start{font-size:13px}.leaderboard h2{font-size:30px}.power-hud{padding:8px}.copyright{font-size:16px}}

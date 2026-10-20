@@ -1,6 +1,7 @@
 import * as T from './vendor/three.module.js';
 import {createAmbience} from './ambience.js?v=mobile-20261012';
 import {bindSwipes} from './touch.mjs';
+import {createMobilePlay} from './mobile-play.mjs?v=20261020';
 import {currentPlayer,submitRun} from './leaderboard.mjs?v=auto-retry-20261012';
 import {loadCharacter} from './character.js?v=footsteps-2';
 import {setupPowers} from './powers.js?v=crimson-1';
@@ -17,6 +18,7 @@ run.collect=type=>{originalCollect(type);ambience.pickup(type);};
 const canvas=document.querySelector('#scene');
 let renderer;
 const mobile=matchMedia('(pointer:coarse)').matches;
+const mobilePlay=createMobilePlay({distance:document.querySelector('#distance'),onPause:()=>{if(run.status==='running'){run.status='paused';showPanel();}}});
 canvas.setAttribute('aria-label','Swipe left or right to change lanes; swipe up to jump. Keyboard: arrows, Space and Escape.');
 let renderScale=Math.min(devicePixelRatio,mobile?1.25:2);
 try{renderer=new T.WebGLRenderer({canvas,antialias:!mobile,powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
@@ -169,7 +171,7 @@ const panel=document.querySelector('#play-panel'),title=document.querySelector('
 let last=0,runPlayer=null,scoreSubmitted=false,flightVisualOffset=0;
 function showPanel(){ambience.setRunning(run.status==='running');ambience.setScreen(run.status);panel.hidden=run.status==='running';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':mobile?'Swipe left / right to change lanes. Swipe up to jump.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
-function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';ambience.start();last=0;showPanel();sync();canvas.focus();}
+function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';mobilePlay.enter();ambience.start();last=0;showPanel();sync();canvas.focus({preventScroll:true});}
 function togglePause(){if(run.status==='running'){run.status='paused';showPanel();}else if(run.status==='paused')begin();}
 start.onclick=()=>{if(run.status==='paused'||run.status==='over')begin();else openInstructions();};
 const instructions=document.querySelector('#instructions');
@@ -186,7 +188,8 @@ document.addEventListener('visibilitychange',()=>{last=0;if(document.hidden&&run
 const chooser=document.createElement('div');chooser.className='character-choice';chooser.setAttribute('role','group');chooser.setAttribute('aria-label','Choose your runner');
 for(const name of ['christina','amber']){const button=document.createElement('button');button.type='button';button.dataset.character=name;button.textContent=name[0].toUpperCase()+name.slice(1);button.addEventListener('click',()=>selectCharacter(name));chooser.append(button);}
 start.before(chooser);
-const originalShowPanel=showPanel;
+const baseShowPanel=showPanel;
+const originalShowPanel=()=>{mobilePlay.sync(run.status);baseShowPanel();};
 showPanel=function(){originalShowPanel();canvas.parentElement.dataset.status=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+selectedCharacter+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+(selectedCharacter==='amber'?'amber-halloween':'christina-clown')+'.png';portrait.alt=selectedCharacter+' in her Halloween costume';document.querySelector('#runner-name').textContent=selectedCharacter;for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
 showPanel();sync();selectCharacter('amber');
 let lastFrame=0,slowTime=0,samples=0,sampleTime=0;
