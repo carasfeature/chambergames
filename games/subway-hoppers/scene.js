@@ -1,4 +1,6 @@
 import * as T from './vendor/three.module.js';
+import {createGraphics} from './graphics.js?v=20261021';
+import {batchStaticBoxes} from './scenery-batch.js?v=20261021';
 import {createAmbience} from './ambience.js?v=mobile-20261012';
 import {bindSwipes} from './touch.mjs';
 import {createMobilePlay} from './mobile-play.mjs?v=pause-20261020';
@@ -20,11 +22,11 @@ let renderer;
 const mobile=matchMedia('(pointer:coarse)').matches;
 const mobilePlay=createMobilePlay({distance:document.querySelector('#distance'),onPause:()=>{if(run.status==='running'){run.status='paused';showPanel();}}});
 canvas.setAttribute('aria-label','Swipe left or right to change lanes; swipe up to jump. Keyboard: arrows, Space and Escape.');
-let renderScale=Math.min(devicePixelRatio,mobile?1.25:2);
-try{renderer=new T.WebGLRenderer({canvas,antialias:!mobile,powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
-renderer.setPixelRatio(renderScale);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
+try{renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
+renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
 const scene=new T.Scene();scene.background=new T.Color('#26383b');scene.fog=new T.Fog('#26383b',26,112);
 const camera=new T.PerspectiveCamera(64,1,.1,160);camera.position.set(0,5.5,8.5);camera.lookAt(0,1,-18);
+const graphics=createGraphics(renderer,canvas,camera);
 scene.add(new T.HemisphereLight('#f3e4c9','#4b403a',2.4));const sun=new T.DirectionalLight('#ffe2b4',2.1);sun.position.set(-4,9,5);scene.add(sun);
 const vaultFill=new T.DirectionalLight('#dfc8a5',1.3);vaultFill.position.set(0,2,4);vaultFill.target.position.set(0,10,-20);scene.add(vaultFill,vaultFill.target);
 const mat=(color,roughness=.85)=>new T.MeshStandardMaterial({color,roughness});
@@ -68,6 +70,7 @@ for(let i=0;i<count;i++){
  }
  if(i%2===0){const sign=new T.Mesh(new T.PlaneGeometry(3.5,1.75),signmat);sign.position.set(-6.45,4.65,-3);sign.rotation.y=Math.PI/2;g.add(sign);}
 }
+sections.forEach(batchStaticBoxes);
 const animateTunnel=decorateTunnel(sections);
 // Sand is 10% lower than before; independent of the taller tunnel.
 const SAND_HEIGHT=7.35*.5*.9,SAND_HALF_WIDTH=LANE_WIDTH/2-.05;
@@ -182,7 +185,6 @@ document.querySelector('#instructions-close').onclick=()=>instructions.close();
 instructions.addEventListener('close',()=>ambience.setScreen(run.status));
 document.addEventListener('keydown',e=>{if(instructions.open)return;if(e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();});
 bindSwipes(canvas,action=>action==='jump'?run.jump():run.move(action==='left'?-1:1),()=>run.status==='running');
-new ResizeObserver(()=>{const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.fov=camera.aspect<1?Math.min(94,64/camera.aspect):64;camera.updateProjectionMatrix();}).observe(canvas);
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(run.status==='running'){run.status='paused';showPanel();}document.querySelector('#error').hidden=false;document.querySelector('#error').textContent='Graphics interrupted. Reload the page to restart the game.';});
 document.addEventListener('visibilitychange',()=>{last=0;if(document.hidden&&run.status==='running'){run.status='paused';showPanel();}});
 const chooser=document.createElement('div');chooser.className='character-choice';chooser.setAttribute('role','group');chooser.setAttribute('aria-label','Choose your runner');
@@ -192,17 +194,14 @@ const baseShowPanel=showPanel;
 const originalShowPanel=()=>{mobilePlay.sync(run.status);baseShowPanel();};
 showPanel=function(){originalShowPanel();canvas.parentElement.dataset.status=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+selectedCharacter+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+(selectedCharacter==='amber'?'amber-halloween':'christina-clown')+'.png';portrait.alt=selectedCharacter+' in her Halloween costume';document.querySelector('#runner-name').textContent=selectedCharacter;for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
 showPanel();sync();selectCharacter('amber');
-let lastFrame=0,slowTime=0,samples=0,sampleTime=0;
+let lastFrame=0;
 const distanceLabel=document.querySelector('#distance');let displayedDistance=-1;
 renderer.setAnimationLoop(now=>{
  if(document.hidden){last=0;return;}
  const gap=now-lastFrame;
  if(gap<(run.status==='running'?1000/60:1000/30)-1)return;
  lastFrame=now;
- if(mobile&&run.status==='running'){
-  samples++;sampleTime+=gap;
-  if(sampleTime>=3000){slowTime=sampleTime/samples>23?slowTime+1:0;samples=0;sampleTime=0;if(slowTime>=2&&renderScale>.75){renderScale=Math.max(.75,renderScale-.25);renderer.setPixelRatio(renderScale);slowTime=0;}}
- }else{samples=0;sampleTime=0;}
+ graphics.sample(gap,run.status==='running');
  const dt=last?Math.min((now-last)/1000,.1):0;last=now;
  if(run.status==='paused'){renderer.render(scene,camera);return;}
  if(run.status==='running'){
