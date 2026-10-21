@@ -9,7 +9,7 @@ function describe(i){if(busy)return;document.getElementById('hint-title').textCo
 challenges.forEach((item,i)=>{
  const angle=-90+i*step, p=point(angle-step/2),q=point(angle+step/2);
  const group=svg('g',{class:'slice',role:'button',tabindex:'0','aria-label':item.name+': '+item.description});
- const path=svg('path',{d:'M300 300L'+p.join(' ')+'A280 280 0 0 1 '+q.join(' ')+'Z',fill:i%2?'#314e43':'#9c7046',stroke:'#d3b48a','stroke-width':1.4});
+ const path=svg('path',{d:'M300 300L'+p.join(' ')+'A280 280 0 0 1 '+q.join(' ')+'Z',fill:i%2?'#69775d':'#817e78',stroke:'#c0c3bb','stroke-width':1.4});
  group.append(path);
  const pos=point(angle,193),anchor=svg('g',{transform:'translate('+pos.join(' ')+')'}),label=svg('text',{'text-anchor':'middle',class:'upright-label'});
  item.lines.forEach((line,j)=>{const span=svg('tspan',{x:0,y:(j-(item.lines.length-1)/2)*21+5});span.textContent=line;label.append(span);});
@@ -59,9 +59,9 @@ if(challenges.length)spin.textContent="SPIN THE WHEEL";
 if(!challenges.length){
  for(let i=0;i<10;i++){
   const angle=-90+i*36,p=point(angle-18),q=point(angle+18);
-  rotor.append(svg('path',{d:'M300 300L'+p.join(' ')+'A280 280 0 0 1 '+q.join(' ')+'Z',fill:i%2?'#314e43':'#9c7046',stroke:'#c3b091','stroke-width':1}));
+  rotor.append(svg('path',{d:'M300 300L'+p.join(' ')+'A280 280 0 0 1 '+q.join(' ')+'Z',fill:i%2?'#69775d':'#817e78',stroke:'#b8bcb3','stroke-width':1}));
   const pos=point(angle,205);
-  rotor.append(svg('path',{d:'M0 -8L3 -3L8 0L3 3L0 8L-3 3L-8 0L-3 -3Z',transform:'translate('+pos.join(' ')+')',fill:'#ddd5bc',opacity:'.55'}));
+  rotor.append(svg('path',{d:'M0 -8L3 -3L8 0L3 3L0 8L-3 3L-8 0L-3 -3Z',transform:'translate('+pos.join(' ')+')',fill:'#d5d9d1',opacity:'.55'}));
  }
  spin.disabled=true;spin.textContent='COMING SOON';
 }
