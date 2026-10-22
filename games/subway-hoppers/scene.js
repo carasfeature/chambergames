@@ -2,13 +2,13 @@ import * as T from './vendor/three.module.js';
 import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=mobile-modes-20261022';
 import {batchStaticBoxes} from './scenery-batch.js?v=20261021';
 import {createAmbience} from './ambience.js?v=mobile-20261012';
-import {bindSwipes} from './touch.mjs';
+import {bindSwipes} from './touch.mjs?v=collision-fix-20261022';
 import {createMobilePlay} from './mobile-play.mjs?v=pause-20261020';
 import {currentPlayer,submitRun} from './leaderboard.mjs?v=auto-retry-20261012';
 import {loadCharacter} from './character.js?v=footsteps-2';
 import {setupPowers} from './powers.js?v=crimson-1';
 import {decorateTunnel} from './tunnel-halloween.js?v=vault-final-4';
-import {Run,SAND_RINGS,sandDepth} from './physics.mjs?v=sand-back-20261013';
+import {Run,SAND_RINGS,sandDepth} from './physics.mjs?v=collision-fix-20261022';
 const run=new Run();
 const ambience=createAmbience(document.querySelector('#sound-toggle'),document.querySelector('#sound-volume'));
 // Wrap accepted actions so keyboard, buttons and touch share the same audio cues.

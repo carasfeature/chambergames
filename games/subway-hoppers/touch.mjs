@@ -12,12 +12,15 @@ export function bindSwipes(canvas,act,isRunning){
   touch={id:e.pointerId,x:e.clientX,y:e.clientY,done:false};
   canvas.setPointerCapture(e.pointerId);
  });
- canvas.addEventListener('pointermove',e=>{
+ const track=e=>{
   if(!touch||touch.id!==e.pointerId||touch.done)return;
   const action=swipeAction(e.clientX-touch.x,e.clientY-touch.y);
   if(action){touch.done=true;if(isRunning())act(action);}
- });
+ };
+ canvas.addEventListener('pointermove',track);
+ // Fast gestures may deliver the threshold-crossing position only on release.
+ canvas.addEventListener('pointerup',e=>{track(e);if(touch?.id===e.pointerId)touch=null;});
  const clear=e=>{if(touch?.id===e.pointerId)touch=null;};
- for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,clear);
+ for(const event of ['pointercancel','lostpointercapture'])canvas.addEventListener(event,clear);
  document.addEventListener('visibilitychange',()=>{touch=null;});
 }

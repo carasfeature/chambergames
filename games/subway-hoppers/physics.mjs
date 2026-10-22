@@ -71,8 +71,9 @@ export class Run {
   let floor=0;
   for(const o of this.obstacles)if(o.type==='sand'){
    const h=sandSurface(this.x-o.x,-o.z);
-   // Test lateral entry at the current depth, separately from forward approach.
-   if(h!==null&&!landingProtected&&!(this.burgerJump&&oldY>=h)&&sandSurface(oldX-o.x,-o.z)===null&&Math.abs(this.x-o.x)<Math.abs(oldX-o.x)){
+   // A sand side is solid only below its surface, never an infinite-height wall.
+   // Use the feet position after this physics step for both normal and powered jumps.
+   if(h!==null&&!landingProtected&&this.y<h&&sandSurface(oldX-o.x,-o.z)===null&&Math.abs(this.x-o.x)<Math.abs(oldX-o.x)){
     this.die('You hit the side of the sand bank. Jump onto it from the front.');return;
    }
    if(h!==null)floor=Math.max(floor,h);
