@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.js';
-import {createGraphics} from './graphics.js?v=20261021';
+import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=mobile-modes-20261022';
 import {batchStaticBoxes} from './scenery-batch.js?v=20261021';
 import {createAmbience} from './ambience.js?v=mobile-20261012';
 import {bindSwipes} from './touch.mjs';
@@ -20,13 +20,14 @@ run.collect=type=>{originalCollect(type);ambience.pickup(type);};
 const canvas=document.querySelector('#scene');
 let renderer;
 const mobile=matchMedia('(pointer:coarse)').matches;
+const graphicsMode=mobileGraphicsMode(),graphicsToggle=createGraphicsToggle(graphicsMode);
 const mobilePlay=createMobilePlay({distance:document.querySelector('#distance'),onPause:()=>{if(run.status==='running'){run.status='paused';showPanel();}}});
 canvas.setAttribute('aria-label','Swipe left or right to change lanes; swipe up to jump. Keyboard: arrows, Space and Escape.');
-try{renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
+try{renderer=new T.WebGLRenderer({canvas,antialias:graphicsMode!=='performance',powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
 renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
 const scene=new T.Scene();scene.background=new T.Color('#26383b');scene.fog=new T.Fog('#26383b',26,112);
 const camera=new T.PerspectiveCamera(64,1,.1,160);camera.position.set(0,5.5,8.5);camera.lookAt(0,1,-18);
-const graphics=createGraphics(renderer,canvas,camera);
+const graphics=createGraphics(renderer,canvas,camera,graphicsMode);
 scene.add(new T.HemisphereLight('#f3e4c9','#4b403a',2.4));const sun=new T.DirectionalLight('#ffe2b4',2.1);sun.position.set(-4,9,5);scene.add(sun);
 const vaultFill=new T.DirectionalLight('#dfc8a5',1.3);vaultFill.position.set(0,2,4);vaultFill.target.position.set(0,10,-20);scene.add(vaultFill,vaultFill.target);
 const mat=(color,roughness=.85)=>new T.MeshStandardMaterial({color,roughness});
@@ -192,7 +193,7 @@ for(const name of ['christina','amber']){const button=document.createElement('bu
 start.before(chooser);
 const baseShowPanel=showPanel;
 const originalShowPanel=()=>{mobilePlay.sync(run.status);baseShowPanel();};
-showPanel=function(){originalShowPanel();canvas.parentElement.dataset.status=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+selectedCharacter+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+(selectedCharacter==='amber'?'amber-halloween':'christina-clown')+'.png';portrait.alt=selectedCharacter+' in her Halloween costume';document.querySelector('#runner-name').textContent=selectedCharacter;for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
+showPanel=function(){graphicsToggle.sync(run.status);originalShowPanel();canvas.parentElement.dataset.status=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+selectedCharacter+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+(selectedCharacter==='amber'?'amber-halloween':'christina-clown')+'.png';portrait.alt=selectedCharacter+' in her Halloween costume';document.querySelector('#runner-name').textContent=selectedCharacter;for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
 showPanel();sync();selectCharacter('amber');
 let lastFrame=0;
 const distanceLabel=document.querySelector('#distance');let displayedDistance=-1;

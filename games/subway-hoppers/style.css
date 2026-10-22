@@ -45,3 +45,10 @@ html.mobile-playing #distance{cursor:pointer;touch-action:manipulation;min-width
 @media(pointer:coarse){.key-guide{display:none}.touch-help{font-size:15px!important}.viewport{overscroll-behavior:contain}}
 @media(max-width:640px){h1{font-size:34px;margin:4px 0 14px}.viewport{height:72svh;min-height:340px}.runner-card{grid-template-columns:minmax(70px,30%) minmax(0,1fr);gap:12px}.intro-copy h2{font-size:26px}.character-choice button,#start{font-size:13px}.leaderboard h2{font-size:30px}.power-hud{padding:8px}.copyright{font-size:16px}}
 @media(orientation:landscape) and (max-height:550px){main{padding:8px 12px}.viewport{height:82svh;min-height:240px}#play-panel{padding:12px}.runner-card{grid-template-columns:110px 1fr;gap:18px;width:min(600px,100%)}.intro-art img{height:140px}.intro-art p,.eyebrow{display:none}.intro-copy h2{font-size:26px;margin:0 0 8px}.character-choice{flex-direction:row;margin:8px 0}.intro-copy>p{margin:4px 0;font-size:11px}.overlay{top:8px;left:8px}.overlay span{padding:8px;font-size:14px}}
+
+.mobile-graphics{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:16px auto;text-align:center}
+.mobile-graphics[hidden]{display:none}
+.mobile-graphics button{min-height:44px;padding:12px 16px;font:700 12px system-ui;letter-spacing:.05em}
+.mobile-graphics button[aria-pressed=true]{background:#7d1623;border-color:#e4bdc2;color:#fff3df}
+.mobile-graphics small{width:100%;color:#c5a3a9;font:11px system-ui}
+@media(pointer:fine){.mobile-graphics{display:none}}
