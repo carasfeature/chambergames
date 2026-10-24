@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {Run,SAND_HEIGHT} from '../games/subway-hoppers/physics.mjs';
 import {bindSwipes,swipeAction} from '../games/subway-hoppers/touch.mjs';
-function emptyRun(){const r=new Run(()=>.3);r.status='running';r.nextRow=1e9;r.obstacles=[];r.rows=[];r.pickups=[];return r;}
+function emptyRun(){const r=new Run(()=>.3,process.env.HOPPERS_MODE||'standard');r.status='running';r.nextRow=1e9;r.obstacles=[];r.rows=[];r.pickups=[];return r;}
 for(const fps of [10,15,20,30,60,90,120]){
  const dt=1/fps;
  // Feet above the pile: lateral movement must not collide with an invisible wall.
@@ -35,11 +35,12 @@ for(const frames of [[1/15],[1/30],[1/60],[1/120],[.016,.05,.025,.1,.008]]){
 const handlers={},actions=[];let running=true;
 globalThis.document={addEventListener(){}};
 const canvas={addEventListener:(type,fn)=>handlers[type]=fn,setPointerCapture(){}};
-bindSwipes(canvas,a=>actions.push(a),()=>running);
+const resetSwipe=bindSwipes(canvas,a=>actions.push(a),()=>running);
 const event=(x,y)=>({isPrimary:true,pointerId:1,clientX:x,clientY:y});
 handlers.pointerdown(event(100,100));handlers.pointerup(event(100,50));assert.deepEqual(actions,['jump'],'final pointerup movement must count');
 handlers.pointerdown(event(100,100));handlers.pointermove(event(150,100));handlers.pointerup(event(180,100));assert.deepEqual(actions,['jump','right'],'one action per gesture');
 handlers.pointerdown(event(100,100));handlers.pointercancel(event(100,50));assert.equal(actions.length,2);
 handlers.pointerdown(event(100,100));running=false;handlers.pointerup(event(100,50));assert.equal(actions.length,2);
-assert.equal(swipeAction(0,10),null);assert.equal(swipeAction(0,30),null);
+running=true;handlers.pointerdown(event(100,100));resetSwipe();handlers.pointerup(event(100,50));assert.equal(actions.length,2,'paused swipe cannot leak into resumed run');
+assert.equal(swipeAction(0,10),null);assert.equal(swipeAction(0,30),'down');
 console.log('PASS: collisions and power expiry at 10–120fps; sand top/side/front/rear; cactus and kangaroo rules; pause; quick swipes, cancellation and deduplication.');

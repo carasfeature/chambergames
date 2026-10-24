@@ -3,6 +3,7 @@ export function swipeAction(dx,dy,threshold=24){
  if(Math.max(Math.abs(dx),Math.abs(dy))<threshold)return null;
  if(Math.abs(dx)>Math.abs(dy)*1.2)return dx<0?'left':'right';
  if(-dy>Math.abs(dx)*1.2)return 'jump';
+ if(dy>Math.abs(dx)*1.2)return 'down';
  return null;
 }
 export function bindSwipes(canvas,act,isRunning){
@@ -23,4 +24,5 @@ export function bindSwipes(canvas,act,isRunning){
  const clear=e=>{if(touch?.id===e.pointerId)touch=null;};
  for(const event of ['pointercancel','lostpointercapture'])canvas.addEventListener(event,clear);
  document.addEventListener('visibilitychange',()=>{touch=null;});
+ return ()=>{touch=null;};
 }

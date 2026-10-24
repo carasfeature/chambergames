@@ -1,15 +1,17 @@
 import * as T from './vendor/three.module.js';
-import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=mobile-modes-20261022';
-import {batchStaticBoxes} from './scenery-batch.js?v=20261021';
-import {createAmbience} from './ambience.js?v=mobile-20261012';
-import {bindSwipes} from './touch.mjs?v=collision-fix-20261022';
-import {createMobilePlay} from './mobile-play.mjs?v=pause-20261020';
-import {currentPlayer,submitRun} from './leaderboard.mjs?v=auto-retry-20261012';
-import {loadCharacter} from './character.js?v=footsteps-2';
-import {setupPowers} from './powers.js?v=crimson-1';
-import {decorateTunnel} from './tunnel-halloween.js?v=vault-final-4';
-import {Run,SAND_RINGS,sandDepth} from './physics.mjs?v=collision-fix-20261022';
+import {createAmbience} from './ambience.js?v=v1-2-20261024';
+import {bindSwipes} from './touch.mjs?v=v1-2-20261024';
+import {createMobilePlay} from './mobile-play.mjs?v=v1-2-20261024';
+import {currentPlayer,submitRun} from './leaderboard.mjs?v=v1-2-20261024';
+import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=v1-2-20261024';
+import {batchStaticBoxes} from './scenery-batch.js';
+import {loadCharacter} from './character.js?v=v1-2-20261024';
+import {setupPowers} from './powers.js?v=v1-2-20261024';
+import {decorateTunnel} from './tunnel-halloween.js?v=v1-2-20261024';
+import {Run} from './physics.mjs?v=v1-2-20261024';
+import {SAND_HEIGHT,SAND_RINGS,SAND_POSITIONS,SAND_UVS,SAND_INDICES} from './sand-shape.mjs?v=v1-2-20261024';
 const run=new Run();
+let selectedMode='standard';
 const ambience=createAmbience(document.querySelector('#sound-toggle'),document.querySelector('#sound-volume'));
 // Wrap accepted actions so keyboard, buttons and touch share the same audio cues.
 const originalMove=run.move.bind(run),originalJump=run.jump.bind(run);
@@ -21,8 +23,10 @@ const canvas=document.querySelector('#scene');
 let renderer;
 const mobile=matchMedia('(pointer:coarse)').matches;
 const graphicsMode=mobileGraphicsMode(),graphicsToggle=createGraphicsToggle(graphicsMode);
+document.documentElement.dataset.graphicsMode=graphicsMode;
+document.addEventListener("visibilitychange",()=>{document.documentElement.dataset.pageHidden=String(document.hidden);});
 const mobilePlay=createMobilePlay({distance:document.querySelector('#distance'),onPause:()=>{if(run.status==='running'){run.status='paused';showPanel();}}});
-canvas.setAttribute('aria-label','Swipe left or right to change lanes; swipe up to jump. Keyboard: arrows, Space and Escape.');
+canvas.setAttribute('aria-label','Swipe left or right to change lanes; swipe up to jump. Keyboard: A/D or left/right arrows change lanes; W, up arrow or Space jumps; S or down arrow descends faster; Escape pauses.');
 try{renderer=new T.WebGLRenderer({canvas,antialias:graphicsMode!=='performance',powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
 renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
 const scene=new T.Scene();scene.background=new T.Color('#26383b');scene.fog=new T.Fog('#26383b',26,112);
@@ -74,7 +78,7 @@ for(let i=0;i<count;i++){
 sections.forEach(batchStaticBoxes);
 const animateTunnel=decorateTunnel(sections);
 // Sand is 10% lower than before; independent of the taller tunnel.
-const SAND_HEIGHT=7.35*.5*.9,SAND_HALF_WIDTH=LANE_WIDTH/2-.05;
+
 const sandTexture=texture((c,w,h)=>{
  c.fillStyle='#bd6236';c.fillRect(0,0,w,h);
  let seed=31;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
@@ -103,18 +107,7 @@ function sandJumpMark(parent){
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();parent.add(new T.Mesh(geometry,jumpMarkMaterial));
 }
 function sandBank(parent){
- const positions=[],uvs=[],indices=[],segments=64;
- const rings=SAND_RINGS;
- rings.forEach(([height,rx,rz],row)=>{for(let i=0;i<=segments;i++){
-  const a=i/segments*Math.PI*2,co=Math.cos(a),si=Math.sin(a);
-  const ripple=0;
-  positions.push(Math.sign(co)*Math.pow(Math.abs(co),.55)*Math.min(SAND_HALF_WIDTH,rx+ripple),height,Math.sign(si)*Math.pow(Math.abs(si),.55)*sandDepth(rz+ripple,si));uvs.push(i/segments*4,height/3);
- }});
- for(let row=0;row<rings.length-1;row++)for(let i=0;i<segments;i++){const a=row*(segments+1)+i,b=a+segments+1;indices.push(a,b,a+1,a+1,b,b+1);}
- const top=positions.length/3;positions.push(0,SAND_HEIGHT,0);uvs.push(.5,.5);
- const bottom=positions.length/3;positions.push(0,0,0);uvs.push(.5,.5);
- for(let i=0;i<segments;i++){const a=(rings.length-1)*(segments+1)+i;indices.push(top,a+1,a,bottom,i,i+1);}
- const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();parent.add(new T.Mesh(geometry,sandMaterial));sandJumpMark(parent);
+ const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.BufferAttribute(SAND_POSITIONS,3));geometry.setAttribute('uv',new T.BufferAttribute(SAND_UVS,2));geometry.setIndex(new T.BufferAttribute(SAND_INDICES,1));geometry.computeVertexNormals();parent.add(new T.Mesh(geometry,sandMaterial));sandJumpMark(parent);
 }
 const fur=mat('#a86f47'),furLight=mat('#c99164'),belly=mat('#e5c39b'),earInner=mat('#81504a'),nose=mat('#292725',.6);
 function limb(parent,a,b,r1,r2,material){const start=new T.Vector3(...a),end=new T.Vector3(...b),delta=end.clone().sub(start);const mesh=new T.Mesh(new T.CylinderGeometry(r2,r1,delta.length(),16),material);mesh.position.copy(start.add(end).multiplyScalar(.5));mesh.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),delta.normalize());parent.add(mesh);return mesh;}
@@ -173,9 +166,9 @@ const shadow=new T.Mesh(new T.CircleGeometry(.6,24),new T.MeshBasicMaterial({col
 
 const panel=document.querySelector('#play-panel'),title=document.querySelector('#play-title'),message=document.querySelector('#play-message'),start=document.querySelector('#start');
 let last=0,runPlayer=null,scoreSubmitted=false,flightVisualOffset=0;
-function showPanel(){ambience.setRunning(run.status==='running');ambience.setScreen(run.status);panel.hidden=run.status==='running';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':mobile?'Swipe left / right to change lanes. Swipe up to jump.':'← → change lanes · Space jumps. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
+function showPanel(){ambience.setRunning(run.status==='running');ambience.setScreen(run.status);panel.hidden=run.status==='running';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':mobile?'Swipe left / right to change lanes. Swipe up to jump; down to descend faster.':'A / D or ← → change lanes · W / ↑ / Space jumps · S / ↓ fast descent. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
-function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';mobilePlay.enter();ambience.start();last=0;showPanel();sync();canvas.focus({preventScroll:true});}
+function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.mode=selectedMode;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';mobilePlay.enter();ambience.start();last=0;showPanel();sync();canvas.focus({preventScroll:true});}
 function togglePause(){if(run.status==='running'){run.status='paused';showPanel();}else if(run.status==='paused')begin();}
 start.onclick=()=>{if(run.status==='paused'||run.status==='over')begin();else openInstructions();};
 const instructions=document.querySelector('#instructions');
@@ -184,23 +177,27 @@ document.querySelector('#instructions-open').onclick=openInstructions;
 document.querySelector('#instructions-start').onclick=()=>{instructions.close();begin();};
 document.querySelector('#instructions-close').onclick=()=>instructions.close();
 instructions.addEventListener('close',()=>ambience.setScreen(run.status));
-document.addEventListener('keydown',e=>{if(instructions.open)return;if(e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();});
-bindSwipes(canvas,action=>action==='jump'?run.jump():run.move(action==='left'?-1:1),()=>run.status==='running');
+document.addEventListener('keydown',e=>{if(instructions.open)return;if(e.target instanceof HTMLSelectElement||e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW','ArrowDown','KeyS'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();if(['ArrowDown','KeyS'].includes(e.code))run.fastDescend();});
+const resetSwipe=bindSwipes(canvas,action=>action==='jump'?run.jump():action==='down'?run.fastDescend():run.move(action==='left'?-1:1),()=>run.status==='running');
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(run.status==='running'){run.status='paused';showPanel();}document.querySelector('#error').hidden=false;document.querySelector('#error').textContent='Graphics interrupted. Reload the page to restart the game.';});
 document.addEventListener('visibilitychange',()=>{last=0;if(document.hidden&&run.status==='running'){run.status='paused';showPanel();}});
 const chooser=document.createElement('div');chooser.className='character-choice';chooser.setAttribute('role','group');chooser.setAttribute('aria-label','Choose your runner');
 for(const name of ['christina','amber']){const button=document.createElement('button');button.type='button';button.dataset.character=name;button.textContent=name[0].toUpperCase()+name.slice(1);button.addEventListener('click',()=>selectCharacter(name));chooser.append(button);}
 start.before(chooser);
+const modeChooser=document.createElement('div');modeChooser.className='mode-choice';modeChooser.setAttribute('role','group');modeChooser.setAttribute('aria-label','Game mode');
+const modeNote=document.createElement('p');modeNote.className='mode-note';modeNote.id='mode-note';
+for(const [mode,label] of [['standard','Standard Mode'],['fast','Fast Mode']]){const button=document.createElement('button');button.type='button';button.dataset.mode=mode;button.textContent=label;button.setAttribute('aria-describedby','mode-note');button.onclick=()=>{if(run.status==='running'||run.status==='paused')return;selectedMode=mode;showPanel();};modeChooser.append(button);}
+chooser.before(modeChooser,modeNote);
 const baseShowPanel=showPanel;
 const originalShowPanel=()=>{mobilePlay.sync(run.status);baseShowPanel();};
-showPanel=function(){graphicsToggle.sync(run.status);originalShowPanel();canvas.parentElement.dataset.status=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+selectedCharacter+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+(selectedCharacter==='amber'?'amber-halloween':'christina-clown')+'.png';portrait.alt=selectedCharacter+' in her Halloween costume';document.querySelector('#runner-name').textContent=selectedCharacter;for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
+showPanel=function(){graphicsToggle.sync(run.status);originalShowPanel();for(const button of modeChooser.children){button.setAttribute('aria-pressed',String(button.dataset.mode===(run.status==='paused'||run.status==='running'?run.mode:selectedMode)));button.disabled=run.status==='paused'||run.status==='running';}if(run.status!=='running')resetSwipe();modeNote.textContent=(run.status==='paused'||run.status==='running'?run.mode:selectedMode)==='fast'?'Fast Mode - game 35% faster; for those who want to get further, quicker':'Standard Mode - Original Game, same speed progression';canvas.parentElement.dataset.status=run.status;document.documentElement.dataset.runStatus=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+selectedCharacter+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+(selectedCharacter==='amber'?'amber-halloween':'christina-clown')+'.png';portrait.alt=selectedCharacter+' in her Halloween costume';document.querySelector('#runner-name').textContent=selectedCharacter;for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
 showPanel();sync();selectCharacter('amber');
 let lastFrame=0;
 const distanceLabel=document.querySelector('#distance');let displayedDistance=-1;
 renderer.setAnimationLoop(now=>{
  if(document.hidden){last=0;return;}
  const gap=now-lastFrame;
- if(gap<(run.status==='running'?1000/60:1000/30)-1)return;
+ if(gap<(run.status==='running'?1000/graphics.fps:1000/30)-1)return;
  lastFrame=now;
  graphics.sample(gap,run.status==='running');
  const dt=last?Math.min((now-last)/1000,.1):0;last=now;

@@ -1,0 +1,56 @@
+body{background:#464b49;background-image:linear-gradient(90deg,#242c3040,transparent 25%,transparent 75%,#242c3040),repeating-linear-gradient(0deg,transparent 0 95px,#252d3038 96px,#a7aea51c 97px,transparent 98px),repeating-linear-gradient(90deg,#515651 0 191px,#343d3b 192px,#7b867b40 193px,#515651 194px 384px);isolation:isolate}
+.dune-atmosphere{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1;contain:strict}
+.dune-atmosphere::before{content:"";position:absolute;inset:18px 4% auto;height:5px;background:#a7aa98;border:1px solid #656e64;box-shadow:0 0 22px 7px #d9dec315,0 7px 0 #51595740}
+.dune-atmosphere::after{content:"";position:absolute;left:0;right:0;bottom:4%;height:12px;border-top:2px solid #555e5d;border-bottom:1px solid #d6d3be;background:repeating-linear-gradient(90deg,#b9ab78 0 22px,#595e5850 23px 25px);opacity:.35}
+.dune-arches{position:absolute;inset:12% 3% 12%;border:1px solid #4a53543b;border-radius:160px 160px 6px 6px;box-shadow:0 0 0 16px #dedbd416,0 0 0 17px #535b5926,inset 0 18px 25px #37404118}
+.dune-glow{position:absolute;pointer-events:none;animation:station-pass 38s ease-in-out infinite;will-change:transform}
+.dune-glow-amber{top:0;left:-40%;width:28%;height:100%;background:linear-gradient(90deg,transparent,#e3e6db10,transparent);transform:skewX(-12deg)}
+.dune-glow-crimson{left:0;right:0;bottom:18%;height:3px;background:linear-gradient(90deg,#8b233470 0 28%,transparent 28% 29%,#8b233450 29% 72%,transparent 72%);animation:none}
+@keyframes station-pass{0%,25%{transform:translate3d(0,0,0) skewX(-12deg)}75%,100%{transform:translate3d(550%,0,0) skewX(-12deg)}}
+.game-heading{padding:8px 0 4px}
+.game-heading h1{color:#303b3d;text-shadow:0 1px 0 #ecebe170}
+.viewport{border:1px solid #626c6b;box-shadow:0 2px 0 #e6e6dc65,0 15px 36px #26333545,0 0 0 5px #3443451c}
+.back-games,.game-controls button{background-image:linear-gradient(#e2c9a42b,#65422512);box-shadow:inset 0 1px #f1f2e880,0 3px 0 #687570,0 6px 12px #29393b20}
+.leaderboard{background-color:#b9b9ae;background-image:linear-gradient(135deg,#dcc6a933,#76523812);border:1px solid #727f7b;box-shadow:inset 0 1px #f1f2e880,0 5px 0 #29393b38,0 15px 32px #29393b30}
+#start{background-image:linear-gradient(#ecd0a62b,#6f412219);box-shadow:inset 0 1px #f1f2e880,0 3px 0 #5e6c68,0 5px 10px #29393b20}
+#start:active{transform:translateY(2px);box-shadow:inset 0 1px #f1f2e880,0 1px 0 #5e6c68}
+html[data-run-status="running"] .dune-glow,html[data-run-status="paused"] .dune-glow,html[data-page-hidden="true"] .dune-glow{animation-play-state:paused;will-change:auto}
+html[data-graphics-mode="performance"] .dune-glow{animation:none;will-change:auto}
+@media(prefers-reduced-motion:reduce){.dune-glow{animation:none;will-change:auto}
+#start:active{transform:none}
+}
+@media(max-width:640px){.dune-glow{width:110vw;height:55vh}
+.game-heading{padding-top:2px}
+}
+.game-heading h1,.leaderboard h2{color:#303b3d}
+.back-games,.game-controls button{background-color:#c8ccc2;color:#303b3d}
+.leaderboard{color:#303b3d;background-image:linear-gradient(120deg,#dce0d430,transparent)}
+@media(max-width:640px){.dune-glow-amber{width:40%;height:100%}
+.dune-glow-crimson{width:auto;height:3px}
+.dune-arches{inset:10% 10px 10%;border-radius:100px 100px 6px 6px}
+}
+.mode-choice{display:flex;gap:8px;margin:10px 0 4px}
+.mode-choice button{flex:1;padding:8px 10px;font:600 13px system-ui;border:1px solid #83918a;border-radius:7px;background:#cbd0c5;color:#303b3d}
+.mode-choice button[aria-pressed=true]{background:#8b2334;color:#fff4e7;border-color:#8b2334}
+.mode-note{font:12px/1.3 system-ui!important;color:#413e36;margin:4px 0 10px!important}
+.mode-choice button:disabled{opacity:.7}
+@media(max-width:640px){.mode-choice{margin:6px 0 3px}
+.mode-choice button{padding:7px 5px;font-size:12px}
+.mode-note{font-size:10px!important;margin-bottom:6px!important}
+}
+.game-heading h1{color:#d5d5c8;text-shadow:0 2px 2px #17212280}
+.copyright,.volume-control output{color:#bdc4b8}
+body{background:#282322;background-image:linear-gradient(90deg,#17141540,transparent 30%,transparent 70%,#17141540),repeating-linear-gradient(0deg,transparent 0 95px,#110f1026 96px,#67514a18 97px,transparent 98px),repeating-linear-gradient(90deg,#302928 0 191px,#211c1c 192px,#53413b22 193px,#302928 194px 384px)}
+.dune-atmosphere::before{height:3px;background:#796254;border-color:#473831;box-shadow:0 0 18px 4px #b88b6510}
+.dune-atmosphere::after{border-color:#514037;background:repeating-linear-gradient(90deg,#78624d 0 22px,#332727 23px 25px);opacity:.25}
+.dune-arches{border-color:#84635815;box-shadow:0 0 0 16px #b28c7410,0 0 0 17px #21181930,inset 0 18px 25px #130e1020}
+.dune-glow-amber{background:linear-gradient(90deg,transparent,#bd8c6810,transparent)}
+.game-heading h1{color:#d6c5b2;text-shadow:none}
+.copyright,.volume-control output{color:#b9a79a}
+.back-games,.game-controls button{background:#4a3834;color:#e3d3c2;border-color:#85514e;background-image:none;box-shadow:0 3px 8px #120c1030}
+.back-games:hover,.game-controls button:hover:not(:disabled){background:#5c423c}
+.leaderboard{background:#3c2e2c;background-image:none;color:#ddcdbd;border-color:#5e4540;box-shadow:0 8px 24px #140d1030}
+.leaderboard h2{color:#ddcdbd}
+.leaderboard p,.leaderboard li,.leaderboard .board-row{color:#c8b5a6;border-color:#5e4540}
+.leaderboard .board-row.is-you{background:#563b37;color:#f0dccc}
+.duration-preview span{color:#c5ad9c}

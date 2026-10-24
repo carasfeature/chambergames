@@ -1,0 +1,44 @@
+:root{color-scheme:light;--cream:#41372c;--muted:#564938;--line:#a58b69;--sand:#b5a184;--card:#cebb9e;--crimson:#8b2334}
+body{background:var(--sand);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+h1,h2,h3{font-weight:700;letter-spacing:-.025em}
+.game-heading h1{font-size:clamp(26px,3.4vw,46px)}
+button,.back-games{background:var(--card);color:var(--cream);border-color:var(--crimson);font-weight:600}
+button:hover:not(:disabled),.back-games:hover{background:#c1ac8c}
+button:focus-visible,.back-games:focus-visible{outline-color:var(--crimson)}
+.viewport{border-color:#a58b69;box-shadow:0 12px 32px #59452b22}
+.overlay span,.power-hud{color:#fff3df}
+#play-panel{background:linear-gradient(90deg,#b5a184bb,#cebb9ef5)}
+.intro-art strong{font-weight:700}
+.intro-copy h2{font-weight:750}
+.intro-copy .eyebrow{font-weight:650}
+#start,#instructions-start{background:#a58b69;color:#41372c;border:1px solid #8b2334;font-weight:700}
+#start:hover,#instructions-start:hover{background:#bfa179}
+.character-choice button[aria-pressed=true]{background:#bda17c;border-color:var(--crimson)}
+#instructions-open{font-size:16px}
+.copyright{font-size:12px}
+#sound-volume{accent-color:#8b2334}
+.leaderboard{background:#cebb9e;border:1px solid #a58b69;box-shadow:0 6px 24px #59452b0a}
+.leaderboard h2{font-size:28px}
+.board-row{border-color:#b49b79}
+.board-row.is-you{background:#b5a184;color:#41372c}
+dialog{background:#cebb9e;color:#41372c;border:1px solid #a58b69;box-shadow:0 24px 90px #41372c55}
+dialog::backdrop{background:#41372c77}
+.obstacle-guide section,.power-guide section{background:#c2ad8e;border-color:#a58b69}
+kbd{background:#c2ad8e}
+.no{color:#8b2334!important}
+.yes{color:#466238!important}
+.mobile-graphics button[aria-pressed=true]{background:#bda17c;border-color:#8b2334;color:#41372c}
+.mobile-graphics small,.graphics-setting,.graphics-setting span{color:#564938}
+.graphics-setting select{background:#cebb9e;color:#41372c;border-color:#8b2334}
+.duration-preview span{color:#564938}
+@media(max-width:640px){header.game-heading h1{font-size:24px}
+.back-games{font-size:11px;padding:8px}
+.intro-copy h2{font-size:26px}
+.leaderboard h2{font-size:26px}
+.copyright{font-size:11px}
+}
+@font-face{font-family:"Varsity Team";src:url("fonts/VarsityTeam-Bold.otf") format("opentype");font-style:normal;font-weight:700;font-display:swap}
+.game-heading h1,.intro-copy h2,.leaderboard h2,#instructions h2{font-family:"Varsity Team",system-ui,sans-serif;font-weight:700;letter-spacing:.015em}
+@media(max-width:640px){header.game-heading h1{font-size:25px}
+.intro-copy h2{font-size:29px}
+}
