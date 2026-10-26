@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gift Wheel Admin | ChamberGames</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:CinemaDisplay;src:url('./assets/cinema-display.woff2') format('woff2');font-display:swap}
+:root{--red:#C83232;--blue:#1478A8;--ink:#242424;--cream:#fffaf1;--paper:#f8f7f3}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{margin:0;min-height:100vh;padding:38px 24px 65px;background:var(--paper) url('./assets/paper-texture.jpg') center top / cover fixed no-repeat;color:var(--ink);font-family:'Space Grotesk',Arial,sans-serif}
+main{width:min(1100px,100%);margin:auto}
+main>a:first-child{display:inline-flex;align-items:center;justify-content:center;padding:12px 17px;background:var(--cream);border:2px solid var(--red);box-shadow:4px 4px 0 #24242418;color:var(--ink);font-family:CinemaDisplay,Georgia,serif;font-size:12px;letter-spacing:.03em;text-decoration:none}
+main>a:first-child:hover{background:var(--red);color:white}
+main>p:first-of-type{margin:27px 0 3px;color:var(--blue);font-size:11px;font-weight:800;letter-spacing:.24em;text-align:center}
+h1{margin:8px 0 12px;text-align:center;font:400 clamp(40px,6.5vw,76px)/1.1 CinemaDisplay,Georgia,serif;letter-spacing:.015em;color:var(--red)}
+main>p:nth-of-type(2){text-align:center;margin:4px 0 32px;font-size:12px;font-weight:800;letter-spacing:.055em}
+a{color:var(--blue)}
+section{background:rgba(255,255,255,.92);border:2px solid var(--red);box-shadow:6px 6px 0 #24242418;padding:24px 27px;margin:20px 0;border-radius:2px}
+h2{font:400 23px/1.2 CinemaDisplay,Georgia,serif;color:var(--blue);margin:0 0 16px;letter-spacing:.025em}
+#stats{font-family:'Space Grotesk',Arial,sans-serif;font-size:11px;color:var(--ink);font-weight:800;letter-spacing:.04em}
+p,.tiny{font-size:12px;line-height:1.7;color:#424242;margin:10px 0 15px}
+label{display:block;margin:12px 0 6px;font-size:11px;color:var(--blue);font-weight:800;letter-spacing:.09em}
+input,button{max-width:100%;min-height:46px;border-radius:2px;font:700 12px 'Space Grotesk',Arial,sans-serif;letter-spacing:.045em;padding:12px 14px}
+input{width:100%;background:var(--cream);border:1.5px solid #8d8d8d;color:var(--ink)}
+input:focus{outline:2px solid var(--blue);outline-offset:1px}
+button{cursor:pointer;background:var(--cream);color:var(--ink);border:2px solid var(--red);box-shadow:3px 3px 0 #2424241c;transition:background .12s,color .12s}
+button:hover{background:var(--red);color:white}
+button:disabled{opacity:.55;cursor:wait}
+#spin{background:var(--red);color:white}
+#spin:hover{background:#a71f22}
+.danger{border-color:var(--red)}
+.row{display:flex;flex-wrap:wrap;align-items:end;gap:13px}
+.row>*{flex:1;min-width:135px}
+.status{padding:13px 15px;background:#eaf5f9;border-left:4px solid var(--blue);font-size:12px;font-weight:800;color:var(--blue);line-height:1.5}
+#timerReadout{font:400 clamp(28px,5vw,45px)/1.2 CinemaDisplay,Georgia,serif;text-align:center;letter-spacing:.1em;padding:12px 15px;margin:19px 0}
+#lastRefresh{font-size:10px;letter-spacing:.07em}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:12px 8px;border-bottom:1px solid #d9d2cb;text-align:left}
+th{font-size:10px;letter-spacing:.1em;color:var(--blue)}
+td:last-child,th:last-child{text-align:right}
+.scroll{max-height:350px;overflow:auto}
+#history{padding-left:23px;margin:0}
+#history li{padding:8px 0;border-bottom:1px solid #ded9d1;font-size:12px;line-height:1.5}
+code{font-family:monospace;overflow-wrap:anywhere}
+@media(max-width:600px){body{padding:20px 14px 45px}section{padding:17px;margin:16px 0}h1{font-size:clamp(34px,10vw,56px)}h2{font-size:19px}.row>*{min-width:115px}main>a:first-child{padding:10px;font-size:11px}}
+</style></head><body><main>
+<a href="/index.html#section=krispysgames">← CHAMBERGAMES</a>
+<p>PRIVATE CONTROL ROOM</p>
+<h1>GIVEAWAY WHEEL ADMIN</h1>
+<p><a href="/games/gift-wheel/" target="_blank" rel="noopener">OPEN WHEEL DISPLAY ↗</a> &nbsp; // &nbsp; PUBLIC DISPLAY</p>
+<section><h2>TWITCH INVITE ACCESS</h2><p>Signed in with your ChamberGames Twitch account. Only invited Twitch accounts can control this wheel.</p></section>
+<section><h2>WHEEL CONTROLS</h2><div class="row"><button id="spin">SPIN LIVE WHEEL</button><button id="reload">REFRESH ENTRIES</button><button id="newRound" class="danger">NEW ROUND + TIMER</button></div><div id="status" class="status">READY</div><p id="lastRefresh" class="tiny">NOT CHECKED YET</p></section>
+<section><h2>ROUND COUNTDOWN</h2>
+<div class="row"><div><label for="hours">HOURS</label><input id="hours" type="number" min="0" max="24" value="0"></div><div><label for="minutes">MINUTES</label><input id="minutes" type="number" min="0" max="59" value="30"></div><div><label for="seconds">SECONDS</label><input id="seconds" type="number" min="0" max="59" value="0"></div></div>
+<p id="timerReadout" class="status">00:30:00</p>
+<div class="row"><button id="pauseTimer">PAUSE</button><button id="resumeTimer">RESUME</button><button id="resetTimer">RESET TO INPUT</button></div>
+</section>
+<section><h2>THIS ROUND'S PRIZE</h2><form id="prizeForm" class="row"><div><label for="prizeInput">PRIZE TITLE</label><input id="prizeInput" maxlength="100" required></div><button type="submit">SAVE PRIZE</button></form></section><section><h2>MANUAL ENTRY ADJUSTMENT</h2><p>+ Adds entries. − Removes entries from a participant's total, down to zero. All changes are preserved as audit records.</p><form id="entryForm" class="row"><div><label for="username">TWITCH USERNAME</label><input id="username" maxlength="25" required placeholder="username"></div><div><label for="delta">ENTRY CHANGE</label><input id="delta" type="number" min="-1000" max="1000" required value="1"></div><button type="submit">APPLY</button></form></section>
+<section><h2>PARTICIPANTS <span id="stats"></span></h2><label for="search">SEARCH</label><input id="search" placeholder="Find Twitch username..."><div class="scroll"><table><thead><tr><th>USERNAME</th><th>ENTRIES</th></tr></thead><tbody id="participants"></tbody></table></div></section>
+<section><h2>LAST 50 WINNERS</h2><ol id="history"></ol><p>History starts with spins after this version is deployed.</p></section>
+</main><script>
+
+const CHAMBER_WHEEL_API = "https://chamber-analytics.krispyyfry.workers.dev/cg-wheel";
+const cgToken = localStorage.getItem('twitchToken');
+async function cgRequest(route, options={}) {
+  if (!cgToken) throw new Error('Please sign in to ChamberGames with Twitch first.');
+  const response=await fetch(CHAMBER_WHEEL_API + route, {
+    ...options,
+    cache:'no-store',
+    headers:{'Authorization':'Bearer '+cgToken, ...(options.body?{'Content-Type':'application/json'}:{}), ...(options.headers||{})}
+  });
+  if(!response.ok) {
+    const error=await response.json().catch(()=>({}));
+    throw new Error(error.error || ('Access denied / HTTP '+response.status));
+  }
+  return response.json();
+}
+
+(() => {
+const $=id=>document.getElementById(id);let users=[];
+let timer={status:'idle',remainingMs:0,durationMs:0,endsAt:null};
+const durationSeconds=()=>Number($('hours').value)*3600+Number($('minutes').value)*60+Number($('seconds').value);
+const showTime=ms=>{const s=Math.ceil(Math.max(0,ms)/1000);return [Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(n=>String(n).padStart(2,'0')).join(':');};
+function tickTimer(){
+ const remaining=timer.status==='running'?Math.max(0,Number(timer.endsAt||0)-Date.now()):Number(timer.remainingMs||0);
+ $('timerReadout').textContent=showTime(remaining)+(timer.status==='paused'?' // PAUSED':timer.status==='finished'||(timer.status==='running'&&!remaining)?" // TIMES UP":'');
+}
+setInterval(tickTimer,250);
+['hours','minutes','seconds'].forEach(id=>$(id).addEventListener('input',()=>{if(timer.status==='idle')$('timerReadout').textContent=showTime(durationSeconds()*1000);}));
+function status(v){$('status').textContent=v;}
+async function load(manual=false){
+ const button=$('reload');
+ if(manual){button.disabled=true;button.textContent='REFRESHING...';status('FETCHING LATEST SAVED ENTRIES...');}
+ try{
+   const stamp=Date.now();
+   const [data,hist]=await Promise.all([cgRequest('/state'),cgRequest('/history')]);
+   const previous=JSON.stringify(users);
+   users=Array.isArray(data.users)?data.users:[];
+   timer=data.timer||timer;tickTimer();
+   $('prizeInput').value=data.prizeTitle==='PRIZE TO BE ANNOUNCED'?'':(data.prizeTitle||''); $('stats').textContent='// '+users.length+' GIFTERS // '+(data.totalSubs||0)+' ENTRIES';
+   draw();
+   $('history').replaceChildren(...(hist.history||[]).map(item=>{
+     const li=document.createElement('li');
+     li.textContent=item.winner+' // '+new Date(item.createdAt).toLocaleString();
+     return li;
+   }));
+   const time=new Date().toLocaleTimeString();
+   $('lastRefresh').textContent='LAST CHECKED: '+time;
+   if(manual)status(previous===JSON.stringify(users)?'REFRESHED // NO ENTRY CHANGES YET':'REFRESHED // ENTRIES UPDATED');
+   else if(!$('status').textContent.startsWith('SAVED'))status('CONNECTED // AUTO UPDATE ACTIVE');
+ }catch(e){status('REFRESH ERROR: '+e.message);}
+ finally{if(manual){button.disabled=false;button.textContent='REFRESH ENTRIES';}}
+}
+function draw(){const q=$('search').value.trim().toLowerCase();$('participants').replaceChildren(...users.filter(p=>p.username.includes(q)).slice(0,250).map(p=>{const tr=document.createElement('tr');const n=document.createElement('td'),v=document.createElement('td');n.textContent=p.username;v.textContent=p.entries;tr.append(n,v);return tr}));}
+async function post(url,payload){return cgRequest(url.replace('/gift-wheel',''), {method:'POST',body:JSON.stringify(payload||{})});}
+$('prizeForm').addEventListener('submit',async e=>{e.preventDefault();try{const r=await post('/gift-wheel/prize',{title:$('prizeInput').value.trim()});status('PRIZE SAVED // '+r.prizeTitle);}catch(err){status('ERROR: '+err.message)}});$('search').addEventListener('input',draw);$('reload').addEventListener('click',()=>load(true));
+$('newRound').addEventListener('click',async()=>{
+ if(!confirm('START A NEW ROUND?\n\nAll current wheel entries will reset to zero. Archived Twitch gift data and winner history are kept.'))return;
+ const typed=prompt('To confirm, type NEW ROUND exactly:');
+ if(typed!=='NEW ROUND'){status('NEW ROUND CANCELLED');return;}
+ if(!Number.isInteger(durationSeconds())||durationSeconds()<1||durationSeconds()>86400){status('CHOOSE A TIMER BETWEEN 1 SECOND AND 24 HOURS');return;}
+ $('newRound').disabled=true;status('STARTING A NEW ROUND...');
+ try{
+   await post('/gift-wheel/new-round',{confirm:'NEW ROUND',prizeTitle:$('prizeInput').value.trim(),timerSeconds:durationSeconds()});
+   status('NEW ROUND STARTED // WAIT FOR KV TO PROPAGATE');
+   await load(true);
+ }catch(e){status('ERROR: '+e.message)}
+ finally{$('newRound').disabled=false}
+});
+async function timerAction(action){
+ status('UPDATING TIMER...');
+ try {const payload={action};if(action==='reset'){payload.timerSeconds=durationSeconds();}
+   const result=await post('/gift-wheel/timer',payload);
+   timer=result.timer;tickTimer();status('TIMER '+action.toUpperCase());
+ }catch(e){status('ERROR: '+e.message);}
+}
+$('pauseTimer').onclick=()=>timerAction('pause');
+$('resumeTimer').onclick=()=>timerAction('resume');
+$('resetTimer').onclick=()=>timerAction('reset');
+$('spin').addEventListener('click' ,async()=>{if(!confirm('Spin the live Gift Wheel now?'))return;$('spin').disabled=true;status('STARTING SPIN...');try{const r=await post('/gift-wheel/spin');status('SPIN SENT // WINNER: '+r.spin.winner);await load(true)}catch(e){status('ERROR: '+e.message)}finally{$('spin').disabled=false}});
+$('entryForm').addEventListener('submit',async e=>{e.preventDefault();const username=$('username').value.trim(),delta=Number($('delta').value);if(!confirm('Apply '+(delta>0?'+':'')+delta+' entries to '+username+'?'))return;status('SAVING...');try{await post('/gift-wheel/manage',{username,delta});status('SAVED // ALLOW UP TO 60 SECONDS TO PROPAGATE');await load(true)}catch(err){status('ERROR: '+err.message)}});
+if(!cgToken)status('SIGN IN THROUGH CHAMBERGAMES FIRST');else {load();setInterval(()=>load(false),15000);}
+})();
+</script></body></html>

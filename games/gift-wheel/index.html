@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gift Wheel | ChamberGames</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Space+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+
+:root {
+  --ink: #151515;
+  --soft-ink: #414141;
+  --grey: #777777;
+  --paper: #f8f8f5;
+  --white: #ffffff;
+  --rim: #222222;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; }
+html { background: var(--paper); }
+body {
+  font-family: 'Space Grotesk', Arial, sans-serif;
+  color: var(--ink);
+  background: var(--paper) url('./assets/paper-texture.jpg') center top / cover no-repeat fixed;
+  overflow-x: hidden;
+}
+
+body::before, body::after { display: none; }
+
+@font-face {
+  font-family: 'CinemaDisplay';
+  src: url('./assets/cinema-display.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+main {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 10px 22px 48px;
+  position: relative;
+  text-align: center;
+  isolation: isolate;
+}
+
+main::before, main::after { content: none; }
+
+
+.back {
+  position: fixed;
+  top: 20px;
+  left: 25px;
+  z-index: 100;
+
+  display: inline-block;
+  margin: 0;
+  padding: 12px 18px;
+
+  background: #fffaf0;
+  color: #151515;
+  border: 2px solid #C83232;
+  border-radius: 3px;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.18);
+font-family: 'CinemaDisplay';
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.back:hover {
+  background: #C83232;
+  color: white;
+  text-decoration: none;
+}
+.paper-heading {
+  position: relative;
+  width: min(860px, 100%);
+  min-height: 0;
+  margin: 0 auto 20px;
+  padding: 0 16px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.paper-heading::before, .paper-heading::after { content: none; }
+.eyebrow, .paper-heading .eyebrow {
+  color: #1478A8;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .27em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+h1, .paper-heading h1 {
+  margin: 0;
+  color: #C83232;
+  font: 400 clamp(36px, 5.7vw, 72px)/1.07 'CinemaDisplay', Georgia, serif;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  text-shadow: none;
+}
+.sub, .paper-heading .sub {
+  margin: 12px 0 0;
+ color: #1478A8;
+  font-size: 10px;
+  line-height: 1.7;
+  letter-spacing: .21em;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.film-divider, .paper-heading .film-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  max-width: 400px;
+  margin: 12px auto 0;
+  color: var(--ink);
+  font-size: 12px;
+  letter-spacing: .35em;
+}
+.film-divider::before, .film-divider::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: #555555;
+}
+.wheel-layout {
+  width: min(1250px, 100%);
+  margin: 30px auto 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(0, 560px) minmax(180px, 1fr);
+  align-items: center;
+  gap: 50px;
+}
+
+.wheel-layout .stage {
+  position: static; 
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.wheel-layout .wheel-shell {
+ width: min(550px, 100%);
+}
+
+.wheel-side-left {
+  align-self: center;
+  text-align: left;
+}
+
+.wheel-side-right {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 65px;
+  text-align: left;
+}
+
+.side-paper, .paper-note, .paper-prize, .paper-winner, .rip-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  filter: none;
+  clip-path: none;
+}
+
+.side-paper {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+
+  background: rgba(255, 255, 255, 0.88);
+  border: 2px solid #C83232;
+  border-radius: 3px;
+
+  padding: 18px 20px;
+
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.15);
+}
+
+.rip-bg { display: none !important; }
+.side-paper .rip-content, .rip-content {
+  position: relative;
+  min-height: 0;
+  width: 100%;
+  padding: 12px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  background: transparent;
+  transform: none;
+  color: var(--ink);
+}
+.wheel-side-left .rip-content,
+.wheel-side-right .paper-prize .rip-content,
+.wheel-side-right .paper-winner .rip-content {
+  min-height: 0;
+  padding: 12px 4px;
+  transform: none;
+}
+.side-paper .rip-content span,
+.side-paper .rip-content h2,
+.paper-note span,
+.rip-content span {
+  display: block;
+  margin: 0 0 12px;
+  font: 800 13px/1.4 'Space Grotesk', Arial, sans-serif;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: #1478A8;
+}
+.side-paper .rip-content > strong,
+.rip-content > strong,
+#prizeTitle, #latestWinner {
+  font: 400 clamp(17px, 2vw, 26px)/1.2 'CinemaDisplay', Georgia, serif;
+  color: #1478A8;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.side-paper.paper-note p,
+.paper-note p,
+.rip-content p {
+  margin: 6px 0;
+  color: var(--soft-ink);
+  font: 600 14px/1.8 'Space Grotesk', Arial, sans-serif;
+}
+.side-paper.paper-note p strong,
+.paper-note p strong {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+
+.stage, .wheel-layout .stage {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.stage::before, .stage::after { display: none; }
+.wheel-shell, .wheel-layout .wheel-shell {
+  position: relative;
+  width: min(560px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  padding: 7px;
+  background: none;
+  border: 0;
+  filter: drop-shadow(0 7px 4px rgba(0,0,0,.15));
+}
+.wheel-shell::after { content: none; }
+#wheel { display: block; width: 100%; height: 100%; overflow: visible; }
+
+#rotor text {
+  font-family: 'CinemaDisplay';
+  pointer-events: none;
+  paint-order: stroke;
+  stroke-width: 1px;
+}
+.pointer {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 19px solid transparent;
+  border-right: 19px solid transparent;
+  border-top: 42px solid #C83232;
+  filter: none;
+}
+.pointer::after {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: -41px;
+  width: 14px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--ink);
+}
+
+#wheel { filter: none; }
+
+
+.icon-slot {
+  position: absolute;
+  width: 105px;
+  height: 105px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 1;
+  transform: rotate(var(--tilt,0deg));
+}
+.icon-slot img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  filter: none;
+}
+.icon-slot::before { content: attr(data-icon); color: var(--ink); font-size: 9px; letter-spacing: .08em; }
+.icon-slot:has(img)::before { display: none; }
+.icon-clapper {
+  top: 14%;
+  left: 3%;
+  right: auto;
+  bottom: auto;
+  --tilt: -18deg;
+}
+
+.icon-tickets {
+  top: 15%;
+  right: 3%;
+  left: auto;
+  bottom: auto;
+  --tilt: 14deg;
+}
+
+.icon-film {
+  top: 43%;
+  left: -5%;
+  right: auto;
+  bottom: auto;
+  --tilt: -25deg;
+}
+
+.icon-director {
+  top: 44%;
+  right: -5%;
+  left: auto;
+  bottom: auto;
+  --tilt: 15deg;
+}
+
+.icon-star {
+  top: 79%;
+  left: 8%;
+  right: auto;
+  bottom: auto;
+  --tilt: -16deg;
+}
+
+.icon-popcorn {
+  top: 80%;
+  right: 7%;
+  left: auto;
+  bottom: auto;
+  --tilt: 12deg;
+}
+
+
+.small-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 12px 0 0; }
+.small-row span { color: var(--ink); border: 1px solid var(--ink); padding: 8px 12px; font-size: 10px; font-weight: 800; }
+.small-row b { color: var(--ink); font-size: 14px; }
+#status { margin: 18px 0 0; color: #1478A8; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
+#winner {
+  position: absolute;
+  inset: 5%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: radial-gradient(circle,rgba(255,255,255,.98),rgba(255,255,255,.90) 57%,transparent 83%);
+  text-shadow: none;
+  animation: winnerPop .45s ease-out;
+}
+#winner[hidden] { display: none; }
+#winner span {
+  max-width: 90%;
+  color: var(--ink);
+  font: 400 clamp(17px,3vw,29px) 'CinemaDisplay',Georgia,serif;
+}
+#winner strong {
+  display: block;
+  max-width: 85%;
+  margin-top: 14px;
+  color: var(--ink);
+  font: 400 clamp(23px,4vw,44px) 'CinemaDisplay',Georgia,serif;
+  overflow-wrap: anywhere;
+}
+@keyframes winnerPop {
+  from { opacity: 0; transform: scale(.87); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+
+.paper-footer { width: 100%; max-width: 980px; margin: 18px auto 0; display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+.paper-footer > div { background: none; border: 0; box-shadow: none; clip-path: none; transform: none; padding: 0; min-height: 0; }
+
+@media (max-width: 1000px) {
+  .wheel-layout { grid-template-columns: minmax(155px,1fr) minmax(0,420px) minmax(155px,1fr); gap: 12px; }
+  .icon-slot { width: 74px; height: 74px; }
+  .wheel-side-right { gap: 32px; }
+}
+@media (max-width: 730px) {
+  main { padding: 20px 14px 40px; }
+  .paper-heading { padding: 0 8px; }
+  .wheel-layout { grid-template-columns: 1fr 1fr; align-items: start; gap: 24px 16px; }
+  .wheel-layout .stage { grid-column: 1 / -1; grid-row: 1; }
+  .wheel-side-left { grid-column: 1; grid-row: 2; }
+  .wheel-side-right { grid-column: 2; grid-row: 2; gap: 30px; }
+  .icon-slot { display: none; }
+  .paper-footer { grid-template-columns: 1fr; }
+}
+@media (max-width: 440px) {
+  .wheel-layout { grid-template-columns: 1fr; gap: 25px; }
+  .wheel-layout .stage, .wheel-side-left, .wheel-side-right { grid-column: 1; grid-row: auto; }
+  .wheel-side-left, .wheel-side-right { width: min(350px,100%); margin: 0 auto; }
+  .pointer { top: -9px; border-left-width: 15px; border-right-width: 15px; border-top-width: 33px; }
+  .pointer::after { top: -33px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; }
+}
+
+
+html {
+  min-height: 100%;
+  background: #fff;
+}
+
+body {
+  min-height: 100vh;
+  background-image: url("./assets/paper-texture.jpg") !important;
+  background-position: center top !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="/index.html#section=krispysgames">← BACK TO CHAMBERGAMES</a>
+<header class="paper-heading">
+<p class="eyebrow">CHRISTINA &amp; AMBER PRESENT</p>
+<h1>GIVEAWAY WHEEL</h1>
+<p class="sub"></p>
+<div class="film-divider" aria-hidden="true"></div>
+</header>
+<div id="roundTimer" aria-live="off" style="font-family:Space Grotesk,sans-serif;font-weight:800;font-size:clamp(24px,4vw,42px);letter-spacing:.08em;color:#1478A8;margin:12px auto 18px">00:00:00</div>
+<div class="wheel-layout" aria-label="Gift wheel and round information">
+  <aside class="wheel-side wheel-side-left">
+    <div class="side-paper paper-note">
+      <img class="rip-bg" src="./assets/paper-how.svg" alt="">
+      <div class="rip-content">
+        <h2>HOW TO ENTER</h2>
+        <p>-Entry starts with <strong>1 gifted sub.</strong></p>
+        <p>-Each gifted sub counts as one wheel entry.</p>
+      </div>
+    </div>
+  </aside>
+  <div class="stage">
+
+<div class="icon-slot icon-clapper" data-icon="Clapperboard"><img src="./assets/clapperboard.png" alt="" onerror="this.remove()"></div>
+<div class="icon-slot icon-tickets" data-icon="Tickets"><img src="./assets/tickets.png" alt="" onerror="this.remove()"></div>
+<div class="icon-slot icon-film" data-icon="Film reel"><img src="./assets/film-reel.png" alt="" onerror="this.remove()"></div>
+<div class="icon-slot icon-director" data-icon="Director chair"><img src="./assets/director-chair.png" alt="" onerror="this.remove()"></div>
+<div class="icon-slot icon-star" data-icon="Star"><img src="./assets/star.png" alt="" onerror="this.remove()"></div>
+<div class="icon-slot icon-popcorn" data-icon="Popcorn"><img src="./assets/popcorn.png" alt="" onerror="this.remove()"></div>
+<div class="wheel-shell">
+<div class="pointer"></div>
+<svg id="wheel" viewBox="0 0 600 600" role="img" aria-label="Weighted supporter wheel">
+<defs>
+
+<filter id="printedWheelGrain" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency=".58" numOctaves="3" stitchTiles="stitch" result="grain"/>
+  <feColorMatrix in="grain" type="saturate" values="0"/>
+</filter>
+<clipPath id="wheelPrintClip"><circle cx="300" cy="300" r="269" /></clipPath>
+</defs>
+
+<circle cx="300" cy="300" r="277" fill="#FFFFFF" stroke="#C83232" stroke-width="3"/>
+<g id="rotor"></g>
+
+<g clip-path="url(#wheelPrintClip)" pointer-events="none" style="mix-blend-mode:multiply">
+  <rect x="30" y="30" width="540" height="540" filter="url(#printedWheelGrain)" opacity=".09"/>
+</g>
+
+<circle cx="300" cy="300" r="44" fill="#C83232" stroke="#1478A8" stroke-width="5"/>
+<circle cx="300" cy="300" r="36" fill="#FFFFFF" stroke="#1478A8" stroke-width="2"/>
+<text x="300" y="307" font-size="21" text-anchor="middle" fill="#242424">C&amp;A</text>
+</svg>
+<div id="winner" hidden><span>AND THE WINNER IS...</span><strong id="winnerName"></strong></div>
+</div></div>
+  <aside class="wheel-side wheel-side-right">
+    <div class="side-paper paper-prize">
+      <img class="rip-bg" src="./assets/paper-prize.svg" alt="">
+      <div class="rip-content">
+        <span>THIS ROUND'S PRIZE</span>
+        <strong id="prizeTitle">PRIZE TO BE ANNOUNCED</strong>
+      </div>
+    </div>
+    <div class="side-paper paper-winner">
+      <img class="rip-bg" src="./assets/paper-winner.svg" alt="">
+      <div class="rip-content">
+        <span>LATEST WINNER</span>
+        <strong id="latestWinner">—</strong>
+      </div>
+    </div>
+  </aside>
+</div>
+<p id="status">CONNECTING TO TWITCH DATA...</p>
+</main>
+<script>
+
+const CHAMBER_WHEEL_API = "https://chamber-analytics.krispyyfry.workers.dev/cg-wheel";
+async function cgRequest(route) {
+  // Public, read-only state: no Twitch login required.
+  const response = await fetch(CHAMBER_WHEEL_API + route, {cache:'no-store'});
+  if (!response.ok) throw new Error('Wheel data unavailable (HTTP ' + response.status + ')');
+  return response.json();
+}
+
+(function(){
+'use strict';
+const NS='http://www.w3.org/2000/svg';
+const rotor=document.getElementById('rotor');
+const colors=['#F6EAD3','#C83232','#252525','#1478A8','#E8DDC6','#B73535','#353535','#297EA8'];
+let people=[], angle=0, busy=false, lastSpinId=null, lastRoundId=null, winnerTimeout=null;
+ let timer={status:'idle',remainingMs:0,endsAt:null};
+ function showTimer(){const ms=timer.status==='running'?Math.max(0,Number(timer.endsAt||0)-Date.now()):Math.max(0,Number(timer.remainingMs||0));const n=Math.ceil(ms/1000);const text=[Math.floor(n/3600),Math.floor(n%3600/60),n%60].map(v=>String(v).padStart(2,'0')).join(':');document.getElementById('roundTimer').textContent=timer.status==='idle'?'ROUND NOT STARTED':!ms?'TIME\'S UP!':text;}
+ setInterval(showTimer,250);
+// Administration happens on the separate /gift-wheel/admin page.
+const svg=(tag,attributes)=>{const el=document.createElementNS(NS,tag);Object.entries(attributes).forEach(([k,v])=>el.setAttribute(k,String(v)));return el};
+const point=(degrees,r)=>[300+Math.cos(degrees*Math.PI/180)*r,300+Math.sin(degrees*Math.PI/180)*r];
+function wedge(a,b){const size=b-a;if(size>=359.999)return 'M300 30 A270 270 0 1 1 299.99 30 Z';const p=point(a,270),q=point(b,270);return 'M300 300 L'+p[0]+' '+p[1]+' A270 270 0 '+(size>180?1:0)+' 1 '+q[0]+' '+q[1]+' Z'}
+function render(){
+ rotor.replaceChildren();
+ const total=people.reduce((s,p)=>s+p.entries,0);
+ let a=-90;
+ if(!total){const msg=svg('text',{x:300,y:190,'text-anchor':'middle',fill:'#252525','font-size':19});msg.textContent='WAITING FOR GIFTS';rotor.append(msg)}
+ people.forEach((person,i)=>{
+   const width=360*person.entries/total,mid=a+width/2,b=a+width;
+   rotor.append(svg('path',{d:wedge(a,b),fill:colors[i%colors.length],stroke:'#242424','stroke-width':2.8}));
+   if(width>=9){const p=point(mid,165);const t=svg('text',{x:p[0],y:p[1],'text-anchor':'middle','dominant-baseline':'middle','font-size':width<16?8:11,fill:([1,2,3,5,6,7].includes(i%colors.length)?'#F6EAD3':'#242424'),stroke:'none'});t.textContent=person.username.length>13?person.username.slice(0,12)+'…':person.username;rotor.append(t)}
+   a=b;
+ });
+ rotor.setAttribute('transform','rotate('+angle+' 300 300)');
+}
+function demoData(){return [{username:'krispy',entries:2},{username:'melo',entries:5},{username:'abby',entries:15},{username:'chat',entries:3}]}
+async function refresh(){
+ try{
+   const data=await cgRequest('/state');
+    timer=data.timer||{status:"idle",remainingMs:0,endsAt:null};showTimer();
+   const incoming=(Array.isArray(data.users)?data.users:[]).filter(p=>p&&p.username&&Number(p.entries)>0).map(p=>({username:String(p.username),entries:Number(p.entries)}));
+   const demo=new URLSearchParams(location.search).has('demo');
+   if(data.round && data.round.id!==lastRoundId){
+      lastRoundId=data.round.id;
+      lastSpinId=data.spin?.id || null;
+      if(!busy){angle=0;document.getElementById('winner').hidden=true;clearTimeout(winnerTimeout)}
+   }
+   if(!busy){people=demo?demoData():incoming;render()}
+   document.getElementById('prizeTitle').textContent=data.prizeTitle||'PRIZE TO BE ANNOUNCED';
+   document.getElementById('latestWinner').textContent=data.spin?.winner||'—';
+   document.getElementById('status').textContent=demo?'DEMO PREVIEW • NOT LIVE DATA':'NOW SHOWING • UPDATES EVERY 10 SECONDS';
+   if(data.spin && data.spin.id){
+     if(lastSpinId===null)lastSpinId=data.spin.id;
+     else if(lastSpinId!==data.spin.id){lastSpinId=data.spin.id; if(!busy&&!demo)spinTo(data.spin.winner)}
+   }
+ }catch(error){document.getElementById('status').textContent='CONNECTION ERROR: '+error.message}
+}
+async function spinTo(username){
+ if(busy)return;
+ const total=people.reduce((s,p)=>s+p.entries,0);
+ let cumulative=0,mid=null;
+ for(const p of people){if(p.username===username){mid=-90+(cumulative+p.entries/2)*360/total;break}cumulative+=p.entries}
+ if(mid===null)return;
+ busy=true;
+ const desired=(-90-mid+720)%360,delta=(desired-(angle%360)+360)%360;
+ const start=angle,finish=angle+360*6+delta,duration=5500;
+ await new Promise(resolve=>{const t0=performance.now();function frame(now){const p=Math.min(1,(now-t0)/duration),e=1-Math.pow(1-p,4);rotor.setAttribute('transform','rotate('+(start+(finish-start)*e)+' 300 300)');if(p<1)requestAnimationFrame(frame);else resolve()}requestAnimationFrame(frame)});
+ angle=finish%360;busy=false;render();
+ document.getElementById('winnerName').textContent=username;
+ document.getElementById('latestWinner').textContent=username;
+ document.getElementById('winner').hidden=false;
+ clearTimeout(winnerTimeout);
+ winnerTimeout=setTimeout(()=>{document.getElementById('winner').hidden=true},9000);
+}
+refresh();setInterval(refresh,10000);
+})();
+</script>
+</body>
+</html>
