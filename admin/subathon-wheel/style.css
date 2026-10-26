@@ -3,3 +3,5 @@
 @media(min-width:801px){header{padding-top:16px}h1{font-size:clamp(45px,6vw,90px);margin:8px 0}.rule{margin:12px auto}.status{margin:12px 0}main{margin-top:0;grid-template-columns:1fr 2.2fr 1fr;gap:4%}.wheel-wrap{max-width:min(100%,calc(100vh - 360px));margin:auto}.clapper{margin-bottom:30px}.ticket{margin-bottom:30px}.star{font-size:65px;margin-top:10px}.popcorn{font-size:40px;margin-top:10px}.card{padding:20px}.card p{font-size:14px}.latest{margin-top:20px}footer{padding:10px}.spin{margin-top:8px}.subnote{margin:10px 0}.left,.right{align-self:center}}
 
 .slice.used path,.slice.used circle{fill:#aaa7a1;stroke:#827f79}.slice.used text{fill:#57554f;text-decoration:line-through}
+
+.card ul{padding-left:18px;font-size:14px;line-height:1.8}.card li{margin:7px 0}
