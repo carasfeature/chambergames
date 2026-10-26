@@ -54,7 +54,7 @@ dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-s
 @media(max-width:900px){.stage{grid-template-columns:1fr}.wheel-wrap{max-width:720px}}
 </style></head>
 <body>
-<main id="stream-menu" class="stream-menu"><header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>For Stream</h1></header><nav class="stream-links" aria-label="Stream activities"><button class="stream-link" id="open-wheel">Wheel Of Fortune</button><a class="stream-link" href="celebration/">Celebration Wheel</a><p class="coming-label">FOR NEXT SUBATHON 👀</p><button class="stream-link" type="button" disabled>NSFW Words Guesser</button></nav></main>
+<main id="stream-menu" class="stream-menu"><header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>For Stream</h1></header><nav class="stream-links" aria-label="Stream activities"><button class="stream-link" id="open-wheel">Wheel Of Fortune</button></nav></main>
 <main id="wheel-page" hidden><button class="menu-back" id="back-menu">← For Stream menu</button>
 <header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>Blessing <em>Or</em> Curse</h1></header>
 <section class="stage" aria-label="Halloween wheel">
@@ -76,11 +76,7 @@ dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-s
 <span class="small">Your fate is decided</span><h2 id="result-title"></h2><p id="result-description"></p>
 <div class="coin-game" id="result-coin" hidden><div class="coin" aria-hidden="true">C</div><button class="coin-button" type="button">flip the coin</button><p class="coin-result" role="status" aria-live="polite"></p></div>
 <form method="dialog"><button class="spin" autofocus>BACK TO THE WHEEL</button></form></dialog>
-<dialog id="additions" aria-labelledby="additions-title">
-<h2 id="additions-title">NEW ADDITIONS TODAY:</h2>
-<ul><li><strong>Hairdresser Extravaganza</strong></li><li>Eyebrow Slit</li></ul>
-<form method="dialog"><button class="spin" type="submit" autofocus>OK</button></form>
-</dialog>
+
 <script>
 const menu=document.getElementById('stream-menu'),wheelPage=document.getElementById('wheel-page');
 function route(){const showWheel=location.hash==='#wheel';menu.hidden=showWheel;wheelPage.hidden=!showWheel;}
@@ -165,5 +161,5 @@ document.querySelectorAll('.coin-game').forEach(widget=>{
  });
 });
 result.addEventListener('close',()=>spin.focus());
-document.getElementById('additions').showModal();
+
 </script></body></html>
