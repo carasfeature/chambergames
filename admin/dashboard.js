@@ -1,0 +1,12 @@
+const names={stream:'For Stream',games:'Games',tournaments:'Tournaments',settings:'Website Settings'};
+function route(){const key=location.hash.slice(1)||'stream',active=names[key]?key:'stream';for(const id of [...Object.keys(names),'wheel-detail'])document.getElementById(id).hidden=id!==active;document.querySelectorAll('[data-section]').forEach(a=>{if(a.dataset.section===active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});document.getElementById('page-title').textContent=names[active]}
+addEventListener('hashchange',route);route();
+document.querySelectorAll('[data-section]').forEach(a=>a.addEventListener('click',()=>{if(location.hash===a.getAttribute('href'))route()}));
+document.querySelectorAll('[data-wheel]').forEach(b=>b.onclick=()=>{document.getElementById('stream').hidden=true;document.getElementById('wheel-detail').hidden=false;const fortune=b.dataset.wheel==='fortune';document.getElementById('wheel-frame').hidden=!fortune;document.getElementById('empty-wheel').hidden=fortune;const title=fortune?'Wheel Of Fortune':b.dataset.wheel==='subathon'?'Subathon Wheel':'Giveaway Wheel';document.getElementById('page-title').textContent=title;document.getElementById('empty-title').textContent=title});
+document.getElementById('wheel-back').onclick=route;
+const date=document.getElementById('release-date'),tba=document.getElementById('release-tba'),zone=Intl.DateTimeFormat().resolvedOptions().timeZone;
+document.getElementById('timezone').textContent='Timezone: '+zone+'. The release represents the same moment for all viewers.';
+const saved=JSON.parse(localStorage.getItem('chamber-admin-local-db')||'{}').tournament?.gameRelease;
+if(saved?.at){const d=new Date(saved.at);date.value=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
+tba.checked=!saved?.at;date.disabled=tba.checked;tba.onchange=()=>date.disabled=tba.checked;
+document.getElementById('settings-form').onsubmit=async e=>{e.preventDefault();const status=document.getElementById('settings-status');if(!tba.checked&&!date.value){status.textContent='Choose a date and time or select TBA.';return}try{await localFirebase.set('tournament/gameRelease',tba.checked?null:{at:new Date(date.value).getTime(),timeZone:zone});status.textContent='Saved locally. The live website is unchanged.'}catch{status.textContent='Unable to save. Check browser storage availability.'}};
