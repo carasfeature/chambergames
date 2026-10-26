@@ -42,8 +42,21 @@ td:last-child,th:last-child{text-align:right}
 #history{padding-left:23px;margin:0}
 #history li{padding:8px 0;border-bottom:1px solid #ded9d1;font-size:12px;line-height:1.5}
 code{font-family:monospace;overflow-wrap:anywhere}
+[hidden]{display:none!important}
+#accessScreen{max-width:680px;min-height:75vh;display:flex;flex-direction:column;justify-content:center;text-align:center}
+#accessScreen h1{font-size:clamp(38px,6vw,64px)}
+#accessScreen p{font-size:14px}
 @media(max-width:600px){body{padding:20px 14px 45px}section{padding:17px;margin:16px 0}h1{font-size:clamp(34px,10vw,56px)}h2{font-size:19px}.row>*{min-width:115px}main>a:first-child{padding:10px;font-size:11px}}
-</style></head><body><main>
+</style></head><body>
+<main id="accessScreen" aria-live="polite">
+  <a href="/">← CHAMBERGAMES</a>
+  <section>
+    <h1 id="accessTitle">CHECKING ACCESS</h1>
+    <p id="accessMessage">Verifying your Twitch account...</p>
+    <a id="accessLogin" href="/" hidden>LOG IN TO CHAMBERGAMES</a>
+  </section>
+</main>
+<main id="adminRoom" hidden>
 <a href="/index.html#section=krispysgames">← CHAMBERGAMES</a>
 <p>PRIVATE CONTROL ROOM</p>
 <h1>GIVEAWAY WHEEL ADMIN</h1>
@@ -62,6 +75,17 @@ code{font-family:monospace;overflow-wrap:anywhere}
 
 const CHAMBER_WHEEL_API = "https://chamber-analytics.krispyyfry.workers.dev/cg-wheel";
 const cgToken = localStorage.getItem('twitchToken');
+function showAccess(title, message, login = false) {
+  document.getElementById('adminRoom').hidden = true;
+  document.getElementById('accessScreen').hidden = false;
+  document.getElementById('accessTitle').textContent = title;
+  document.getElementById('accessMessage').textContent = message;
+  document.getElementById('accessLogin').hidden = !login;
+}
+function showAdmin() {
+  document.getElementById('accessScreen').hidden = true;
+  document.getElementById('adminRoom').hidden = false;
+}
 async function cgRequest(route, options={}) {
   if (!cgToken) throw new Error('Please sign in to ChamberGames with Twitch first.');
   const response=await fetch(CHAMBER_WHEEL_API + route, {
@@ -71,6 +95,8 @@ async function cgRequest(route, options={}) {
   });
   if(!response.ok) {
     const error=await response.json().catch(()=>({}));
+    if (response.status === 401) showAccess('SIGN IN REQUIRED', 'Sign in to ChamberGames with Twitch to access this page.', true);
+    if (response.status === 403) showAccess('ACCESS DENIED', 'This Twitch account is not approved to use the Giveaway Wheel admin.');
     throw new Error(error.error || ('Access denied / HTTP '+response.status));
   }
   return response.json();
@@ -139,6 +165,19 @@ $('resumeTimer').onclick=()=>timerAction('resume');
 $('resetTimer').onclick=()=>timerAction('reset');
 $('spin').addEventListener('click' ,async()=>{if(!confirm('Spin the live Gift Wheel now?'))return;$('spin').disabled=true;status('STARTING SPIN...');try{const r=await post('/gift-wheel/spin');status('SPIN SENT // WINNER: '+r.spin.winner);await load(true)}catch(e){status('ERROR: '+e.message)}finally{$('spin').disabled=false}});
 $('entryForm').addEventListener('submit',async e=>{e.preventDefault();const username=$('username').value.trim(),delta=Number($('delta').value);if(!confirm('Apply '+(delta>0?'+':'')+delta+' entries to '+username+'?'))return;status('SAVING...');try{await post('/gift-wheel/manage',{username,delta});status('SAVED // ALLOW UP TO 60 SECONDS TO PROPAGATE');await load(true)}catch(err){status('ERROR: '+err.message)}});
-if(!cgToken)status('SIGN IN THROUGH CHAMBERGAMES FIRST');else {load();setInterval(()=>load(false),15000);}
+if (!cgToken) {
+  showAccess('SIGN IN REQUIRED', 'Sign in to ChamberGames with Twitch to access this page.', true);
+} else {
+  cgRequest('/history').then(() => {
+    showAdmin();
+    load();
+    setInterval(() => load(false), 15000);
+  }).catch(error => {
+    if (!document.getElementById('accessTitle').textContent.includes('DENIED') &&
+        !document.getElementById('accessTitle').textContent.includes('REQUIRED')) {
+      showAccess('UNABLE TO VERIFY', 'Your Twitch access could not be verified. Please try again.');
+    }
+  });
+}
 })();
 </script></body></html>
