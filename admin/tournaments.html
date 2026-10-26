@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="/admin/access.js"></script><meta name="viewport" content="width=device-width,initial-scale=1"><script src="local-db.js"></script>
+<meta charset="UTF-8">
+<title>Tournament Admin</title>
+<style>
+  :root{
+    --bg:#0d0f14; --panel:#151822; --line:#262b3a;
+    --text:#e8eaf0; --dim:#7b8399; --purple:#8b5cf6; --gold:#ffc857; --green:#5fd97b; --red:#e05c5c; --flash:#6DB8FA;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; padding:20px; }
+  h1{ font-size:18px; margin:0 0 4px; }
+  h2{ font-size:14px; margin:24px 0 10px; color:var(--purple); }
+  .sub{ color:var(--dim); font-size:12px; margin-bottom:16px; }
+
+  .row{ display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; align-items:center; }
+  input[type=text], input[type=password]{
+    background:var(--panel); border:1px solid var(--line); color:var(--text);
+    padding:9px 12px; border-radius:8px; font-size:13px;
+  }
+  input[type=text]{ flex:1; }
+  button{ background:var(--purple); color:white; border:none; padding:9px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+  button.secondary{ background:var(--panel); border:1px solid var(--line); color:var(--text); }
+  button.open-toggle.closed{ background:var(--line); color:var(--dim); }
+  button.open-toggle.open{ background:var(--green); color:#0d0f14; }
+  button:disabled{ opacity:.4; cursor:default; }
+
+  button.round-pointer-btn{ background:var(--panel); border:1px solid var(--line); color:var(--text); }
+  button.round-pointer-btn.active{ background:#ffffff; border-color:#ffffff; color:#0d0f14; }
+
+  .status{ font-size:12px; margin-bottom:16px; }
+  .status.on{ color:var(--green); } .status.off{ color:var(--red); }
+
+  .panel{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px; }
+  .round-card{ border-bottom:1px solid var(--line); padding:14px 0; }
+  .round-card:last-child{ border-bottom:none; }
+  .round-top{ display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+  .round-top label{ width:110px; font-size:13px; color:var(--dim); flex-shrink:0; font-weight:600; }
+  .round-top input[type=text]{ flex:1; min-width:160px; }
+  .fill-count{ font-size:12px; color:var(--dim); white-space:nowrap; }
+  .fill-count.full{ color:var(--gold); font-weight:700; }
+
+  .qualified-list{ font-size:11px; color:var(--dim); margin-top:6px; max-height:60px; overflow-y:auto; line-height:1.6; }
+  .qualified-list span{ background:#1c1f2c; padding:2px 6px; border-radius:4px; margin-right:4px; display:inline-block; margin-bottom:3px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ text-align:left; color:var(--dim); font-weight:600; padding:6px 8px; border-bottom:1px solid var(--line); }
+  td{ padding:6px 8px; border-bottom:1px solid var(--line); }
+  .log{ max-height:280px; overflow-y:auto; }
+  #roundTalliesPanel{ display:flex; gap:10px; flex-wrap:wrap; }
+  .tally-card{ flex:1 1 170px; min-width:170px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; }
+
+  .publish-status{ font-size:12px; margin-top:10px; }
+  .publish-status.ok{ color:var(--green); } .publish-status.err{ color:var(--red); }
+
+  .note{ font-size:11px; color:var(--dim); }
+  .section-divider{ border-top:1px solid var(--line); margin:16px 0; }
+
+  .login-box input{ width:100%; margin-bottom:8px; }
+  .login-status{ font-size:12px; margin-top:8px; }
+  .login-status.on{ color:var(--green); } .login-status.off{ color:var(--red); }
+
+  .tournament-block{ background:var(--panel); border:1px solid var(--line); border-radius:12px; margin-bottom:16px; padding:0; }
+  .tournament-block summary{ cursor:pointer; padding:16px; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:space-between; list-style:none; }
+  .tournament-block summary::-webkit-details-marker{ display:none; }
+  .tournament-block summary::before{ content:'▶'; margin-right:8px; font-size:11px; color:var(--dim); }
+  .tournament-block[open] summary::before{ content:'▼'; }
+  .tournament-block-body{ padding:0 16px 16px; }
+
+  .bracket-round-cols{ display:flex; gap:14px; overflow-x:auto; padding-bottom:8px; }
+  .bracket-round-col{ flex:1 1 220px; min-width:220px; }
+  .bracket-round-label{ font-size:12px; color:var(--dim); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px; text-align:center; }
+  .bracket-match{ background:#1c1f2c; border:1px solid var(--line); border-radius:8px; padding:10px; margin-bottom:14px; }
+  .bracket-match.glow{ border-color:var(--flash); box-shadow:0 0 0 1px var(--flash); }
+  .bracket-slot{ display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+  .bracket-slot:last-child{ margin-bottom:0; }
+  .bracket-slot input{ flex:1; min-width:0; padding:6px 8px; font-size:12px; background:var(--bg); border:1px solid var(--line); color:var(--text); border-radius:5px; }
+  .bracket-win-btn{ flex:none; padding:4px 8px; font-size:10px; background:var(--line); color:var(--dim); border:none; border-radius:4px; cursor:pointer; }
+  .bracket-win-btn.winner{ background:var(--green); color:#0d0f14; }
+  .bracket-glow-btn{ width:100%; margin-top:6px; padding:5px; font-size:10px; background:transparent; border:1px dashed var(--line); color:var(--dim); border-radius:4px; cursor:pointer; }
+  .bracket-glow-btn.active{ background:var(--flash); color:#0d0f14; border-style:solid; border-color:var(--flash); }
+</style>
+<link rel="stylesheet" href="theme.css"></head>
+<body class="tool tournament-tool">
+
+<h1>🏆 Tournament Admin</h1>
+<div class="sub">Live gifted-sub tally, relative round ladder, and claim-lock controls</div>
+
+<h2>1. Connect to Twitch chat</h2>
+<div class="row">
+  <input type="text" id="channel" placeholder="twitch channel name (no #)" />
+  <button id="connectBtn" onclick="connect()">Connect</button>
+</div>
+<div id="status" class="status off">Not connected</div>
+<button class="secondary" onclick="resetAllData()">Reset all tally data</button>
+
+<h2>Local workspace</h2>
+<div class="panel">
+
+  <div id="loginStatus" class="login-status off">Local preview — changes save only in this browser.</div>
+  <button style="margin-top:10px;" onclick="publish()">Save tournament locally</button>
+  <div id="publishStatus" class="publish-status"></div>
+</div>
+
+<section hidden><h2>3. Site settings</h2>
+<div class="panel">
+  <div class="round-top">
+    <label>Games release</label>
+    <input type="datetime-local" id="gameReleaseInput" step="60" style="flex:1;" />
+    <label style="width:auto; display:flex; align-items:center; gap:6px; font-size:13px; color:var(--dim);">
+      <input type="checkbox" id="gameReleaseTBA" style="width:auto;" /> TBA
+    </label>
+  </div>
+  <div class="note">Sets the "NEXT GAMES RELEASES IN" countdown on the main menu. Choose the date, hour and minute, then click Publish to claim page above. Check TBA or leave the date blank to show TBA. When the countdown ends, the tile shows OUT NOW.</div>
+  <div class="note" id="gameReleaseTimezone"></div>
+</div>
+
+</section><details class="tournament-block" open>
+<summary>🎮 Fortnite Tournament
+  <button id="toggle-fortniteOpen" class="open-toggle open" onclick="event.preventDefault(); event.stopPropagation(); toggleFortniteOpen();">🔓 Open</button>
+</summary>
+<div class="tournament-block-body">
+
+<h2>4. Current round</h2>
+<div class="panel">
+  <div class="row" id="pointerRow"></div>
+  <div class="note">Click a round to mark it live: starts counting gifted subs toward its ladder (Rounds 1–4 only) and flashes its box on the claim page. This does <b>not</b> unlock the Claim button — that's controlled separately below. Click the active one again to turn it off.</div>
+</div>
+
+<h2>5. Rounds 1–5 and Final — codes, caps, claim lock</h2>
+<div class="panel" id="roundsPanel"></div>
+<div class="panel">
+  <div class="round-top">
+    <label>Round 5</label>
+    <input type="text" id="code-round5" placeholder="round 5 code" />
+    <button id="toggle-round5" class="open-toggle closed" onclick="toggleOpen('round5')">🔒 Closed</button>
+  </div>
+  <div class="note">Free-for-all — no gifting threshold, no cap.</div>
+  <div class="section-divider"></div>
+  <div class="round-top">
+    <label>Finals</label>
+    <input type="text" id="code-finals" placeholder="finals code" />
+    <button id="toggle-finals" class="open-toggle closed" onclick="toggleOpen('finals')">🔒 Closed</button>
+  </div>
+  <div class="qualified-list" id="qlistFinal"></div>
+  <div class="note" style="margin-top:6px;">Locked to manually-added users only — no automatic access from gifting. Add people in section 5 while "Final" is the active round.</div>
+</div>
+
+<h2>6. Add / delete user access</h2>
+<div class="panel">
+  <div class="note" id="accessRoundNote">No round is currently active — pick one in section 3 first.</div>
+  <div class="row">
+    <input type="text" id="accessUsername" placeholder="Twitch username" />
+    <button onclick="grantAccess()">➕ Add access</button>
+    <button class="secondary" onclick="revokeAccess()">➖ Remove access</button>
+  </div>
+  <div id="accessStatus" class="note"></div>
+</div>
+
+<h2>7. Submitted Fortnite gamertags</h2>
+<div class="panel">
+  <div class="row">
+    <button class="secondary" onclick="loadNametags()">🔄 Refresh</button>
+    <input type="text" id="nametagSearch" placeholder="Search by Fortnite name..." oninput="renderNametags()" />
+  </div>
+  <div class="log">
+    <table>
+      <thead><tr><th>Twitch login</th><th>Fortnite name</th></tr></thead>
+      <tbody id="nametagsBody"><tr><td colspan="2" style="color:var(--dim);">Click refresh to load</td></tr></tbody>
+    </table>
+  </div>
+  <button class="secondary" id="nametagsShowMoreBtn" style="margin-top:8px; display:none;" onclick="showMoreNametags()">Show 10 more</button>
+</div>
+
+<h2>8. Prize winners</h2>
+<div class="panel">
+  <div class="round-top"><label>Round 1</label><input type="text" id="winner-round-0" placeholder="Round 1 winner's Twitch or in-game name" /></div>
+  <div class="round-top"><label>Round 2</label><input type="text" id="winner-round-1" placeholder="Round 2 winner's Twitch or in-game name" /></div>
+  <div class="round-top"><label>Round 3</label><input type="text" id="winner-round-2" placeholder="Round 3 winner's Twitch or in-game name" /></div>
+  <div class="round-top"><label>Round 4</label><input type="text" id="winner-round-3" placeholder="Round 4 winner's Twitch or in-game name" /></div>
+  <div class="round-top"><label>Round 5</label><input type="text" id="winner-round5" placeholder="Round 5 winner's Twitch or in-game name" /></div>
+  <div class="round-top"><label>Final</label><input type="text" id="winner-final" placeholder="Final winner's Twitch or in-game name" /></div>
+  <div class="round-top"><label>Killer Round 1</label><input type="text" id="winner-killer-0" placeholder="Christina's Killer winner, Round 1" /></div>
+  <div class="round-top"><label>Killer Round 2</label><input type="text" id="winner-killer-1" placeholder="Christina's Killer winner, Round 2" /></div>
+  <div class="round-top"><label>Killer Round 3</label><input type="text" id="winner-killer-2" placeholder="Christina's Killer winner, Round 3" /></div>
+  <div class="round-top"><label>Killer Round 4</label><input type="text" id="winner-killer-3" placeholder="Christina's Killer winner, Round 4" /></div>
+  <div class="note">These show up on the Prizes section of the claim page. Included automatically whenever you hit Publish.</div>
+</div>
+
+<h2>9. Qualified for Finals (1st–3rd per round)</h2>
+<div class="panel">
+  <div class="round-top"><label>Round 1</label>
+    <input type="text" id="qual-0-0" placeholder="1st" style="flex:1;" />
+    <input type="text" id="qual-0-1" placeholder="2nd" style="flex:1;" />
+    <input type="text" id="qual-0-2" placeholder="3rd" style="flex:1;" />
+  </div>
+  <div class="round-top"><label>Round 2</label>
+    <input type="text" id="qual-1-0" placeholder="1st" style="flex:1;" />
+    <input type="text" id="qual-1-1" placeholder="2nd" style="flex:1;" />
+    <input type="text" id="qual-1-2" placeholder="3rd" style="flex:1;" />
+  </div>
+  <div class="round-top"><label>Round 3</label>
+    <input type="text" id="qual-2-0" placeholder="1st" style="flex:1;" />
+    <input type="text" id="qual-2-1" placeholder="2nd" style="flex:1;" />
+    <input type="text" id="qual-2-2" placeholder="3rd" style="flex:1;" />
+  </div>
+  <div class="round-top"><label>Round 4</label>
+    <input type="text" id="qual-3-0" placeholder="1st" style="flex:1;" />
+    <input type="text" id="qual-3-1" placeholder="2nd" style="flex:1;" />
+    <input type="text" id="qual-3-2" placeholder="3rd" style="flex:1;" />
+  </div>
+  <div class="round-top"><label>Round 5</label>
+    <input type="text" id="qual-4-0" placeholder="1st" style="flex:1;" />
+    <input type="text" id="qual-4-1" placeholder="2nd" style="flex:1;" />
+    <input type="text" id="qual-4-2" placeholder="3rd" style="flex:1;" />
+  </div>
+  <div class="note">Shows on the "Qualified For Finals" panel on the claim page.</div>
+</div>
+
+</div>
+</details>
+
+<details class="tournament-block">
+<summary>⚽ FC26 Tournament
+  <button id="toggle-fc26Open" class="open-toggle closed" onclick="event.preventDefault(); event.stopPropagation(); toggleFc26Open();">🔒 Closed</button>
+</summary>
+<div class="tournament-block-body">
+
+<h2>Bracket — 16 players, single elimination</h2>
+<div class="panel">
+  <div class="note" style="margin-bottom:10px;">Type player names, click "Win" to advance them to the next round automatically. Click "Glow" on whichever match is currently live — only one can glow at a time.</div>
+  <div class="bracket-round-cols" id="fc26BracketCols"></div>
+</div>
+
+<h2>Podium</h2>
+<div class="panel">
+  <div class="round-top"><label>Winner</label><input type="text" id="fc26-winner" placeholder="1st place" /></div>
+  <div class="round-top"><label>2nd Place</label><input type="text" id="fc26-second" placeholder="2nd place" /></div>
+  <div class="round-top"><label>3rd Place</label><input type="text" id="fc26-third" placeholder="3rd place" /></div>
+  <div class="note">Manually entered — not auto-filled from the bracket.</div>
+</div>
+
+</div>
+</details>
+
+<h2>10. Archive tournament data</h2>
+<div class="panel">
+  <div class="note" style="margin-bottom:10px;">Archive before replacing a tournament. This preview only saves locally.</div>
+  <div class="row">
+    <button onclick="downloadTournamentData()">💾 Download as JSON</button>
+    <button class="secondary" onclick="archiveToFirebase()">📦 Save to local archive</button>
+  </div>
+  <div id="archiveStatus" class="note"></div>
+</div>
+
+<h2>Live gifted-sub tally by round</h2>
+<div id="roundTalliesPanel"></div>
+
+
+
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAdx6UIx2mHwqbK4KPKnXolbgmUcCR1Wvg",
+  authDomain: "lobby-claim.firebaseapp.com",
+  databaseURL: "https://lobby-claim-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "lobby-claim",
+  storageBucket: "lobby-claim.firebasestorage.app",
+  messagingSenderId: "41913061647",
+  appId: "1:41913061647:web:4eac52a2ddbb5ec2696e7a"
+};
+
+const fbAuth = firebase.auth();
+const fbDb = firebase.database();
+let isSignedIn = true;
+const releaseTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+document.getElementById('gameReleaseTimezone').textContent = 'Date and time use your timezone: ' + releaseTimeZone + '. The countdown ends at the same moment for all viewers.';
+document.getElementById('gameReleaseTBA').addEventListener('change', event => {
+  document.getElementById('gameReleaseInput').disabled = event.target.checked;
+});
+
+function adminSignIn(){
+  const email = document.getElementById('adminEmail').value.trim();
+  const password = document.getElementById('adminPassword').value;
+  const statusEl = document.getElementById('loginStatus');
+  fbAuth.signInWithEmailAndPassword(email, password)
+    .then(() => {
+      isSignedIn = true;
+      statusEl.textContent = '✅ Signed in as ' + email;
+      statusEl.className = 'login-status on';
+    })
+    .catch((err) => {
+      isSignedIn = false;
+      statusEl.textContent = '❌ Sign-in failed: ' + err.message;
+      statusEl.className = 'login-status off';
+    });
+}
+
+const ROUND_COUNT = 4; // laddered rounds only (Round 1-4). Round 5 + Finals are separate free-for-all.
+const CAP = 90;
+let tallies = {};                    // login -> {display, count, lastTime}
+let qualifyOrder = [{},{},{},{}];    // per round (0-3): login -> order (first-come sequence)
+let roundOpen = [false,false,false,false];
+let round5Open = false;
+let finalsOpen = false;
+let currentRoundPointer = null;      // null, 1-5, or 'final' — nothing flashes/counts until admin picks one
+let finalQualifyOrder = {};          // login -> order — manually curated only, no automatic gifting access
+let giftSeq = 0;
+let ws = null;
+
+const POINTER_OPTIONS = [
+  {val:1,label:'Round 1'},{val:2,label:'Round 2'},{val:3,label:'Round 3'},
+  {val:4,label:'Round 4'},{val:5,label:'Round 5'},{val:'final',label:'Final'}
+];
+
+function renderPointerButtons(){
+  document.getElementById('pointerRow').innerHTML = POINTER_OPTIONS.map(o => {
+    const arg = typeof o.val === 'string' ? `'${o.val}'` : o.val;
+    return `<button class="round-pointer-btn ${currentRoundPointer===o.val?'active':''}" onclick="setCurrentRound(${arg})">${o.label}</button>`;
+  }).join('');
+}
+renderPointerButtons();
+
+function setCurrentRound(val){
+  currentRoundPointer = (currentRoundPointer === val) ? null : val; // click active one again to turn off
+  renderPointerButtons();
+  updateAccessNote();
+  evaluateQualifications();
+  renderRoundTallies();
+  renderRoundFills();
+}
+
+function initRoundsPanel(){
+  document.getElementById('roundsPanel').innerHTML = Array.from({length: ROUND_COUNT}).map((_, i) => `
+    <div class="round-card">
+      <div class="round-top">
+        <label>Round ${i+1}</label>
+        <input type="text" id="code-round-${i}" placeholder="code for round ${i+1} (XXXX-XXXX-XXXX-XXXX)" />
+        <span class="fill-count" id="fill-${i}">0/${CAP}</span>
+        <button id="toggle-round-${i}" class="open-toggle closed" onclick="toggleOpen(${i})">🔒 Closed</button>
+      </div>
+      <div class="qualified-list" id="qlist-${i}"></div>
+    </div>
+  `).join('');
+}
+initRoundsPanel();
+
+let fortniteOpen = true;
+let fc26Open = false;
+function toggleFortniteOpen(){
+  fortniteOpen = !fortniteOpen;
+  const btn = document.getElementById('toggle-fortniteOpen');
+  btn.textContent = fortniteOpen ? '🔓 Open' : '🔒 Closed';
+  btn.className = 'open-toggle ' + (fortniteOpen ? 'open' : 'closed');
+}
+function toggleFc26Open(){
+  fc26Open = !fc26Open;
+  const btn = document.getElementById('toggle-fc26Open');
+  btn.textContent = fc26Open ? '🔓 Open' : '🔒 Closed';
+  btn.className = 'open-toggle ' + (fc26Open ? 'open' : 'closed');
+}
+
+// FC26 bracket: 16 players, single elimination. Rounds: R16(8) -> QF(4) -> SF(2) -> Final(1)
+const FC26_ROUND_SIZES = [8,4,2,1];
+const FC26_ROUND_LABELS = ['Round of 16','Quarterfinals','Semifinals','Final'];
+let fc26Matches = FC26_ROUND_SIZES.map(size => Array.from({length: size}, () => ({p1:'', p2:'', winner:null})));
+let fc26ActiveMatch = null; // {r,i} or null
+
+function fc26PlayerName(r, i){
+  fc26Matches[r][i].p1 = document.getElementById(`fc26-r${r}-${i}-p1`).value.trim();
+  fc26Matches[r][i].p2 = document.getElementById(`fc26-r${r}-${i}-p2`).value.trim();
+}
+
+function setFc26Winner(r, i, slot){
+  fc26PlayerName(r, i);
+  const alreadyWinner = fc26Matches[r][i].winner === slot;
+  const nextExists = r < FC26_ROUND_SIZES.length - 1;
+  const nextR = r + 1, nextI = Math.floor(i / 2), nextSlot = (i % 2 === 0) ? 'p1' : 'p2';
+
+  if(alreadyWinner){
+    fc26Matches[r][i].winner = null;
+    if(nextExists) fc26Matches[nextR][nextI][nextSlot] = '';
+  } else {
+    fc26Matches[r][i].winner = slot;
+    const winningName = fc26Matches[r][i][slot];
+    if(nextExists && winningName) fc26Matches[nextR][nextI][nextSlot] = winningName;
+  }
+  renderFc26Bracket();
+}
+
+function toggleFc26Glow(r, i){
+  fc26ActiveMatch = (fc26ActiveMatch && fc26ActiveMatch.r === r && fc26ActiveMatch.i === i) ? null : {r, i};
+  renderFc26Bracket();
+}
+
+function renderFc26Bracket(){
+  const container = document.getElementById('fc26BracketCols');
+  container.innerHTML = FC26_ROUND_SIZES.map((size, r) => `
+    <div class="bracket-round-col">
+      <div class="bracket-round-label">${FC26_ROUND_LABELS[r]}</div>
+      ${fc26Matches[r].map((m, i) => {
+        const isGlow = fc26ActiveMatch && fc26ActiveMatch.r === r && fc26ActiveMatch.i === i;
+        return `
+        <div class="bracket-match ${isGlow ? 'glow' : ''}">
+          <div class="bracket-slot">
+            <input type="text" id="fc26-r${r}-${i}-p1" placeholder="Player 1" value="${escapeHtml(m.p1)}" onchange="fc26PlayerName(${r},${i})" />
+            <button class="bracket-win-btn ${m.winner==='p1'?'winner':''}" onclick="setFc26Winner(${r},${i},'p1')">Win</button>
+          </div>
+          <div class="bracket-slot">
+            <input type="text" id="fc26-r${r}-${i}-p2" placeholder="Player 2" value="${escapeHtml(m.p2)}" onchange="fc26PlayerName(${r},${i})" />
+            <button class="bracket-win-btn ${m.winner==='p2'?'winner':''}" onclick="setFc26Winner(${r},${i},'p2')">Win</button>
+          </div>
+          <button class="bracket-glow-btn ${isGlow?'active':''}" onclick="toggleFc26Glow(${r},${i})">${isGlow ? '● Glowing' : 'Set as active match'}</button>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+}
+renderFc26Bracket();
+
+function toggleOpen(which){
+  if(which === 'finals'){
+    finalsOpen = !finalsOpen;
+    const btn = document.getElementById('toggle-finals');
+    btn.textContent = finalsOpen ? '🔓 Open' : '🔒 Closed';
+    btn.className = 'open-toggle ' + (finalsOpen ? 'open' : 'closed');
+  } else if(which === 'round5'){
+    round5Open = !round5Open;
+    const btn = document.getElementById('toggle-round5');
+    btn.textContent = round5Open ? '🔓 Open' : '🔒 Closed';
+    btn.className = 'open-toggle ' + (round5Open ? 'open' : 'closed');
+  } else {
+    roundOpen[which] = !roundOpen[which];
+    const btn = document.getElementById('toggle-round-' + which);
+    btn.textContent = roundOpen[which] ? '🔓 Open' : '🔒 Closed';
+    btn.className = 'open-toggle ' + (roundOpen[which] ? 'open' : 'closed');
+  }
+}
+
+function updateAccessNote(){
+  const note = document.getElementById('accessRoundNote');
+  if(typeof currentRoundPointer === 'number' && currentRoundPointer >= 1 && currentRoundPointer <= 4){
+    note.textContent = `Add/remove applies to Round ${currentRoundPointer} — the currently active round.`;
+  } else if(currentRoundPointer === 'final'){
+    note.textContent = "Add/remove applies to the Final — it's manually curated only, no automatic access from gifting.";
+  } else {
+    note.textContent = 'No round is currently active — pick one in section 3 first. Round 5 is free-for-all and has no access list.';
+  }
+}
+updateAccessNote();
+
+function renderFinalQualifiedList(){
+  const el = document.getElementById('qlistFinal');
+  if(!el) return;
+  const entries = Object.entries(finalQualifyOrder).sort((a,b) => a[1]-b[1]).map(e => e[0]);
+  el.innerHTML = entries.map(login => `<span>${escapeHtml(tallies[login]?.display || login)}</span>`).join('') || '<span style="opacity:.5">no one yet</span>';
+}
+renderFinalQualifiedList();
+
+function grantAccess(){
+  const login = document.getElementById('accessUsername').value.trim().toLowerCase();
+  const statusEl = document.getElementById('accessStatus');
+  if(!login){ statusEl.textContent = 'Enter a username first.'; return; }
+
+  if(currentRoundPointer === 'final'){
+    if(finalQualifyOrder[login] === undefined){
+      giftSeq++;
+      finalQualifyOrder[login] = giftSeq;
+    }
+    if(!tallies[login]) tallies[login] = { display: login, count: 0, lastTime: new Date().toLocaleTimeString() };
+    renderFinalQualifiedList();
+    statusEl.textContent = `✅ Added ${login} to the Final.`;
+    document.getElementById('accessUsername').value = '';
+    return;
+  }
+
+  if(typeof currentRoundPointer !== 'number' || currentRoundPointer < 1 || currentRoundPointer > 4){
+    statusEl.textContent = '❌ Pick an active round (1–4) or Final in section 3 first.';
+    return;
+  }
+  const idx = currentRoundPointer - 1;
+  if(qualifyOrder[idx][login] === undefined){
+    giftSeq++;
+    qualifyOrder[idx][login] = giftSeq;
+  }
+  if(!tallies[login]) tallies[login] = { display: login, count: 0, lastTime: new Date().toLocaleTimeString() };
+  renderRoundTallies();
+  renderRoundFills();
+  statusEl.textContent = `✅ Added ${login} to Round ${currentRoundPointer}.`;
+  document.getElementById('accessUsername').value = '';
+}
+
+function revokeAccess(){
+  const login = document.getElementById('accessUsername').value.trim().toLowerCase();
+  const statusEl = document.getElementById('accessStatus');
+  if(!login){ statusEl.textContent = 'Enter a username first.'; return; }
+
+  if(currentRoundPointer === 'final'){
+    if(finalQualifyOrder[login] !== undefined){
+      delete finalQualifyOrder[login];
+      renderFinalQualifiedList();
+      statusEl.textContent = `✅ Removed ${login} from the Final.`;
+    } else {
+      statusEl.textContent = `${login} wasn't on the Final's list.`;
+    }
+    document.getElementById('accessUsername').value = '';
+    return;
+  }
+
+  if(typeof currentRoundPointer !== 'number' || currentRoundPointer < 1 || currentRoundPointer > 4){
+    statusEl.textContent = '❌ Pick an active round (1–4) or Final in section 3 first.';
+    return;
+  }
+  const idx = currentRoundPointer - 1;
+  if(qualifyOrder[idx][login] !== undefined){
+    delete qualifyOrder[idx][login];
+    renderRoundTallies();
+    renderRoundFills();
+    statusEl.textContent = `✅ Removed ${login} from Round ${currentRoundPointer}.`;
+  } else {
+    statusEl.textContent = `${login} wasn't on Round ${currentRoundPointer}'s list.`;
+  }
+  document.getElementById('accessUsername').value = '';
+}
+
+function resetAllData(){
+  if(!confirm('Reset all tallies and qualified lists? This cannot be undone (until you publish again).')) return;
+  tallies = {};
+  qualifyOrder = [{},{},{},{}];
+  giftSeq = 0;
+  renderRoundTallies();
+  renderRoundFills();
+}
+
+function connect(){
+  const channel = document.getElementById('channel').value.trim().toLowerCase().replace(/^#/, '');
+  if(!channel){ alert('Enter a channel name'); return; }
+  if(ws) ws.close();
+
+  const statusEl = document.getElementById('status');
+  const btn = document.getElementById('connectBtn');
+  statusEl.textContent = 'Connecting...';
+  statusEl.className = 'status off';
+  btn.disabled = true;
+
+  ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+
+  const failTimer = setTimeout(() => {
+    statusEl.textContent = 'Still trying... if stuck, network/VPN/firewall is likely blocking WebSocket to Twitch.';
+  }, 6000);
+
+  ws.onopen = () => {
+    ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+    ws.send('PASS SCHMOOPIIE');
+    ws.send('NICK justinfan' + Math.floor(Math.random()*99999));
+    ws.send('JOIN #' + channel);
+  };
+
+  ws.onmessage = (evt) => {
+    clearTimeout(failTimer);
+    if(statusEl.textContent !== 'Connected to #' + channel){
+      statusEl.textContent = 'Connected to #' + channel;
+      statusEl.className = 'status on';
+      btn.disabled = false;
+    }
+    const lines = evt.data.split('\r\n').filter(Boolean);
+    for(const line of lines){
+      if(line.startsWith('PING')){ ws.send('PONG :tmi.twitch.tv'); continue; }
+      handleLine(line);
+    }
+  };
+
+  ws.onclose = () => { statusEl.textContent = 'Disconnected'; statusEl.className = 'status off'; btn.disabled = false; };
+  ws.onerror = () => { statusEl.textContent = 'Connection error — check channel name or network'; statusEl.className = 'status off'; btn.disabled = false; };
+}
+
+function handleLine(line){
+  let tags = {};
+  let rest = line;
+  if(line.startsWith('@')){
+    const spaceIdx = line.indexOf(' ');
+    const tagStr = line.slice(1, spaceIdx);
+    rest = line.slice(spaceIdx+1);
+    tagStr.split(';').forEach(t=>{
+      const eq = t.indexOf('=');
+      tags[t.slice(0,eq)] = decodeURIComponent(t.slice(eq+1).replace(/\\s/g,' '));
+    });
+  }
+  if(!rest.includes('USERNOTICE')) return;
+
+  const msgId = tags['msg-id'];
+  const display = tags['display-name'];
+  const login = (tags['login'] || display || '').toLowerCase();
+
+  if(msgId === 'submysterygift'){
+    const count = parseInt(tags['msg-param-mass-gift-count']) || 1;
+    addGift(login, display, count);
+  } else if(msgId === 'subgift'){
+    if(!tags['msg-param-community-gift-id']){
+      addGift(login, display, 1);
+    }
+  }
+}
+
+function addGift(login, display, count){
+  const key = login.toLowerCase();
+  const time = new Date().toLocaleTimeString();
+  if(!tallies[key]) tallies[key] = { display, count: 0, lastTime: time };
+  tallies[key].count += count;
+  tallies[key].lastTime = time;
+  tallies[key].display = display;
+
+  evaluateQualifications();
+  renderRoundTallies();
+  renderRoundFills();
+}
+
+// Relative ladder: from currentRoundPointer, every 5 gifted subs unlocks one more round forward,
+// capped so it never goes past Round 4 (Round 5 + Final are handled separately, free-for-all).
+// Only ADDS newly-reached rounds — never revokes previously earned ones.
+// Nothing counts at all until currentRoundPointer is a number 1-4 (admin explicitly activated a round).
+function evaluateQualifications(){
+  if(typeof currentRoundPointer !== 'number') return;
+  Object.keys(tallies).forEach(login => {
+    const count = tallies[login].count;
+    const maxForward = ROUND_COUNT - currentRoundPointer + 1;
+    const unlockedCount = Math.max(0, Math.min(Math.floor(count / 5), maxForward));
+    for(let offset = 0; offset < unlockedCount; offset++){
+      const idx = (currentRoundPointer - 1) + offset;
+      if(idx >= 0 && idx < ROUND_COUNT && qualifyOrder[idx][login] === undefined){
+        giftSeq++;
+        qualifyOrder[idx][login] = giftSeq;
+      }
+    }
+  });
+}
+
+function computeQualified(i){
+  const entries = Object.entries(qualifyOrder[i]); // [login, order]
+  entries.sort((a,b) => a[1] - b[1]);
+  return entries.slice(0, CAP).map(e => e[0]);
+}
+
+function renderRoundFills(){
+  for(let i = 0; i < ROUND_COUNT; i++){
+    const totalCrossed = Object.keys(qualifyOrder[i]).length;
+    const qualified = computeQualified(i);
+    const filled = qualified.length;
+    const missed = Math.max(0, totalCrossed - CAP);
+
+    const fillEl = document.getElementById('fill-' + i);
+    fillEl.textContent = filled + '/' + CAP + (missed > 0 ? '  (' + missed + ' missed cutoff)' : '');
+    fillEl.className = 'fill-count' + (filled >= CAP ? ' full' : '');
+
+    const listEl = document.getElementById('qlist-' + i);
+    listEl.innerHTML = qualified.map(login => `<span>${escapeHtml(tallies[login]?.display || login)}</span>`).join('') || '<span style="opacity:.5">no one yet</span>';
+  }
+}
+
+function initRoundTalliesPanel(){
+  document.getElementById('roundTalliesPanel').innerHTML = Array.from({length: ROUND_COUNT}).map((_, i) => `
+    <div class="tally-card">
+      <div style="font-weight:700;font-size:13px;color:var(--purple);margin-bottom:8px;">Round ${i+1}</div>
+      <table>
+        <thead><tr><th>Gifter</th><th>Total</th></tr></thead>
+        <tbody id="round-tally-${i}"><tr><td colspan="2" style="color:var(--dim);">no one yet</td></tr></tbody>
+      </table>
+    </div>
+  `).join('');
+}
+initRoundTalliesPanel();
+
+function isoToDatetimeLocal(iso){
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function loadExistingData(){
+  fbDb.ref('tournament').once('value').then((snap) => {
+    const data = snap.val();
+    if(!data) return;
+
+    const releaseAt = data.gameRelease?.at;
+    const hasRelease = typeof releaseAt === 'number' && Number.isFinite(releaseAt) && !isNaN(new Date(releaseAt).getTime());
+    document.getElementById('gameReleaseInput').value = hasRelease ? isoToDatetimeLocal(releaseAt) : '';
+    document.getElementById('gameReleaseTBA').checked = !hasRelease;
+    document.getElementById('gameReleaseInput').disabled = !hasRelease;
+
+    fortniteOpen = data.fortniteOpen !== undefined ? data.fortniteOpen : true;
+    const fortBtn = document.getElementById('toggle-fortniteOpen');
+    fortBtn.textContent = fortniteOpen ? '🔓 Open' : '🔒 Closed';
+    fortBtn.className = 'open-toggle ' + (fortniteOpen ? 'open' : 'closed');
+
+    if(data.currentRound !== undefined && data.currentRound !== null){
+      currentRoundPointer = data.currentRound;
+      renderPointerButtons();
+    }
+
+    (data.rounds || []).forEach((r, i) => {
+      if(r.code) document.getElementById('code-round-' + i).value = r.code;
+      roundOpen[i] = !!r.open;
+      const btn = document.getElementById('toggle-round-' + i);
+      btn.textContent = roundOpen[i] ? '🔓 Open' : '🔒 Closed';
+      btn.className = 'open-toggle ' + (roundOpen[i] ? 'open' : 'closed');
+      (r.qualified || []).forEach((login, idx) => { qualifyOrder[i][login] = idx; });
+    });
+
+    if(data.round5){
+      if(data.round5.code) document.getElementById('code-round5').value = data.round5.code;
+      round5Open = !!data.round5.open;
+      const btn = document.getElementById('toggle-round5');
+      btn.textContent = round5Open ? '🔓 Open' : '🔒 Closed';
+      btn.className = 'open-toggle ' + (round5Open ? 'open' : 'closed');
+    }
+
+    if(data.finals){
+      if(data.finals.code) document.getElementById('code-finals').value = data.finals.code;
+      finalsOpen = !!data.finals.open;
+      const btn = document.getElementById('toggle-finals');
+      btn.textContent = finalsOpen ? '🔓 Open' : '🔒 Closed';
+      btn.className = 'open-toggle ' + (finalsOpen ? 'open' : 'closed');
+      (data.finals.qualified || []).forEach((login, idx) => { finalQualifyOrder[login] = idx; });
+      renderFinalQualifiedList();
+    }
+
+    if(data.prizeWinners){
+      (data.prizeWinners.round || []).forEach((name, i) => { if(name) document.getElementById('winner-round-' + i).value = name; });
+      if(data.prizeWinners.round5) document.getElementById('winner-round5').value = data.prizeWinners.round5;
+      if(data.prizeWinners.final) document.getElementById('winner-final').value = data.prizeWinners.final;
+      (data.prizeWinners.killer || []).forEach((name, i) => { if(name) document.getElementById('winner-killer-' + i).value = name; });
+    }
+
+    (data.qualifiers || []).forEach((round, r) => {
+      (round || []).forEach((name, p) => { if(name) document.getElementById(`qual-${r}-${p}`).value = name; });
+    });
+
+    fc26Open = !!(data.fc26 && data.fc26.open);
+    const fc26Btn = document.getElementById('toggle-fc26Open');
+    fc26Btn.textContent = fc26Open ? '🔓 Open' : '🔒 Closed';
+    fc26Btn.className = 'open-toggle ' + (fc26Open ? 'open' : 'closed');
+
+    if(data.fc26 && data.fc26.matches){
+      fc26Matches = data.fc26.matches;
+      fc26ActiveMatch = data.fc26.activeMatch || null;
+      renderFc26Bracket();
+    }
+    if(data.fc26 && data.fc26.podium){
+      if(data.fc26.podium.winner) document.getElementById('fc26-winner').value = data.fc26.podium.winner;
+      if(data.fc26.podium.second) document.getElementById('fc26-second').value = data.fc26.podium.second;
+      if(data.fc26.podium.third) document.getElementById('fc26-third').value = data.fc26.podium.third;
+    }
+
+    renderRoundFills();
+    updateAccessNote();
+  }).catch((e) => {
+    console.error('Failed to load existing tournament data:', e);
+  });
+}
+loadExistingData();
+
+function renderRoundTallies(){
+  for(let i = 0; i < ROUND_COUNT; i++){
+    const qualified = computeQualified(i);
+    const body = document.getElementById('round-tally-' + i);
+    if(qualified.length === 0){
+      body.innerHTML = '<tr><td colspan="2" style="color:var(--dim);">no one yet</td></tr>';
+      continue;
+    }
+    body.innerHTML = qualified.map(login => {
+      const r = tallies[login];
+      return `<tr><td>${escapeHtml(r ? r.display : login)}</td><td>${r ? r.count : ''}</td></tr>`;
+    }).join('');
+  }
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+
+let allNametags = []; // [[login, name], ...]
+let nametagsShown = 10;
+
+function loadNametags(){
+  const body = document.getElementById('nametagsBody');
+  body.innerHTML = '<tr><td colspan="2" style="color:var(--dim);">Loading...</td></tr>';
+  fbDb.ref('nametags').once('value').then((snap) => {
+    const data = snap.val() || {};
+    allNametags = Object.entries(data);
+    nametagsShown = 10;
+    renderNametags();
+  }).catch((e) => {
+    body.innerHTML = '<tr><td colspan="2" style="color:var(--red);">Error: ' + escapeHtml(e.message) + '</td></tr>';
+  });
+}
+
+function renderNametags(){
+  const body = document.getElementById('nametagsBody');
+  const showMoreBtn = document.getElementById('nametagsShowMoreBtn');
+  const search = document.getElementById('nametagSearch').value.trim().toLowerCase();
+
+  let filtered = allNametags;
+  if(search){
+    filtered = allNametags.filter(([, name]) => (name || '').toLowerCase().includes(search));
+  }
+
+  if(filtered.length === 0){
+    body.innerHTML = `<tr><td colspan="2" style="color:var(--dim);">${allNametags.length===0 ? 'No nametags submitted yet' : 'No matches'}</td></tr>`;
+    showMoreBtn.style.display = 'none';
+    return;
+  }
+
+  const toShow = search ? filtered : filtered.slice(0, nametagsShown);
+  body.innerHTML = toShow.map(([login, name]) =>
+    `<tr><td>${escapeHtml(login)}</td><td>${escapeHtml(name)}</td></tr>`
+  ).join('');
+
+  if(!search && filtered.length > nametagsShown){
+    showMoreBtn.style.display = 'inline-block';
+    showMoreBtn.textContent = `Show 10 more (${filtered.length - nametagsShown} remaining)`;
+  } else {
+    showMoreBtn.style.display = 'none';
+  }
+}
+
+function showMoreNametags(){
+  nametagsShown += 10;
+  renderNametags();
+}
+
+function buildPayload(){
+  const dtVal = document.getElementById('gameReleaseInput').value;
+  const isTBA = document.getElementById('gameReleaseTBA').checked || !dtVal;
+  const releaseAt = isTBA ? null : new Date(dtVal).getTime();
+  if(!isTBA && !Number.isFinite(releaseAt)) throw new Error('Choose a valid games release date and time.');
+  return {
+    currentRound: currentRoundPointer,
+    rounds: Array.from({length: ROUND_COUNT}).map((_, i) => ({
+      name: 'Round ' + (i+1),
+      cap: CAP,
+      code: document.getElementById('code-round-' + i).value.trim(),
+      open: roundOpen[i],
+      qualified: computeQualified(i)
+    })),
+    round5: { code: document.getElementById('code-round5').value.trim(), open: round5Open },
+    finals: { code: document.getElementById('code-finals').value.trim(), open: finalsOpen, qualified: Object.keys(finalQualifyOrder) },
+    prizeWinners: {
+      round: [0,1,2,3].map(i => document.getElementById('winner-round-' + i).value.trim()),
+      round5: document.getElementById('winner-round5').value.trim(),
+      final: document.getElementById('winner-final').value.trim(),
+      killer: [0,1,2,3].map(i => document.getElementById('winner-killer-' + i).value.trim())
+    },
+    qualifiers: [0,1,2,3,4].map(r => [0,1,2].map(p => document.getElementById(`qual-${r}-${p}`).value.trim())),
+    eligibility: Object.fromEntries(Object.entries(tallies).map(([k,v]) => [k, v.count])),
+    gameRelease: JSON.parse(localStorage.getItem("chamber-admin-local-db") || "{}").tournament?.gameRelease || null,
+    fortniteOpen: fortniteOpen,
+    fc26: {
+      open: fc26Open,
+      matches: fc26Matches,
+      activeMatch: fc26ActiveMatch,
+      podium: {
+        winner: document.getElementById('fc26-winner').value.trim(),
+        second: document.getElementById('fc26-second').value.trim(),
+        third: document.getElementById('fc26-third').value.trim()
+      }
+    }
+  };
+}
+
+function downloadTournamentData(){
+  const payload = buildPayload();
+  const dataStr = JSON.stringify(payload, null, 2);
+  const blob = new Blob([dataStr], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `tournament-archive-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const statusEl = document.getElementById('archiveStatus');
+  statusEl.textContent = '✅ Downloaded tournament-archive-' + stamp + '.json';
+}
+
+async function archiveToFirebase(){
+  const statusEl = document.getElementById('archiveStatus');
+  if(!isSignedIn){
+    statusEl.textContent = '❌ Sign in first (section 2) — local archive requires it.';
+    return;
+  }
+  const payload = buildPayload();
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  statusEl.textContent = 'Saving...';
+  try{
+    await fbDb.ref('archives/' + stamp).set(payload);
+    statusEl.textContent = 'Saved to local archive (archives/' + stamp + ')';
+  }catch(e){
+    statusEl.textContent = '❌ Failed: ' + e.message + ' — check Firebase rules include an "archives" path.';
+  }
+}
+
+async function publish(){
+  const statusEl = document.getElementById('publishStatus');
+
+  if(!isSignedIn){
+    statusEl.textContent = 'Sign in first — publish is locked until then.';
+    statusEl.className = 'publish-status err';
+    return;
+  }
+
+  statusEl.textContent = 'Publishing...';
+  statusEl.className = 'publish-status';
+
+  try{
+    const payload = buildPayload();
+    await fbDb.ref('tournament').update(payload);
+    statusEl.textContent = 'Saved locally. The public website has not changed.';
+    statusEl.className = 'publish-status ok';
+  }catch(e){
+    statusEl.textContent = '❌ Failed: ' + e.message;
+    statusEl.className = 'publish-status err';
+  }
+}
+</script>
+
+</body>
+</html>
