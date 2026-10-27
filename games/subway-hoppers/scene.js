@@ -3,7 +3,7 @@ import * as T from './vendor/three.module.js';
 import {createAmbience} from './ambience.js?v=mobile-save-hotfix-20261027';
 import {bindSwipes} from './touch.mjs?v=mobile-save-hotfix-20261027';
 import {createMobilePlay} from './mobile-play.mjs?v=mobile-save-hotfix-20261027';
-import {currentPlayer,submitRun} from './preview-scores.mjs';
+const {currentPlayer,submitRun}=await import(['localhost','127.0.0.1','[::1]'].includes(location.hostname)?'./preview-scores.mjs':'./leaderboard.mjs?v=leaderboard-live-20261027');
 import {createGems} from './gems.js?v=mobile-save-hotfix-20261027';
 import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=mobile-save-hotfix-20261027';
 import {batchStaticBoxes} from './scenery-batch.js';
