@@ -18,7 +18,7 @@ function positionWheel(angle){rotor.setAttribute('transform','rotate('+angle+' 3
 function animateSharedSpin(selected,startedAt,showResult=true){
  const id=++animationId,from=0,target=(360-selected*360/foods.length)%360;
  const finish=from+2160+(target-from%360+360)%360;
- busy=true;if(result.open)result.close();updateControls();$('status').textContent='AND THE NEXT COURSE IS…';
+ busy=true;if(result.open)result.close();updateControls();$('status').textContent='And the next spin is...';
  function frame(){
   if(id!==animationId)return;
   const elapsed=Math.max(0,Date.now()+serverOffset-startedAt),t=Math.min(1,elapsed/spinDuration);
