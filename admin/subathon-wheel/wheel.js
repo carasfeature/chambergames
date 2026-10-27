@@ -3,7 +3,8 @@ import {getDatabase,ref,onValue,runTransaction,set,serverTimestamp} from 'https:
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import {FIREBASE} from '/shared/config.js';
 const app=getApps().find(a=>a.name==='caption')||initializeApp(FIREBASE,'caption'),db=getDatabase(app),auth=getAuth(app);
-let ready=false,connected=false,adminUser=null;
+let ready=false,connected=false,adminUser=null,serverOffset=0,lastEventAt=0,animationId=0;
+const spinDuration=5500;
 const $=id=>document.getElementById(id),rotor=$('rotor'),spin=$('spin'),result=$('result');
 const key='chamberwood-food-wheel-v1';let foods=['Ahlgrens Candy', 'Larvets', 'Clam Juice', 'Thick Water with Sausages Broth', 'Snails', '1000 Year Old Egg', 'Octopus', 'Safe', 'Drink or Shot', 'TikTok Dance Challenge', 'Shocktato Part 2'],last='',rotation=0,busy=false,used=new Set();
 const svgNS='http://www.w3.org/2000/svg';
@@ -11,29 +12,37 @@ function point(angle,r=280){const t=angle*Math.PI/180;return [300+r*Math.cos(t),
 function svg(tag,attrs){const el=document.createElementNS(svgNS,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);return el;}
 function draw(){rotor.replaceChildren();rotor.removeAttribute('transform');const list=foods.length?foods:Array(12).fill('');const step=360/list.length;list.forEach((name,i)=>{const angle=-90+i*step,p=point(angle-step/2),q=point(angle+step/2);const g=svg('g',{class:'slice'+(used.has(i)?' used':''),'data-index':i});const colors=['#a72027','#c1a050','#262522','#eee0b7'];if(list.length===1)g.append(svg('circle',{cx:300,cy:300,r:280,fill:colors[0]}));else g.append(svg('path',{d:'M300 300L'+p.join(' ')+'A280 280 0 '+(step>180?1:0)+' 1 '+q.join(' ')+'Z',fill:colors[i%4],stroke:'#353026','stroke-width':1.6}));const pos=point(angle,190),anchor=svg('g',{transform:'translate('+pos.join(' ')+')'}),label=svg('text',{'text-anchor':'middle',class:'upright-label',fill:i%4===1||i%4===3?'#272521':'#fff4d9'});if(!name){label.textContent='✦';}else{const words=name.split(/\s+/),lines=[''];for(const w of words){if((lines.at(-1)+' '+w).trim().length>15&&lines.at(-1))lines.push(w);else lines[lines.length-1]=(lines.at(-1)+' '+w).trim();}lines.forEach((l,j)=>{const t=svg('tspan',{x:0,y:(j-(lines.length-1)/2)*16+5});t.textContent=l;label.append(t);});}anchor.append(label);g.append(anchor);rotor.append(g);});positionWheel(rotation);updateControls();}
 function available(){return foods.map((_,i)=>i).filter(i=>!used.has(i));}
-function updateControls(){spin.disabled=busy||!ready||!connected||!available().length;spin.textContent='SPIN';renderRestoreControls();}
+function updateControls(){spin.disabled=busy||!ready||!connected||!available().length;spin.textContent=busy?'SPINNING…':'SPIN';renderRestoreControls();}
 // Animation and unbiased random selection adapted from the existing main wheel.
 function positionWheel(angle){rotor.setAttribute('transform','rotate('+angle+' 300 300)');rotor.querySelectorAll('.upright-label').forEach(label=>label.setAttribute('transform','rotate('+(-angle)+')'));}
-function animateWheel(from,to,duration){return new Promise(resolve=>{let start;function frame(now){if(start===undefined)start=now;const t=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-t,4);positionWheel(from+(to-from)*eased);if(t<1)requestAnimationFrame(frame);else resolve();}requestAnimationFrame(frame);});}
+function animateSharedSpin(selected,startedAt,showResult=true){
+ const id=++animationId,from=0,target=(360-selected*360/foods.length)%360;
+ const finish=from+2160+(target-from%360+360)%360;
+ busy=true;if(result.open)result.close();updateControls();$('status').textContent='AND THE NEXT COURSE IS…';
+ function frame(){
+  if(id!==animationId)return;
+  const elapsed=Math.max(0,Date.now()+serverOffset-startedAt),t=Math.min(1,elapsed/spinDuration);
+  positionWheel(matchMedia('(prefers-reduced-motion: reduce)').matches?target:from+(finish-from)*(1-Math.pow(1-t,4)));
+  if(t<1){requestAnimationFrame(frame);return;}
+  rotation=target;last=foods[selected];busy=false;draw();$('current').textContent=last;$('result-title').textContent=last;
+  if(showResult)result.showModal();$('status').textContent='EVERY 1,000 SUBS • ONE SPIN';
+ }
+ requestAnimationFrame(frame);
+}
 function randomIndex(n){const data=new Uint32Array(1),limit=Math.floor(4294967296/n)*n;do{crypto.getRandomValues(data);}while(data[0]>=limit);return data[0]%n;}
 spin.onclick=async()=>{
  if(busy||!ready||!connected)return;
- busy=true;updateControls();spin.textContent='SPINNING…';
+ busy=true;updateControls();
  try{
-  let selected;
-  while(available().length){
-   const eligible=available(),candidate=eligible[randomIndex(eligible.length)];
+  const eligible=available();
+  while(eligible.length){
+   const candidate=eligible.splice(randomIndex(eligible.length),1)[0];
    const claim=await runTransaction(ref(db,'subathonWheel/tiles/'+candidate),value=>value?.used?undefined:{used:true,pickedAt:serverTimestamp()},{applyLocally:false});
-   if(claim.committed){selected=candidate;break;}
-   used.add(candidate);
+   // The shared database listener starts the animation on every screen, including this one.
+   if(claim.committed)return;
   }
-  if(selected===undefined)return;
-  $('status').textContent='AND THE NEXT COURSE IS…';
-  const step=360/foods.length,target=(360-selected*step)%360,delta=(target-rotation%360+360)%360,finish=rotation+360*6+delta;
-  await animateWheel(rotation,finish,matchMedia('(prefers-reduced-motion: reduce)').matches?150:5500);
-  rotation=finish%360;last=foods[selected];$('current').textContent=last;$('result-title').textContent=last;result.showModal();
- }catch(error){$('status').textContent='CONNECTION ERROR — PLEASE TRY AGAIN';console.error(error);}
- finally{busy=false;draw();if(connected)$('status').textContent='EVERY 1,000 SUBS • ONE SPIN';}
+  busy=false;draw();
+ }catch(error){busy=false;draw();$('status').textContent='CONNECTION ERROR — PLEASE TRY AGAIN';console.error(error);}
 };
 result.addEventListener('close',()=>spin.focus());draw();
 
@@ -48,8 +57,19 @@ function renderRestoreControls(){
  }
 }
 onValue(ref(db,'.info/connected'),snapshot=>{connected=snapshot.val()===true;updateControls();});
+onValue(ref(db,'.info/serverTimeOffset'),snapshot=>{serverOffset=snapshot.val()||0;});
 onValue(ref(db,'subathonWheel/tiles'),snapshot=>{
- const tiles=snapshot.val()||{};used=new Set(foods.map((_,i)=>tiles[i]?.used?i:-1).filter(i=>i>=0));ready=true;
+ const tiles=snapshot.val()||{},wasReady=ready;
+ used=new Set(foods.map((_,i)=>tiles[i]?.used?i:-1).filter(i=>i>=0));ready=true;
+ const events=Object.entries(tiles).filter(([i,t])=>Number.isInteger(Number(i))&&Number(i)>=0&&Number(i)<foods.length&&t.used&&Number.isFinite(t.pickedAt));
+ events.sort((a,b)=>b[1].pickedAt-a[1].pickedAt);
+ const newest=events[0],previousAt=lastEventAt;
+ lastEventAt=Math.max(lastEventAt,...Object.values(tiles).map(t=>Number(t.pickedAt)||0));
+ if(newest&&newest[1].pickedAt>previousAt){
+  const selected=Number(newest[0]),startedAt=newest[1].pickedAt;
+  if(Date.now()+serverOffset-startedAt<spinDuration){animateSharedSpin(selected,startedAt);return;}
+  if(!wasReady){rotation=(360-selected*360/foods.length)%360;$('current').textContent=foods[selected];}
+ }
  if(!busy)draw();else renderRestoreControls();
 },error=>{ready=false;updateControls();$('status').textContent='WHEEL CONNECTION UNAVAILABLE';});
 if($('restore-tiles')){
