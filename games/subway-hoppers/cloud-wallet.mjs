@@ -5,13 +5,13 @@ export async function createCloudWallet({sdk,storage=localStorage,endpoint=ENDPO
  const [{initializeApp},{getAuth,signInWithCustomToken,signOut,inMemoryPersistence,setPersistence}]=sdk??await Promise.all([import(CDN+'firebase-app.js'),import(CDN+'firebase-auth.js')]);
  const app=initializeApp({apiKey:'AIzaSyAdx6UIx2mHwqbK4KPKnXolbgmUcCR1Wvg',authDomain:'lobby-claim.firebaseapp.com',projectId:'lobby-claim'},'hoppers-wallet');
  const auth=getAuth(app);await setPersistence(auth,inMemoryPersistence);
- let data=initialWallet(),uid=null,sourceToken=null,validatedAt=0,error='',busy=false,pending=null,active=null,chain=Promise.resolve();
+ let data=initialWallet(),uid=null,sourceToken=null,validatedAt=0,error='',busy=false,pending=null,active=null,needsRestart=false,chain=Promise.resolve();
  const listeners=new Set(),emit=()=>listeners.forEach(f=>f());
  const getToken=()=>storage.getItem('twitchToken');
  async function login(){
   const token=getToken();if(!token)throw Error('Log in with Twitch on the main website to save your progress.');
   if(sourceToken===token&&auth.currentUser&&Date.now()-validatedAt<50*60000)return;
-  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',token})});
+  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',token}),signal:AbortSignal.timeout(20000)});
   const reply=await response.json();if(!response.ok)throw Error(reply.error||'Could not verify Twitch login');
   if(uid&&reply.uid!==uid){await signOut(auth);throw Error('Account changed. Reload the game to continue.');}
   await signInWithCustomToken(auth,reply.token);uid=reply.uid;sourceToken=token;validatedAt=Date.now();
@@ -33,7 +33,25 @@ export async function createCloudWallet({sdk,storage=localStorage,endpoint=ENDPO
    if(op.action==='start'){reply.result.load??=[];active={...reply.result,seq:0,frames:[]};}
    if(op.action==='checkpoint'&&active){active.seq=reply.result.seq;active.frames.splice(0,op.args.frames.length);}
    save();return reply.result;
-  }catch(e){if(e.definitive){pending=null;save();await request({action:'wallet'});}throw e;}
+  }catch(e){
+   if(e.definitive){
+    pending=null;await request({action:'wallet'});
+    if(op.action==='checkpoint'){
+     if(e.message==='Account changed. Refresh and try again.'&&(op.recoveryAttempts||0)<2){
+      pending={...op,expectedRevision:data.revision,recoveryAttempts:(op.recoveryAttempts||0)+1};save();return sendPending();
+     }
+     // Retire only this client's rejected run. Never invent rewards or end another device's run.
+     const runId=active?.runId;
+     active=null;needsRestart=true;save();
+     if(runId&&e.message!=='Run no longer active'){
+      try{await request({id:crypto.randomUUID(),action:'finish',args:{runId},expectedRevision:data.revision});}catch(f){if(!f.definitive)throw f;}
+     }
+     return null;
+    }
+    save();
+   }
+   throw e;
+  }
  }
  function serial(task){const next=chain.then(async()=>{busy=true;emit();try{const result=await task();error='';return result;}catch(e){error=e.message;return false;}finally{busy=false;emit();}});chain=next.then(()=>{},()=>{});return next;}
  async function mutate(action,args={}){
@@ -53,13 +71,13 @@ export async function createCloudWallet({sdk,storage=localStorage,endpoint=ENDPO
  if(active?.frames.length)await flushFrames();
  let actions=[],lastFlush=0;
  const api={
-  cloud:true,get state(){return structuredClone(data);},get persisted(){return !error;},get error(){return error;},get busy(){return busy;},
+  cloud:true,get needsRestart(){return needsRestart;},get state(){return structuredClone(data);},get persisted(){return !error;},get error(){return error;},get busy(){return busy;},
   subscribe(fn){listeners.add(fn);return()=>listeners.delete(fn);},
   buy:item=>serial(async()=>{await mutate('buy',{item});return true;}),
   buySkin:item=>serial(async()=>{await mutate('buy',{item});return true;}),
   equipSkin:item=>serial(async()=>{await mutate('equip',{item});return true;}),
   arm:item=>serial(async()=>{await mutate('arm',{item});return true;}),
-  async startRun(mode){return serial(async()=>{if(pending?.action==='start'){const result=await sendPending();actions=[];return result;}await flushFrames();if(active)await mutate('finish',{runId:active.runId});const result=await mutate('start',{mode,version:'account-store-1'});actions=[];return result;});},
+  async startRun(mode){return serial(async()=>{if(pending?.action==='start'){const result=await sendPending();actions=[];needsRestart=false;return result;}await flushFrames();if(active)await mutate('finish',{runId:active.runId});const result=await mutate('start',{mode,version:'account-store-1'});actions=[];needsRestart=false;return result;});},
   payForRevive:()=>serial(async()=>{await flushFrames();await mutate('revive',{runId:active?.runId});return true;}),
   award(){return false;},
   recordAction(action){if(active)actions.push(action);},

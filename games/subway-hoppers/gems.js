@@ -1,8 +1,8 @@
 import {createGemTracker,seededRandom} from './gem-tracker.mjs';
-import {createCloudWallet} from './cloud-wallet.mjs';
+import {createCloudWallet} from './cloud-wallet.mjs?v=mobile-save-hotfix-20261027';
 import * as T from './vendor/three.module.js';
-import {createWallet} from './economy.mjs?v=store-release-20261027';
-import {createStore} from './store.js?v=skin-equip-20261027';
+import {createWallet} from './economy.mjs?v=mobile-save-hotfix-20261027';
+import {createStore} from './store.js?v=mobile-save-hotfix-20261027';
 export async function createGems(scene,run,options){
  let storage;try{storage=localStorage;}catch{storage={getItem(){return null;},setItem(){throw Error('Unavailable');}};}
  const demo=['localhost','127.0.0.1'].includes(location.hostname)&&new URL(location.href).searchParams.get('demo')==='1';
@@ -40,7 +40,7 @@ export async function createGems(scene,run,options){
   flying=flying.filter(p=>p.t<1);for(const p of flying){p.t+=dt*5;if(n>=pool.length)break;const g=pool[n++],t=Math.min(1,p.t);g.visible=true;g.position.set(p.x+(run.x-p.x)*t,p.y+(run.y+1.2-p.y)*t,p.z*(1-t));g.rotation.y=run.time*5;}
  }
  function sync(){shop.sync();hud.hidden=run.status==='ready';}
- if(wallet.cloud)wallet.subscribe(()=>{render();if(wallet.error)options.onError?.(wallet.error);});
+ if(wallet.cloud)wallet.subscribe(()=>{render();if(wallet.error||wallet.needsRestart)options.onError?.(wallet.error||'This run could not be continued. Start a new run; saved gems and purchases are safe.');});
  return {reset,update,sync,wallet,dialog:shop.dialog,get earned(){return earned;},get balance(){return wallet.state.balance;}};
 }
 

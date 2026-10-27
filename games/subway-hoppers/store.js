@@ -1,7 +1,7 @@
-import {SKINS} from './skins.mjs?v=store-release-20261027';
-import {createSkinPreview} from './skin-preview.js?v=store-release-20261027';
-import {POWERS,UPGRADES,SAVE_ME_PRICE} from './economy.mjs?v=store-release-20261027';
-import {shopIcon} from './shop-icons.js?v=store-release-20261027';
+import {SKINS} from './skins.mjs?v=mobile-save-hotfix-20261027';
+import {createSkinPreview} from './skin-preview.js?v=mobile-save-hotfix-20261027';
+import {POWERS,UPGRADES,SAVE_ME_PRICE} from './economy.mjs?v=mobile-save-hotfix-20261027';
+import {shopIcon} from './shop-icons.js?v=mobile-save-hotfix-20261027';
 const fmt=n=>n.toLocaleString('en-US');
 const beforeRun=['shield','double','head'];
 const short={shield:'Shield',double:'×2 Gems',head:'Head Start'};
@@ -66,7 +66,7 @@ export function createStore(run,wallet,{resume,demo=false,onEquip=()=>{}}){
    const owned=s.skins.includes(item.id),equipped=s.equipped===item.id;
    action(c,owned?'Equip':item.price===0?'Claim Free':'Unlock · ◆ '+fmt(item.price),run.status==='paused'||equipped||(!owned&&s.balance<item.price),async()=>{
     if(!owned){notice=await wallet.buySkin(item.id)?item.name+' unlocked.':'Could not save. Please try again.';render();return;}
-    if(await wallet.equipSkin(item.id)){await onEquip(item.id);notice=item.name+' equipped.';}else notice='Could not save selection.';render();
+    if(await wallet.equipSkin(item.id)){await onEquip(item.id);notice=item.name+' equipped.';}else notice=wallet.error||'Could not save selection. Please try again.';render();
    },'skin-'+item.id,'shop-buy');content.append(c);
   }
   if(tab==='powers')for(const item of POWERS){

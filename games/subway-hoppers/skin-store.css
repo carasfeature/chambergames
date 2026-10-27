@@ -38,3 +38,20 @@
 @media(max-width:560px){.gem-store .skin-card h3{min-height:36px}}
 
 .gem-store .shop-content:not(:has(.skin-card)) .shop-card:last-child:nth-child(odd){grid-column:1/-1}
+
+/* Keep retry actions above optional setup controls on phone game-over screens. */
+@media (max-width:700px), (pointer:coarse) {
+ .viewport[data-status="over"] #play-panel{padding:14px;display:block;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
+ .viewport[data-status="over"] .runner-card{display:block;width:100%}
+ .viewport[data-status="over"] .intro-art,.viewport[data-status="over"] .eyebrow{display:none}
+ .viewport[data-status="over"] .intro-copy{display:flex;flex-direction:column;gap:8px}
+ .viewport[data-status="over"] #play-title{order:-5;font-size:24px;line-height:1.1;margin:0}
+ .viewport[data-status="over"] #play-message{order:-4;font:12px/1.35 system-ui;margin:0}
+ .viewport[data-status="over"] #start{order:-3;min-height:48px;margin:0;font-size:15px;flex-shrink:0}
+ .viewport[data-status="over"] .revive-button{order:-2;min-height:44px;margin:0!important;padding:8px}
+ .viewport[data-status="over"] .mode-choice,.viewport[data-status="over"] .character-choice{margin:0;gap:8px;flex-direction:row}
+ .viewport[data-status="over"] .mode-choice button,.viewport[data-status="over"] .character-choice button{min-height:44px;padding:8px;font-size:12px}
+ .viewport[data-status="over"] .mode-note{margin:0!important}
+ .viewport[data-status="over"] .run-loadout{margin:0}
+ .viewport[data-status="over"] .overlay,.viewport[data-status="over"] .gem-hud{display:none}
+}
