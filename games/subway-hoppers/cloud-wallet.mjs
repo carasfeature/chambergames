@@ -32,14 +32,22 @@ export async function createCloudWallet({sdk,storage=localStorage,endpoint=ENDPO
   try{const reply=await request(op);pending=null;
    if(op.action==='start'){reply.result.load??=[];active={...reply.result,seq:0,frames:[]};}
    if(op.action==='checkpoint'&&active){active.seq=reply.result.seq;active.frames.splice(0,op.args.frames.length);}
+   if(op.action==='finish'&&active?.runId===op.args.runId)active=null;
    save();return reply.result;
   }catch(e){
    if(e.definitive){
     pending=null;await request({action:'wallet'});
+    if(['checkpoint','finish','revive'].includes(op.action)&&e.message==='Account changed. Refresh and try again.'&&(op.recoveryAttempts||0)<2){
+     pending={...op,expectedRevision:data.revision,recoveryAttempts:(op.recoveryAttempts||0)+1};save();return sendPending();
+    }
+    if(['finish','revive'].includes(op.action)&&e.message==='Run no longer active'){
+     if(active?.runId===op.args.runId){active=null;needsRestart=true;}
+     save();
+     // An obsolete finish is already complete. A rejected revive must never grant revival.
+     if(op.action==='finish')return {};
+     throw e;
+    }
     if(op.action==='checkpoint'){
-     if(e.message==='Account changed. Refresh and try again.'&&(op.recoveryAttempts||0)<2){
-      pending={...op,expectedRevision:data.revision,recoveryAttempts:(op.recoveryAttempts||0)+1};save();return sendPending();
-     }
      // Retire only this client's rejected run. Never invent rewards or end another device's run.
      const runId=active?.runId;
      active=null;needsRestart=true;save();

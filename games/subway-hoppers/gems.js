@@ -1,5 +1,5 @@
 import {createGemTracker,seededRandom} from './gem-tracker.mjs';
-import {createCloudWallet} from './cloud-wallet.mjs?v=mobile-save-hotfix-20261027';
+import {createCloudWallet} from './cloud-wallet.mjs?v=stale-run-20261027';
 import * as T from './vendor/three.module.js';
 import {createWallet} from './economy.mjs?v=mobile-save-hotfix-20261027';
 import {createStore} from './store.js?v=mobile-save-hotfix-20261027';
