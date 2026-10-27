@@ -5,3 +5,5 @@
 .slice.used path,.slice.used circle{fill:#aaa7a1;stroke:#827f79}.slice.used text{fill:#57554f;text-decoration:line-through}
 
 .card ul{padding-left:18px;font-size:14px;line-height:1.8}.card li{margin:7px 0}
+
+@media(min-width:801px){main{max-width:none;padding:0 24px;grid-template-columns:clamp(180px,18vw,300px) minmax(0,1fr) clamp(180px,18vw,300px);gap:24px}.wheel-wrap{width:100%;max-width:min(100%,calc(100vh - 270px));margin:0 auto}.center{min-width:0}.ticket{margin-left:auto;margin-right:auto}.card{padding:18px}.clapper{margin-bottom:20px}}
