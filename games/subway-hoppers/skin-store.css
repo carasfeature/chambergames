@@ -1,0 +1,40 @@
+.gem-store .skin-card{padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}.gem-store .skin-card h3{margin:2px 0;font-size:20px}.gem-store .skin-card .item-description{font-size:12px;margin:0 0 5px}.gem-store .skin-picture{display:block;width:100%;aspect-ratio:4/5;padding:8px;border:1px solid #69514d;border-radius:12px;background:radial-gradient(ellipse at 50% 45%,#51423e,#211d1d 80%);cursor:pointer;overflow:hidden}.skin-picture img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 9px 9px #0006)}.skin-picture:hover{outline:2px solid #9e3d49}.skin-preview{width:min(440px,90vw);max-height:90dvh;overflow:auto;background:#292322;color:#f0e5d7;border:1px solid #795b55;border-radius:20px;padding:18px;text-align:center}.skin-preview::backdrop{background:#000b}.skin-preview form{display:flex;justify-content:flex-end}.skin-preview button{background:#62333c;color:white;border:1px solid #ae6671;border-radius:10px;font-size:24px;padding:4px 14px}.skin-preview h2{margin:0;font-size:26px}.skin-preview canvas{display:block;width:100%;height:360px;background:radial-gradient(ellipse,#51423e,#211d1d);border-radius:12px}.skin-preview p{font-size:13px}.skin-preview .preview-status:empty{display:none}@media(max-width:560px){.gem-store .shop-content:has(.skin-card){grid-template-columns:repeat(2,minmax(0,1fr))}.gem-store .skin-card h3{font-size:17px}.gem-store .skin-card .shop-buy{font-size:12px;padding:10px 5px}.gem-store .skin-card{padding:8px}.skin-preview canvas{height:360px}}
+
+.gem-store .skin-card h3{overflow-wrap:anywhere}
+
+/* Compact store rhythm across skins, powers and upgrades. */
+.gem-store .shop-intro:empty,.gem-store .shop-notice:empty,.gem-store .price-hint:empty{display:none}
+.gem-store .shop-content{gap:12px;margin-top:12px;align-items:stretch}
+.gem-store .shop-card{padding:14px}
+.gem-store .shop-intro{margin:10px 0;font-size:12px}
+.gem-store .skin-picture{aspect-ratio:auto;height:210px;margin:0;padding:5px;border-radius:9px}
+.gem-store .skin-card{gap:7px}
+.gem-store .skin-card h3{font-size:18px;line-height:1.2;margin:0;min-height:0}
+.gem-store .skin-card .item-description{font-size:9px!important;line-height:1.3;min-height:0;margin:0;color:#bcaea6}
+.gem-store .skin-card .shop-buy{margin-top:3px}
+.gem-store .shop-card .item-description{min-height:0;margin:10px 0;line-height:1.45}
+.gem-store .shop-card .usage-hint{min-height:0;display:block;margin:7px 0 0;line-height:1.4}
+.gem-store .shop-bottom{margin-top:14px;padding-top:10px}
+.gem-store .shop-notice{min-height:0;margin:10px 0}
+.gem-store .upgrade-steps{margin-bottom:12px}
+.gem-store .shop-wallet{margin:10px 0}
+.gem-store .shop-tabs{gap:6px}
+.skin-preview form{position:absolute;right:12px;top:12px}
+.skin-preview h2{font-size:22px;margin:4px 45px 12px}
+.skin-preview p:empty{display:none}
+@media(min-width:760px){.gem-store .shop-content:has(.skin-card){grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){
+ .gem-store .shop-content{gap:9px}
+ .gem-store .skin-card{padding:9px;gap:6px}
+ .gem-store .skin-picture{height:170px;padding:3px}
+ .gem-store .skin-card h3{font-size:15px;min-height:36px}
+ .gem-store .skin-card .item-description{font-size:8px!important;min-height:0;margin:0}
+ .gem-store .shop-card{padding:12px}
+ .gem-store .skin-card .shop-buy{min-height:44px;font-size:11px}
+}
+.gem-store .skin-card .item-description{margin:0;min-height:0}
+.gem-store .skin-card h3{min-height:44px}
+.gem-store .skin-card .shop-buy{margin-top:auto}
+@media(max-width:560px){.gem-store .skin-card h3{min-height:36px}}
+
+.gem-store .shop-content:not(:has(.skin-card)) .shop-card:last-child:nth-child(odd){grid-column:1/-1}

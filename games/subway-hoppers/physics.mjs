@@ -1,5 +1,5 @@
-import {SAND_HEIGHT,sandSurface} from './sand-shape.mjs?v=v1-2-20261024';
-export {SAND_HEIGHT,SAND_HALF_WIDTH,SAND_RINGS,sandDepth,sandSurface} from './sand-shape.mjs?v=v1-2-20261024';
+import {SAND_HEIGHT,sandSurface} from './sand-shape.mjs?v=store-release-20261027';
+export {SAND_HEIGHT,SAND_HALF_WIDTH,SAND_RINGS,sandDepth,sandSurface} from './sand-shape.mjs?v=store-release-20261027';
 export const LANE_WIDTH=3.85;
 // Stretch the jump by 5% without increasing its peak height.
 export const JUMP_SPEED=14.6/1.05, GRAVITY=28/(1.05*1.05), MAX_FEET_HEIGHT=6.95*1.4-2.5;
@@ -42,7 +42,7 @@ export class Run {
      this.recentSand=this.recentSand.filter(o=>row.at-o.at<100);
      if(this.recentSand.some(previous=>!sandTransferPossible(previous,candidate,this.mode))){
       // Two kangaroos, then one cactus. Do not draw extra randomness: the
-      // original row layout, safe lane and random sequence stay unchanged.
+      // original row layout, safe lane and gem trail sequence stay unchanged.
       type=this.sandReplacementIndex++%3<2?'roo':'cactus';
      }
      else this.recentSand.push(candidate);

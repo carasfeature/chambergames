@@ -1,10 +1,11 @@
+import {SKINS} from './skins.mjs?v=store-release-20261027';
 import * as T from './vendor/three.module.js';
 import {GLTFLoader} from './vendor/loaders/GLTFLoader.js';
-import {attachBurgerShoes} from './powers.js?v=gameplay-fixes-1';
+import {attachBurgerShoes} from './powers.js?v=store-release-20261027';
 export async function loadCharacter(parent,name='christina'){
- const files={christina:'christina-clown.glb',amber:'amber-halloween.glb'};
+ const files=Object.fromEntries(SKINS.map(s=>[s.id,s.file+'.glb']));
  if(!files[name])throw new Error('Unknown runner');
- const gltf=await new GLTFLoader().loadAsync('./assets/'+files[name]+'?v=run-polish-1');
+ const gltf=await new GLTFLoader().loadAsync('./assets/'+files[name]+'?v=store-release-20261027');
  const model=gltf.scene;model.rotation.y=Math.PI;parent.add(model);
  const updateShoes=attachBurgerShoes(model);
  const feet=['L','R'].map((side,i)=>{const anchor=new T.Object3D();anchor.position.set(i===0?-.27:.27,.04,.11);model.add(anchor);model.updateMatrixWorld(true);model.getObjectByName('Shin'+side).attach(anchor);return anchor;});

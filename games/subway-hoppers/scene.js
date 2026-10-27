@@ -1,15 +1,17 @@
+import {skinById} from './skins.mjs?v=store-release-20261027';
 import * as T from './vendor/three.module.js';
-import {createAmbience} from './ambience.js?v=v1-2-20261024';
-import {bindSwipes} from './touch.mjs?v=v1-2-20261024';
-import {createMobilePlay} from './mobile-play.mjs?v=v1-2-20261024';
-import {currentPlayer,submitRun} from './leaderboard.mjs?v=v1-2-20261024';
-import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=v1-2-20261024';
+import {createAmbience} from './ambience.js?v=store-release-20261027';
+import {bindSwipes} from './touch.mjs?v=store-release-20261027';
+import {createMobilePlay} from './mobile-play.mjs?v=store-release-20261027';
+import {currentPlayer,submitRun} from './preview-scores.mjs';
+import {createGems} from './gems.js?v=store-release-20261027';
+import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=store-release-20261027';
 import {batchStaticBoxes} from './scenery-batch.js';
-import {loadCharacter} from './character.js?v=v1-2-20261024';
-import {setupPowers} from './powers.js?v=v1-2-20261024';
-import {decorateTunnel} from './tunnel-halloween.js?v=v1-2-20261024';
-import {Run} from './physics.mjs?v=v1-2-20261024';
-import {SAND_HEIGHT,SAND_RINGS,SAND_POSITIONS,SAND_UVS,SAND_INDICES} from './sand-shape.mjs?v=v1-2-20261024';
+import {loadCharacter} from './character.js?v=store-release-20261027';
+import {setupPowers} from './powers.js?v=store-release-20261027';
+import {decorateTunnel} from './tunnel-halloween.js?v=store-release-20261027';
+import {Run} from './physics.mjs?v=store-release-20261027';
+import {SAND_HEIGHT,SAND_RINGS,SAND_POSITIONS,SAND_UVS,SAND_INDICES} from './sand-shape.mjs?v=store-release-20261027';
 const run=new Run();
 let selectedMode='standard';
 const ambience=createAmbience(document.querySelector('#sound-toggle'),document.querySelector('#sound-volume'));
@@ -30,6 +32,7 @@ canvas.setAttribute('aria-label','Swipe left or right to change lanes; swipe up 
 try{renderer=new T.WebGLRenderer({canvas,antialias:graphicsMode!=='performance',powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
 renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
 const scene=new T.Scene();scene.background=new T.Color('#26383b');scene.fog=new T.Fog('#26383b',26,112);
+const gems=await createGems(scene,run,{resume:()=>{scoreSubmitted=false;begin();},onEquip:id=>selectCharacter(id),onError:error=>{if(run.status==='running')run.status='paused';showPanel();message.textContent=error;}}).catch(error=>{const el=document.querySelector('#error');el.hidden=false;el.textContent=error.message+' Reload to retry.';throw error;});
 const camera=new T.PerspectiveCamera(64,1,.1,160);camera.position.set(0,5.5,8.5);camera.lookAt(0,1,-18);
 const graphics=createGraphics(renderer,canvas,camera,graphicsMode);
 scene.add(new T.HemisphereLight('#f3e4c9','#4b403a',2.4));const sun=new T.DirectionalLight('#ffe2b4',2.1);sun.position.set(-4,9,5);scene.add(sun);
@@ -166,9 +169,11 @@ const shadow=new T.Mesh(new T.CircleGeometry(.6,24),new T.MeshBasicMaterial({col
 
 const panel=document.querySelector('#play-panel'),title=document.querySelector('#play-title'),message=document.querySelector('#play-message'),start=document.querySelector('#start');
 let last=0,runPlayer=null,scoreSubmitted=false,flightVisualOffset=0;
-function showPanel(){ambience.setRunning(run.status==='running');ambience.setScreen(run.status);panel.hidden=run.status==='running';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':mobile?'Swipe left / right to change lanes. Swipe up to jump; down to descend faster.':'A / D or ← → change lanes · W / ↑ / Space jumps · S / ↓ fast descent. Jump early onto sand; dodge kangaroos.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
+function showPanel(){ambience.setRunning(run.status==='running');ambience.setScreen(run.status);panel.hidden=run.status==='running';title.textContent=run.status==='over'?'End of the line':run.status==='paused'?'Paused':'Ready to run?';message.textContent=run.status==='over'?run.reason+' Distance: '+Math.floor(run.distance)+' m.':mobile?'Swipe left / right to change lanes. Swipe up to jump; down to descend faster.':'A / D or ← → change lanes · W / ↑ / Space jumps · S / ↓ fast descent. Jump early onto sand; dodge kangaroos.';if(previewStart&&run.status==='ready')message.textContent='Local test · starts at '+previewStart.toLocaleString()+'m · maximum running speed.';start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
-function begin(){if(!character)return;if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.mode=selectedMode;run.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';mobilePlay.enter();ambience.start();last=0;showPanel();sync();canvas.focus({preventScroll:true});}
+const previewStart=['localhost','127.0.0.1','[::1]'].includes(location.hostname)?Math.min(50000,Math.max(0,Number(new URLSearchParams(location.search).get('start'))||0)):0;
+let starting=false;
+async function begin(){if(!character||starting)return;starting=true;try{if(gems.wallet.cloud&&gems.wallet.error&&!await gems.wallet.retry()){message.textContent=gems.wallet.error;return;}if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.mode=selectedMode;run.reset();if(previewStart){run.distance=previewStart;run.rows=[];run.obstacles=[];run.pickups=[];run.recentSand=[];run.nextRow=previewStart+50;run.fillTrack();}if(!await gems.reset()){showPanel();message.textContent=gems.wallet.error||'Could not start a saved run. Try again.';return;}sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';mobilePlay.enter();ambience.start();last=0;showPanel();sync();canvas.focus({preventScroll:true});}finally{starting=false;}}
 function togglePause(){if(run.status==='running'){run.status='paused';showPanel();}else if(run.status==='paused')begin();}
 start.onclick=()=>{if(run.status==='paused'||run.status==='over')begin();else openInstructions();};
 const instructions=document.querySelector('#instructions');
@@ -177,21 +182,22 @@ document.querySelector('#instructions-open').onclick=openInstructions;
 document.querySelector('#instructions-start').onclick=()=>{instructions.close();begin();};
 document.querySelector('#instructions-close').onclick=()=>instructions.close();
 instructions.addEventListener('close',()=>ambience.setScreen(run.status));
-document.addEventListener('keydown',e=>{if(instructions.open)return;if(e.target instanceof HTMLSelectElement||e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW','ArrowDown','KeyS'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();if(['ArrowDown','KeyS'].includes(e.code))run.fastDescend();});
+document.addEventListener('keydown',e=>{if(instructions.open||gems.dialog.open)return;if(e.target instanceof HTMLSelectElement||e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW','ArrowDown','KeyS'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();if(['ArrowDown','KeyS'].includes(e.code))run.fastDescend();});
 const resetSwipe=bindSwipes(canvas,action=>action==='jump'?run.jump():action==='down'?run.fastDescend():run.move(action==='left'?-1:1),()=>run.status==='running');
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(run.status==='running'){run.status='paused';showPanel();}document.querySelector('#error').hidden=false;document.querySelector('#error').textContent='Graphics interrupted. Reload the page to restart the game.';});
 document.addEventListener('visibilitychange',()=>{last=0;if(document.hidden&&run.status==='running'){run.status='paused';showPanel();}});
+function characterLabel(name){return skinById(name)?.name||name;}
 const chooser=document.createElement('div');chooser.className='character-choice';chooser.setAttribute('role','group');chooser.setAttribute('aria-label','Choose your runner');
-for(const name of ['christina','amber']){const button=document.createElement('button');button.type='button';button.dataset.character=name;button.textContent=name[0].toUpperCase()+name.slice(1);button.addEventListener('click',()=>selectCharacter(name));chooser.append(button);}
-start.before(chooser);
+for(const name of ['christina','amber']){const button=document.createElement('button');button.type='button';button.dataset.character=name;button.textContent=characterLabel(name);button.addEventListener('click',async()=>{if(await gems.wallet.equipSkin(name))selectCharacter(name);});chooser.append(button);}
+(document.querySelector('.run-loadout')||start).before(chooser);
 const modeChooser=document.createElement('div');modeChooser.className='mode-choice';modeChooser.setAttribute('role','group');modeChooser.setAttribute('aria-label','Game mode');
 const modeNote=document.createElement('p');modeNote.className='mode-note';modeNote.id='mode-note';
 for(const [mode,label] of [['standard','Standard Mode'],['fast','Fast Mode']]){const button=document.createElement('button');button.type='button';button.dataset.mode=mode;button.textContent=label;button.setAttribute('aria-describedby','mode-note');button.onclick=()=>{if(run.status==='running'||run.status==='paused')return;selectedMode=mode;showPanel();};modeChooser.append(button);}
 chooser.before(modeChooser,modeNote);
 const baseShowPanel=showPanel;
-const originalShowPanel=()=>{mobilePlay.sync(run.status);baseShowPanel();};
-showPanel=function(){graphicsToggle.sync(run.status);originalShowPanel();for(const button of modeChooser.children){button.setAttribute('aria-pressed',String(button.dataset.mode===(run.status==='paused'||run.status==='running'?run.mode:selectedMode)));button.disabled=run.status==='paused'||run.status==='running';}if(run.status!=='running')resetSwipe();modeNote.textContent=(run.status==='paused'||run.status==='running'?run.mode:selectedMode)==='fast'?'Fast Mode - game 35% faster; for those who want to get further, quicker':'Standard Mode - Original Game, same speed progression';canvas.parentElement.dataset.status=run.status;document.documentElement.dataset.runStatus=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+selectedCharacter+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+(selectedCharacter==='amber'?'amber-halloween':'christina-clown')+'.png';portrait.alt=selectedCharacter+' in her Halloween costume';document.querySelector('#runner-name').textContent=selectedCharacter;for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
-showPanel();sync();selectCharacter('amber');
+const originalShowPanel=()=>{mobilePlay.sync(run.status);gems.sync();baseShowPanel();if(run.status==='over')message.textContent+=' Tooth gems collected: '+gems.earned+'.';};
+showPanel=function(){graphicsToggle.sync(run.status);originalShowPanel();for(const button of modeChooser.children){button.setAttribute('aria-pressed',String(button.dataset.mode===(run.status==='paused'||run.status==='running'?run.mode:selectedMode)));button.disabled=run.status==='paused'||run.status==='running';}if(run.status!=='running')resetSwipe();modeNote.textContent=(run.status==='paused'||run.status==='running'?run.mode:selectedMode)==='fast'?'Fast Mode - game 35% faster; for those who want to get further, quicker':'Standard Mode - Original Game, same speed progression';canvas.parentElement.dataset.status=run.status;document.documentElement.dataset.runStatus=run.status;start.disabled=loadingCharacter||!character;if(loadingCharacter)start.textContent='Loading '+characterLabel(selectedCharacter)+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+skinById(selectedCharacter).file+'.png';portrait.alt=characterLabel(selectedCharacter)+' skin preview';document.querySelector('#runner-name').textContent=characterLabel(selectedCharacter);for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
+showPanel();sync();selectCharacter(gems.wallet.state.equipped);
 let lastFrame=0;
 const distanceLabel=document.querySelector('#distance');let displayedDistance=-1;
 renderer.setAnimationLoop(now=>{
@@ -204,6 +210,7 @@ renderer.setAnimationLoop(now=>{
  if(run.status==='paused'){renderer.render(scene,camera);return;}
  if(run.status==='running'){
   const distance=run.distance,wasGrounded=run.grounded,previousLevel=run.level;run.update(dt);const step=run.distance-distance;
+  gems.update(dt);
   if(run.status==='over')ambience.gameOver();
   else if(run.level>previousLevel)ambience.difficulty();
   if(!wasGrounded&&run.grounded&&run.status==='running')ambience.movement('land',0,run.surface>.05);

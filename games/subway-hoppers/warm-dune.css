@@ -1,44 +1,54 @@
+/* Warm Dune: page and shop presentation only. */
 :root{color-scheme:light;--cream:#41372c;--muted:#564938;--line:#a58b69;--sand:#b5a184;--card:#cebb9e;--crimson:#8b2334}
 body{background:var(--sand);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-h1,h2,h3{font-weight:700;letter-spacing:-.025em}
-.game-heading h1{font-size:clamp(26px,3.4vw,46px)}
+h1,h2,h3{font-weight:700;letter-spacing:-.025em}.game-heading h1{font-size:clamp(26px,3.4vw,46px)}
 button,.back-games{background:var(--card);color:var(--cream);border-color:var(--crimson);font-weight:600}
-button:hover:not(:disabled),.back-games:hover{background:#c1ac8c}
-button:focus-visible,.back-games:focus-visible{outline-color:var(--crimson)}
+button:hover:not(:disabled),.back-games:hover{background:#c1ac8c}button:focus-visible,.back-games:focus-visible{outline-color:var(--crimson)}
 .viewport{border-color:#a58b69;box-shadow:0 12px 32px #59452b22}
-.overlay span,.power-hud{color:#fff3df}
+/* Game canvas, active HUD and all gameplay controls retain their presentation. */
+.overlay span,.gem-hud,.power-hud,.pickup-timer small{color:#fff3df}
 #play-panel{background:linear-gradient(90deg,#b5a184bb,#cebb9ef5)}
-.intro-art strong{font-weight:700}
-.intro-copy h2{font-weight:750}
-.intro-copy .eyebrow{font-weight:650}
+.intro-art strong{font-weight:700}.intro-copy h2{font-weight:750}.intro-copy .eyebrow{font-weight:650}
 #start,#instructions-start{background:#a58b69;color:#41372c;border:1px solid #8b2334;font-weight:700}
 #start:hover,#instructions-start:hover{background:#bfa179}
 .character-choice button[aria-pressed=true]{background:#bda17c;border-color:var(--crimson)}
-#instructions-open{font-size:16px}
-.copyright{font-size:12px}
-#sound-volume{accent-color:#8b2334}
-.leaderboard{background:#cebb9e;border:1px solid #a58b69;box-shadow:0 6px 24px #59452b0a}
-.leaderboard h2{font-size:28px}
-.board-row{border-color:#b49b79}
-.board-row.is-you{background:#b5a184;color:#41372c}
-dialog{background:#cebb9e;color:#41372c;border:1px solid #a58b69;box-shadow:0 24px 90px #41372c55}
-dialog::backdrop{background:#41372c77}
-.obstacle-guide section,.power-guide section{background:#c2ad8e;border-color:#a58b69}
-kbd{background:#c2ad8e}
-.no{color:#8b2334!important}
-.yes{color:#466238!important}
-.mobile-graphics button[aria-pressed=true]{background:#bda17c;border-color:#8b2334;color:#41372c}
-.mobile-graphics small,.graphics-setting,.graphics-setting span{color:#564938}
-.graphics-setting select{background:#cebb9e;color:#41372c;border-color:#8b2334}
-.duration-preview span{color:#564938}
-@media(max-width:640px){header.game-heading h1{font-size:24px}
-.back-games{font-size:11px;padding:8px}
-.intro-copy h2{font-size:26px}
-.leaderboard h2{font-size:26px}
-.copyright{font-size:11px}
-}
+.run-loadout>p,.run-loadout p small{color:#564938}.run-loadout button{background:#cebb9e;border-color:#a58b69;color:#41372c}.run-loadout b{color:#41372c}.run-loadout [aria-pressed=true]{background:#bda17c;border-color:#8b2334}
+.run-loadout svg{filter:drop-shadow(0 1px 1px #41372c80)}
+.store-open{background:#cebb9e;color:#41372c;border-color:#8b2334}
+#instructions-open{font-size:16px}.copyright{font-size:12px}
+#sound-volume{accent-color:#8b2334}.leaderboard{background:#cebb9e;border:1px solid #a58b69;box-shadow:0 6px 24px #59452b0a}.leaderboard h2{font-size:28px}.board-row{border-color:#b49b79}.board-row.is-you{background:#b5a184;color:#41372c}
+dialog{background:#cebb9e;color:#41372c;border:1px solid #a58b69;box-shadow:0 24px 90px #41372c55}dialog::backdrop{background:#41372c77}
+.obstacle-guide section,.power-guide section{background:#c2ad8e;border-color:#a58b69}kbd{background:#c2ad8e}.no{color:#8b2334!important}.yes{color:#466238!important}
+.mobile-graphics button[aria-pressed=true]{background:#bda17c;border-color:#8b2334;color:#41372c}.mobile-graphics small,.graphics-setting,.graphics-setting span{color:#564938}.graphics-setting select{background:#cebb9e;color:#41372c;border-color:#8b2334}
+.gem-store{background:#b5a184;color:#41372c;border-color:#a58b69;box-shadow:0 25px 90px #41372c66}.gem-store::backdrop{background:#41372c88}.shop-sticky{background:#b5a184f7}
+.shop-heading .eyebrow,.shop-wallet small{color:#564938}.shop-heading h2{font-weight:750;letter-spacing:-.03em}.shop-wallet,.shop-wallet strong{color:#41372c}.shop-wallet .gem-icon{color:#426d7e;text-shadow:none}
+.gem-store button{background:#cebb9e;color:#41372c;border-color:#8b2334}.gem-store button:hover:not(:disabled){background:#c1ac8c}.gem-store .store-close{background:#cebb9e;border-color:#a58b69}
+.gem-store .shop-tabs{border-bottom-color:#a58b69}.shop-tabs button{background:transparent;border-color:transparent}.shop-tabs button[aria-pressed=true]{background:#cebb9e;border-color:transparent;border-bottom:2px solid #8b2334;color:#41372c}
+.gem-store .shop-intro{color:#564938}.shop-card{background:#cebb9e;border-color:#a58b69;box-shadow:0 3px 10px #59452b08}.shop-card h3{color:#41372c}.shop-card .item-kind{color:#564938}.shop-icon{background:#c3ad8d;border-color:#b89d77;text-shadow:none}
+.shop-card .owned{background:#b5a184;color:#594733!important}.shop-card .item-description,.shop-card p{color:#514332}.shop-card small,.shop-card .price-hint,.shop-card .price-review{color:#564938}
+.shop-card .shop-buy{background:#bda17c;color:#41372c;border-color:#8b2334}.shop-card .shop-buy:disabled{background:#bdad95;border-color:#ab987c;color:#796e5d}
+.shop-card .shop-equip{background:#cebb9e;border-color:#b49a76;color:#41372c}.shop-card .shop-equip[aria-pressed=true]{background:#e0d7bd;border-color:#738164;color:#3e5131}
+.shop-card .duration-preview,.upgrade-level{color:#41372c!important}.duration-preview span{color:#564938}.upgrade-steps>div{background:#c2ad8e;border-color:#a58b69}.upgrade-steps .next{border-color:#8b2334}.upgrade-steps .complete{background:#dce0c5;color:#3e5131}
+.shop-notice{color:#4e6440!important}.shop-bottom{border-color:#a58b69}.gem-store .wallet-note{color:#564938}.gem-store .shop-done{background:#cebb9e}
+.revive-button{background:#bda17c!important;color:#41372c!important;border-color:#8b2334}
+@media(max-width:640px){header.game-heading h1{font-size:24px}.back-games{font-size:11px;padding:8px}.intro-copy h2{font-size:26px}.leaderboard h2{font-size:26px}.copyright{font-size:11px}}
+
+/* Crimson power symbols; tooth gems retain their silver-blue finish. */
+:is(.shop-icon,.run-loadout,.magnet-face,.shield-mark,.pickup-timer) svg [fill]:not([fill="none"]){fill:#8b2334}
+:is(.shop-icon,.run-loadout,.magnet-face,.shield-mark,.pickup-timer) svg [stroke]:not([stroke="none"]){stroke:#8b2334}
+:is(.shop-icon,.run-loadout) svg[data-power-icon="double"] path{fill:#acd6e5;stroke:#6e95a5;stroke-width:1}
+.run-loadout svg{filter:none}
+.magnet-face,.pickup-timer>span{background:#c3ad8dee;border-color:#a58b69}
+.magnet-use:disabled .magnet-face{background:conic-gradient(#8b2334 calc(var(--progress)*1turn),#c3ad8d 0);border-color:#a58b69}
+.pickup-timer{background:conic-gradient(#8b2334 calc(var(--progress)*1turn),#c3ad8d99 0)}
+.double-mark{color:#b8dfed}.shop-wallet .gem-icon{color:#a8d2e5;text-shadow:0 1px 1px #466474}
+:is(.shop-icon,.run-loadout) svg[data-power-icon="double"] path{fill:#acd6e5!important;stroke:#6e95a5!important;stroke-width:1}
+.shop-wallet>span{color:#b4d6e4;text-shadow:0 1px 1px #466474}.shop-wallet strong{color:#41372c;text-shadow:none}
+:is(.shop-icon,.run-loadout,.magnet-face) svg [fill="#f1fbff"]{fill:#dec4b7}
+:is(.shop-icon,.run-loadout,.shield-mark) svg [stroke="#c6f1ff"],:is(.shop-icon,.run-loadout,.shield-mark) svg [stroke="#e8faff"]{stroke:#c17a80}
+
+/* Local Varsity Team display typography; descriptions remain easy to read. */
 @font-face{font-family:"Varsity Team";src:url("fonts/VarsityTeam-Bold.otf") format("opentype");font-style:normal;font-weight:700;font-display:swap}
-.game-heading h1,.intro-copy h2,.leaderboard h2,#instructions h2{font-family:"Varsity Team",system-ui,sans-serif;font-weight:700;letter-spacing:.015em}
-@media(max-width:640px){header.game-heading h1{font-size:25px}
-.intro-copy h2{font-size:29px}
-}
+.game-heading h1,.intro-copy h2,.leaderboard h2,#instructions h2,.shop-heading h2,.shop-card h3{font-family:"Varsity Team",system-ui,sans-serif;font-weight:700;letter-spacing:.015em}
+.shop-heading h2{font-size:32px}.shop-card h3{font-size:19px;line-height:1.15}
+@media(max-width:640px){header.game-heading h1{font-size:25px}.shop-heading h2{font-size:28px}.intro-copy h2{font-size:29px}}

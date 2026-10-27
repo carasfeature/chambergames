@@ -82,6 +82,15 @@ export function setupPowers(scene,runner){
  }
  // Small raised streaks catch the lights like thick, sticky spread.
  for(let i=0;i<4;i++){const ridge=part(puddle,new T.SphereGeometry(1,16,8),vegemite,-.32+i*.21,.03,-.05+(i%2)*.2);ridge.scale.set(.035,.014,.48);ridge.rotation.y=(i-1.5)*.09;}
+ // All spill blobs share one material. Draw them in one batch rather than
+ // submitting 24 separate physical-material meshes every toast frame.
+ const spillMeshes=puddle.children.filter(mesh=>mesh.geometry?.type==='SphereGeometry');
+ const spillBatch=new T.InstancedMesh(new T.SphereGeometry(1,16,8),vegemite,spillMeshes.length);
+ spillBatch.instanceMatrix.setUsage(T.DynamicDrawUsage);spillBatch.frustumCulled=false;
+ for(const mesh of spillMeshes){puddle.remove(mesh);mesh.geometry.dispose();}
+ puddle.add(spillBatch);
+ const updateSpillBatch=()=>{spillMeshes.forEach((mesh,i)=>{mesh.updateMatrix();spillBatch.setMatrixAt(i,mesh.matrix);});spillBatch.instanceMatrix.needsUpdate=true;};
+ updateSpillBatch();
  const pool=[];for(const type of Object.keys(names))for(let i=0;i<5;i++){const g=type==='toast'?toast():type==='burger'?burger():bottle();g.scale.setScalar(1.4);g.visible=false;scene.add(g);pool.push({type,g});}
  let flight=0,visualY=0,wasFlying=false;
  const leftFoot=new T.Vector3(),rightFoot=new T.Vector3();
@@ -93,7 +102,7 @@ export function setupPowers(scene,runner){
   puddle.visible=run.powers.toast>0&&run.grounded;puddle.position.set(run.x,run.surface+.025,0);
   board.visible=puddle.visible;
   puddle.rotation.y=-(run.lane*3.85-run.x)*.12;
-  for(const s of sideSpills){
+  if(puddle.visible)for(const s of sideSpills){
    const cycle=(run.time*1.35+s.phase)%1,pulse=Math.sin(Math.PI*cycle),out=1-Math.pow(1-cycle,2);
    s.splash.position.x=s.baseX+s.side*.13*pulse;
    s.splash.position.z=s.z+.035*Math.sin(run.time*4+s.phase*6);
@@ -101,6 +110,7 @@ export function setupPowers(scene,runner){
    s.drop.position.set(s.dropX+s.side*.18*out,.014+.055*pulse,s.z+.08+.07*out);
    const size=Math.pow(Math.max(0,pulse),.65);s.drop.scale.copy(s.dropScale).multiplyScalar(size);
   }
+  if(puddle.visible)updateSpillBatch();
   if(run.status!=='paused'){
    const target=flying?1:run.flightLanding?Math.min(1,Math.max(0,(run.y-run.surface)/3)):0;
    flight+=(target-flight)*(1-Math.exp(-8*dt));
