@@ -1,6 +1,6 @@
 const $=id=>document.getElementById(id),rotor=$('rotor'),spin=$('spin'),result=$('result');
-const key='chamberwood-food-wheel-v1';let foods=['Ahlgrens Candy-Larvets', 'Clam Juice', 'Thick Water with Sausages Broth', 'Snails', '1000 Year Old Egg', 'Octopus'],last='',rotation=0,busy=false,used=new Set();
-try{const saved=JSON.parse(localStorage.getItem(key)||'{}');if(JSON.stringify(saved.foods)===JSON.stringify(foods))used=new Set(Array.isArray(saved.used)?saved.used.filter(i=>Number.isInteger(i)&&i>=0&&i<foods.length):[]);last=typeof saved.last==='string'?saved.last:'';}catch{}
+const key='chamberwood-food-wheel-v1';let foods=['Ahlgrens Candy-Larvets', 'Clam Juice', 'Thick Water with Sausages Broth', 'Snails', '1000 Year Old Egg', 'Octopus', 'Safe', 'Drink or Shot', 'TikTok Dance Challenge', 'Shocktato Part 2'],last='',rotation=0,busy=false,used=new Set();
+try{const saved=JSON.parse(localStorage.getItem(key)||'{}');if(Array.isArray(saved.foods)&&Array.isArray(saved.used)){const served=new Set(saved.used.filter(i=>Number.isInteger(i)&&i>=0&&i<saved.foods.length).map(i=>saved.foods[i]));used=new Set(foods.map((name,i)=>served.has(name)?i:-1).filter(i=>i>=0));}last=typeof saved.last==='string'?saved.last:'';}catch{}
 const svgNS='http://www.w3.org/2000/svg';
 function point(angle,r=280){const t=angle*Math.PI/180;return [300+r*Math.cos(t),300+r*Math.sin(t)];}
 function svg(tag,attrs){const el=document.createElementNS(svgNS,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);return el;}
