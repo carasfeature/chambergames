@@ -1,6 +1,6 @@
 import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import {getDatabase,ref,onValue,runTransaction,set,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-import {getAuth,onAuthStateChanged,signInWithEmailAndPassword} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import {FIREBASE} from '/shared/config.js';
 const app=getApps().find(a=>a.name==='caption')||initializeApp(FIREBASE,'caption'),db=getDatabase(app),auth=getAuth(app);
 let ready=false,connected=false,adminUser=null;
@@ -40,7 +40,6 @@ result.addEventListener('close',()=>spin.focus());draw();
 function renderRestoreControls(){
  const container=$('restore-tiles');if(!container)return;
  container.replaceChildren();$('restore-controls').hidden=!used.size;
- $('restore-login').hidden=!!adminUser;
  for(const i of used){
   const button=document.createElement('button');button.type='button';button.textContent='Restore '+foods[i];button.disabled=!adminUser||!connected;
   button.style.cssText='display:block;width:100%;margin-top:10px';
@@ -54,6 +53,9 @@ onValue(ref(db,'subathonWheel/tiles'),snapshot=>{
  if(!busy)draw();else renderRestoreControls();
 },error=>{ready=false;updateControls();$('status').textContent='WHEEL CONNECTION UNAVAILABLE';});
 if($('restore-tiles')){
- onAuthStateChanged(auth,async user=>{adminUser=user&&!(await user.getIdTokenResult()).claims.hoppersPlayer?user:null;renderRestoreControls();});
- $('restore-login').onsubmit=async event=>{event.preventDefault();$('restore-error').textContent='';try{await signInWithEmailAndPassword(auth,$('restore-email').value,$('restore-password').value);$('restore-password').value='';}catch(error){$('restore-error').textContent='Sign-in failed. Use your Firebase admin account.';}};
+ onAuthStateChanged(auth,async user=>{
+  adminUser=user&&!(await user.getIdTokenResult()).claims.hoppersPlayer?user:null;
+  if(!adminUser){window.top.location.href='/admin/login.html?next=/admin/subathon-wheel/';return;}
+  renderRestoreControls();
+ });
 }
