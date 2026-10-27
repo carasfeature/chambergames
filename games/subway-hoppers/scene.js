@@ -4,7 +4,7 @@ import {createAmbience} from './ambience.js?v=store-release-20261027';
 import {bindSwipes} from './touch.mjs?v=store-release-20261027';
 import {createMobilePlay} from './mobile-play.mjs?v=store-release-20261027';
 import {currentPlayer,submitRun} from './preview-scores.mjs';
-import {createGems} from './gems.js?v=store-release-20261027';
+import {createGems} from './gems.js?v=skin-equip-20261027';
 import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=store-release-20261027';
 import {batchStaticBoxes} from './scenery-batch.js';
 import {loadCharacter} from './character.js?v=store-release-20261027';

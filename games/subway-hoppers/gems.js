@@ -2,7 +2,7 @@ import {createGemTracker,seededRandom} from './gem-tracker.mjs';
 import {createCloudWallet} from './cloud-wallet.mjs';
 import * as T from './vendor/three.module.js';
 import {createWallet} from './economy.mjs?v=store-release-20261027';
-import {createStore} from './store.js?v=store-release-20261027';
+import {createStore} from './store.js?v=skin-equip-20261027';
 export async function createGems(scene,run,options){
  let storage;try{storage=localStorage;}catch{storage={getItem(){return null;},setItem(){throw Error('Unavailable');}};}
  const demo=['localhost','127.0.0.1'].includes(location.hostname)&&new URL(location.href).searchParams.get('demo')==='1';

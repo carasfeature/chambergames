@@ -64,7 +64,7 @@ export function createStore(run,wallet,{resume,demo=false,onEquip=()=>{}}){
    const title=document.createElement('h3');title.textContent=item.name;c.append(title);
    const hint=document.createElement('p');hint.className='item-description';hint.textContent='CLICK PICTURE TO VIEW AVATAR';c.append(hint);
    const owned=s.skins.includes(item.id),equipped=s.equipped===item.id;
-   action(c,item.price===0?'Claim Free':owned?(equipped?'✓ Equipped':'Equip'):'Unlock · ◆ '+fmt(item.price),run.status==='paused'||equipped||(!owned&&s.balance<item.price),async()=>{
+   action(c,owned?'Equip':item.price===0?'Claim Free':'Unlock · ◆ '+fmt(item.price),run.status==='paused'||equipped||(!owned&&s.balance<item.price),async()=>{
     if(!owned){notice=await wallet.buySkin(item.id)?item.name+' unlocked.':'Could not save. Please try again.';render();return;}
     if(await wallet.equipSkin(item.id)){await onEquip(item.id);notice=item.name+' equipped.';}else notice='Could not save selection.';render();
    },'skin-'+item.id,'shop-buy');content.append(c);
