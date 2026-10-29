@@ -10,7 +10,7 @@ let token='',userId='',broadcaster='',socket=null,stopped=true,subscribed=false,
 let pending=[];try{pending=JSON.parse(sessionStorage.getItem(PENDING)||'[]');if(!Array.isArray(pending))pending=[];}catch{}
 const collectorId=sessionStorage.getItem('subathon-collector')||crypto.randomUUID();sessionStorage.setItem('subathon-collector',collectorId);
 const now=()=>Date.now()+offset;
-function phase(){const before=now()<START;$('phase').textContent=before?'Waiting for the scheduled start — counting begins automatically.':'Counting announcements since 11:00 a.m. Los Angeles time.';const active=Object.values(collectors).some(c=>c.connected&&now()-c.at<45000);$('shared-status').textContent=!dbConnected?'Shared counter offline — reconnecting…':active?'Production listener connected.':before?'Connect Twitch on the production computer before the start.':'No active production listener — new announcements may be missed.';}
+function phase(){const before=now()<START;const active=Object.values(collectors).some(c=>c.connected&&now()-c.at<45000);$('shared-status').textContent=!dbConnected?'Shared counter offline — reconnecting…':active?'Production listener connected.':before?'Connect Twitch on the production computer before the start.':'No active production listener — new announcements may be missed.';}
 function savePending(){try{sessionStorage.setItem(PENDING,JSON.stringify(pending));}catch{$('error').textContent='Local backup is unavailable. Keep this page open.';}}
 async function flush(){if(writing||!adminReady||!dbConnected)return;writing=true;try{while(pending.length){const e=pending[0];await runTransaction(ref(db,PATH+'/events/'+e.key),old=>mergeRecord(old,e),{applyLocally:false});pending.shift();savePending();}}catch{$('error').textContent='Saving interrupted. Received announcements are queued on this computer.';}finally{writing=false;}}
 async function heartbeat(){if(!adminReady||!dbConnected)return;try{await set(ref(db,PATH+'/collectors/'+collectorId),{connected:subscribed&&!stopped,at:serverTimestamp()});}catch{}}
@@ -63,3 +63,7 @@ onAuthStateChanged(auth,async user=>{
 });
 setInterval(phase,5000);setInterval(flush,5000);
 setInterval(async()=>{if(!stopped&&token)try{await validate();}catch(error){$('error').textContent=error.message;stop();sessionStorage.removeItem(TOKEN);token='';}},3600000);
+
+const clocks=[['clock-la','America/Los_Angeles'],['clock-uae','Asia/Dubai'],['clock-pl','Europe/Warsaw']].map(([id,timeZone])=>({id,format:new Intl.DateTimeFormat('en-GB',{timeZone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'})}));
+function updateClocks(){const date=new Date(now());for(const clock of clocks)$(clock.id).textContent=clock.format.format(date).replace(':','.');}
+updateClocks();setInterval(updateClocks,1000);
