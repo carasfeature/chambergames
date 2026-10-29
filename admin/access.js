@@ -7,7 +7,7 @@
   const sidebar=document.querySelector('.sidebar');if(!sidebar)return;
   const box=document.createElement('div'),label=document.createElement('p'),button=document.createElement('button');
   label.textContent='Signed in as '+user;label.className='notice';button.textContent='Log out';
-  button.onclick=()=>{sessionStorage.removeItem(key);location.replace('/admin/login.html?logout=1')};
+  button.onclick=()=>{sessionStorage.removeItem(key);sessionStorage.removeItem('chamber-admin-token');location.replace('/admin/login.html?logout=1')};
   box.append(label,button);sidebar.append(box);
  });
 })();

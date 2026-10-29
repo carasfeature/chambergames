@@ -1,19 +1,24 @@
-import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import {getDatabase,ref,onValue,runTransaction,set,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
-import {FIREBASE} from '/shared/config.js';
-import {START,CHANNEL,normalize,mergeRecord,totalRecords} from './core.mjs?v=counter-20261029';
+import {START,CHANNEL,normalize} from './core.mjs?v=counter-20261029';
 const CLIENT='ube5lbxw2yje55kku6hckuturx6s0g',REDIRECT='https://chambergames.app/admin/subathon-counter/';
-const PATH='archives/subathonCounter/2026-10-29',TOKEN='subathon-twitch-token',PENDING='subathon-pending-20261029',STATE='subathon-oauth-state';
-const $=id=>document.getElementById(id),app=getApps().find(a=>a.name==='caption')||initializeApp(FIREBASE,'caption'),auth=getAuth(app),db=getDatabase(app);
+const ENDPOINT='https://chamber-production-counter.swer538.chatgpt.site/api/counter',TOKEN='subathon-twitch-token',PENDING='subathon-pending-20261029',STATE='subathon-oauth-state';
+const $=id=>document.getElementById(id);
 let token='',userId='',broadcaster='',socket=null,stopped=true,subscribed=false,adminReady=false,dbConnected=false,retryTimer=null,retries=0,heartbeatTimer=null,offset=0,collectors={},writing=false;
 let pending=[];try{pending=JSON.parse(sessionStorage.getItem(PENDING)||'[]');if(!Array.isArray(pending))pending=[];}catch{}
 const collectorId=sessionStorage.getItem('subathon-collector')||crypto.randomUUID();sessionStorage.setItem('subathon-collector',collectorId);
 const now=()=>Date.now()+offset;
 function phase(){const before=now()<START;const active=Object.values(collectors).some(c=>c.connected&&now()-c.at<45000);$('shared-status').textContent=!dbConnected?'Shared counter offline — reconnecting…':active?'Production listener connected.':before?'Connect Twitch on the production computer before the start.':'No active production listener — new announcements may be missed.';}
 function savePending(){try{sessionStorage.setItem(PENDING,JSON.stringify(pending));}catch{$('error').textContent='Local backup is unavailable. Keep this page open.';}}
-async function flush(){if(writing||!adminReady||!dbConnected)return;writing=true;try{while(pending.length){const e=pending[0];await runTransaction(ref(db,PATH+'/events/'+e.key),old=>mergeRecord(old,e),{applyLocally:false});pending.shift();savePending();}}catch{$('error').textContent='Saving interrupted. Received announcements are queued on this computer.';}finally{writing=false;}}
-async function heartbeat(){if(!adminReady||!dbConnected)return;try{await set(ref(db,PATH+'/collectors/'+collectorId),{connected:subscribed&&!stopped,at:serverTimestamp()});}catch{}}
+async function shared(data){
+ const adminToken=sessionStorage.getItem('chamber-admin-token');
+ if(!adminToken||!sessionStorage.getItem('chamber-admin-session')){location.replace('/admin/login.html?next=/admin/subathon-counter/');throw Error('Admin login required.');}
+ const response=await fetch(ENDPOINT,{method:data?'POST':'GET',cache:'no-store',headers:{Authorization:'Bearer '+adminToken,...(data?{'Content-Type':'application/json'}:{})},...(data?{body:JSON.stringify(data)}:{})});
+ if(response.status===401){sessionStorage.removeItem('chamber-admin-token');location.replace('/admin/login.html?next=/admin/subathon-counter/');throw Error('Admin login expired.');}
+ if(!response.ok)throw Error('Shared counter connection interrupted.');return response.json();
+}
+let polling=false;
+async function refresh(){if(polling)return;polling=true;try{const state=await shared();dbConnected=true;offset=state.now-Date.now();collectors=state.collectors||{};$('total').textContent=state.total.toLocaleString('en-US');if(!adminReady){adminReady=true;$('connect').disabled=false;if(token)start();}flush();}catch{dbConnected=false;}finally{polling=false;phase();}}
+async function flush(){if(writing||!adminReady||!dbConnected)return;writing=true;try{while(pending.length){const batch=pending.slice(0,100);await shared({action:'events',events:batch});pending.splice(0,batch.length);savePending();}if($('error').textContent.startsWith('Saving interrupted.'))$('error').textContent='';}catch{$('error').textContent='Saving interrupted. Received announcements are queued on this computer.';}finally{writing=false;}}
+async function heartbeat(){if(!adminReady)return;try{await shared({action:'heartbeat',id:collectorId,connected:subscribed&&!stopped});refresh();}catch{}}
 async function api(path,options={}){const response=await fetch('https://api.twitch.tv/helix/'+path,{...options,headers:{'Client-Id':CLIENT,'Authorization':'Bearer '+token,'Content-Type':'application/json',...(options.headers||{})}});if(response.status===401){sessionStorage.removeItem(TOKEN);throw Error('Twitch sign-in expired. Click Connect Twitch again.');}if(!response.ok)throw Error('Twitch connection failed ('+response.status+'). Try connecting again.');return response.json();}
 async function validate(){const response=await fetch('https://id.twitch.tv/oauth2/validate',{headers:{Authorization:'OAuth '+token}});if(!response.ok)throw Error('Twitch sign-in expired. Click Connect Twitch again.');const v=await response.json();if(v.client_id!==CLIENT||!v.scopes?.includes('user:read:chat'))throw Error('Connect Twitch and approve read-chat access.');userId=v.user_id;return v;}
 function disconnected(){subscribed=false;heartbeat();$('connection').textContent=stopped?'Disconnected on this computer.':'Reconnecting to Twitch…';if(now()>=START&&!stopped)$('error').textContent='Twitch connection interrupted. Announcements during the gap may be missed.';phase();}
@@ -53,14 +58,7 @@ if(hash.has('access_token')||hash.has('error')){
  history.replaceState(null,'',location.pathname);
  try{const saved=JSON.parse(sessionStorage.getItem(STATE)||'null');sessionStorage.removeItem(STATE);if(!saved||saved.state!==hash.get('state')||Date.now()-saved.at>600000)throw Error('Sign-in verification failed. Connect Twitch again.');if(hash.has('error'))throw Error('Twitch connection was not approved.');token=hash.get('access_token');sessionStorage.setItem(TOKEN,token);}catch(error){$('error').textContent=error.message;}
 }else token=sessionStorage.getItem(TOKEN)||'';
-onValue(ref(db,'.info/serverTimeOffset'),s=>{offset=s.val()||0;phase();});
-onValue(ref(db,'.info/connected'),s=>{dbConnected=s.val()===true;phase();flush();heartbeat();});
-onAuthStateChanged(auth,async user=>{
- if(!user||(await user.getIdTokenResult()).claims.hoppersPlayer){location.replace('/admin/login.html?next=/admin/subathon-counter/');return;}
- adminReady=true;sessionStorage.setItem('chamber-admin-session',user.email||'Admin');$('connect').disabled=false;
- onValue(ref(db,PATH+'/events'),s=>{$('total').textContent=totalRecords(s.val()).toLocaleString('en-US');},()=>{$('error').textContent='Shared counter access failed. Sign in with your Firebase admin account.';});
- onValue(ref(db,PATH+'/collectors'),s=>{collectors=s.val()||{};phase();});flush();if(token)start();
-});
+refresh();setInterval(refresh,2000);
 setInterval(phase,5000);setInterval(flush,5000);
 setInterval(async()=>{if(!stopped&&token)try{await validate();}catch(error){$('error').textContent=error.message;stop();sessionStorage.removeItem(TOKEN);token='';}},3600000);
 
