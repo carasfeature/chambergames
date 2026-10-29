@@ -10,6 +10,6 @@ document.getElementById('login').addEventListener('submit',async e=>{
   if(name.includes('@')){const credential=await signInWithEmailAndPassword(auth,name,password.value);const token=await credential.user.getIdTokenResult();if(token.claims.hoppersPlayer){await signOut(auth);throw Error('Not an admin account');}}
   else if(password.value!=='chamber'){throw Error('Invalid login');}
   sessionStorage.setItem('chamber-admin-session',name);password.value='';
-  const next=new URLSearchParams(location.search).get('next');location.replace(next==='/admin/subathon-wheel/'?next:'/admin/');
+  const next=new URLSearchParams(location.search).get('next');location.replace(['/admin/subathon-wheel/','/admin/subathon-counter/'].includes(next)?next:'/admin/');
  }catch{error.textContent='Sign-in failed. Use your admin email and password.';password.value='';password.focus();button.disabled=false;}
 });
