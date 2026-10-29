@@ -12,3 +12,6 @@
 .wheel-wrap{width:90%;margin-left:auto;margin-right:auto}
 .spin{min-width:0;width:min(320px,100%);padding:20px 32px;font-size:20px;min-height:64px;margin-top:16px}
 @media(min-width:801px){.wheel-wrap{width:90%;max-width:min(90%,calc(90vh - 243px))}}
+
+@font-face{font-family:CinemaDisplay;src:url("/games/gift-wheel/assets/cinema-display.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+header h1{font-family:CinemaDisplay,Georgia,serif;font-weight:400}
