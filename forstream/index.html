@@ -54,7 +54,7 @@ dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-s
 @media(max-width:900px){.stage{grid-template-columns:1fr}.wheel-wrap{max-width:720px}}
 </style></head>
 <body>
-<main id="stream-menu" class="stream-menu"><header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>For Stream</h1></header><nav class="stream-links" aria-label="Stream activities"><button class="stream-link" id="open-wheel">Wheel Of Fortune</button><a class="stream-link" href="subathon-wheel/">Subathon Wheel</a><a class="stream-link" href="https://chambergames.app/games/gift-wheel/">Giveaway Wheel</a></nav></main>
+<main id="stream-menu" class="stream-menu"><header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>For Stream</h1></header><nav class="stream-links" aria-label="Stream activities"><button class="stream-link" id="open-wheel" hidden>Wheel Of Fortune</button><a class="stream-link" href="subathon-wheel/">Subathon Wheel</a><a class="stream-link" href="https://chambergames.app/games/gift-wheel/">Giveaway Wheel</a></nav></main>
 <main id="wheel-page" hidden><button class="menu-back" id="back-menu">← For Stream menu</button>
 <header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>Blessing <em>Or</em> Curse</h1></header>
 <section class="stage" aria-label="Halloween wheel">
@@ -82,7 +82,7 @@ const menu=document.getElementById('stream-menu'),wheelPage=document.getElementB
 function route(){const showWheel=location.hash==='#wheel';menu.hidden=showWheel;wheelPage.hidden=!showWheel;}
 document.getElementById('open-wheel').onclick=()=>{location.hash='wheel';};
 document.getElementById('back-menu').onclick=()=>{location.hash='menu';};
-window.addEventListener('hashchange',()=>{route();(location.hash==='#wheel'?document.getElementById('back-menu'):document.getElementById('open-wheel')).focus();});route();
+window.addEventListener('hashchange',()=>{route();(location.hash==='#wheel'?document.getElementById('back-menu'):document.querySelector('.stream-links a')).focus();});route();
 const challenges = [
  {name:"Condiment Shot",lines:["Condiment","Shot"],description:"A shot made from condiments picked beforehand. One prepares it for the other, keeping the mixture a mystery."},
  {name:"The Other Pays",lines:["The Other","Pays"],description:"Shopping spree on stream! A coin flip decides who gets the treat, and the other pays."},
