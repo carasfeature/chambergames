@@ -64,6 +64,6 @@ onAuthStateChanged(auth,async user=>{
 setInterval(phase,5000);setInterval(flush,5000);
 setInterval(async()=>{if(!stopped&&token)try{await validate();}catch(error){$('error').textContent=error.message;stop();sessionStorage.removeItem(TOKEN);token='';}},3600000);
 
-const clocks=[['clock-la','America/Los_Angeles'],['clock-uae','Asia/Dubai'],['clock-pl','Europe/Warsaw']].map(([id,timeZone])=>({id,format:new Intl.DateTimeFormat('en-GB',{timeZone,hour:'2-digit',minute:'2-digit',hourCycle:'h23'})}));
-function updateClocks(){const date=new Date(now());for(const clock of clocks)$(clock.id).textContent=clock.format.format(date).replace(':','.');}
+const clocks=[['clock-la','America/Los_Angeles'],['clock-uae','Asia/Dubai'],['clock-pl','Europe/Warsaw']].map(([id,timeZone])=>({id,format:new Intl.DateTimeFormat('en-US',{timeZone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true})}));
+function updateClocks(){const date=new Date(now());for(const clock of clocks)$(clock.id).textContent=clock.format.formatToParts(date).filter(part=>part.type!=='literal'||part.value===':').map(part=>part.value).join('');}
 updateClocks();setInterval(updateClocks,1000);
