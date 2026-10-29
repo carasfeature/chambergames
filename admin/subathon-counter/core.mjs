@@ -6,17 +6,18 @@ export function normalize(event,metadata,broadcaster){
  if(!Number.isFinite(at)||at<START||event?.broadcaster_user_id!==broadcaster)return null;
  if(event.source_broadcaster_user_id&&event.source_broadcaster_user_id!==broadcaster)return null;
  const id=event.message_id;if(!safe(id))return null;
+ const actor=event.chatter_is_anonymous?'Anonymous':String(event.chatter_user_name||event.chatter_user_login||'Unknown').slice(0,80);
  const kind=event.notice_type;
- if(kind==='sub'||(kind==='resub'&&!event.resub?.is_gift))return {key:'event_'+id,kind,at,count:1};
+ if(kind==='sub'||(kind==='resub'&&!event.resub?.is_gift))return {actor,key:'event_'+id,kind,at,count:1};
  if(kind==='community_sub_gift'){
   const g=event.community_sub_gift;
   if(!safe(g?.id)||!Number.isSafeInteger(g.total)||g.total<1)return null;
-  return {key:'gift_'+g.id,kind:'gift',at,total:g.total};
+  return {actor,key:'gift_'+g.id,kind:'gift',at,total:g.total};
  }
  if(kind==='sub_gift'){
   const g=event.sub_gift;
-  if(g?.community_gift_id){if(!safe(g.community_gift_id)||!safe(g.recipient_user_id))return null;return {key:'gift_'+g.community_gift_id,kind:'gift',at,recipient:g.recipient_user_id};}
-  return {key:'event_'+id,kind:'gift',at,count:1};
+  if(g?.community_gift_id){if(!safe(g.community_gift_id)||!safe(g.recipient_user_id))return null;return {actor,key:'gift_'+g.community_gift_id,kind:'gift',at,recipient:g.recipient_user_id};}
+  return {actor,key:'event_'+id,kind:'gift',at,count:1};
  }
  return null;
 }
