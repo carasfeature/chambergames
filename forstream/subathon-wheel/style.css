@@ -7,3 +7,8 @@
 .card ul{padding-left:18px;font-size:14px;line-height:1.8}.card li{margin:7px 0}
 
 @media(min-width:801px){main{max-width:none;padding:0 24px;grid-template-columns:clamp(180px,18vw,300px) minmax(0,1fr) clamp(180px,18vw,300px);gap:24px}.wheel-wrap{width:100%;max-width:min(100%,calc(100vh - 270px));margin:0 auto}.center{min-width:0}.ticket{margin-left:auto;margin-right:auto}.card{padding:18px}.clapper{margin-bottom:20px}}
+
+/* Slightly smaller wheel; larger primary spin control. */
+.wheel-wrap{width:90%;margin-left:auto;margin-right:auto}
+.spin{min-width:0;width:min(320px,100%);padding:20px 32px;font-size:20px;min-height:64px;margin-top:16px}
+@media(min-width:801px){.wheel-wrap{width:90%;max-width:min(90%,calc(90vh - 243px))}}
