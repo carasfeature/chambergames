@@ -16,7 +16,7 @@ document.getElementById('login').addEventListener('submit',async e=>{
   await logoutReady;
   if(needsDatabaseLogin&&!name.includes('@')){throw Error('Database login required');}
   if(!needsDatabaseLogin){try{await sharedLogin({name,password:password.value});sessionStorage.setItem('chamber-admin-session',name);password.value='';location.replace(next==='/admin/subathon-counter/'?next:'/admin/');return;}catch(error){if(!name.includes('@'))throw error;}}
-  if(name.includes('@')){const credential=await signInWithEmailAndPassword(auth,name,password.value);const token=await credential.user.getIdTokenResult();if(token.claims.hoppersPlayer){await signOut(auth);throw Error('Not an admin account');}await sharedLogin({firebaseToken:await credential.user.getIdToken()});}
+  if(name.includes('@')){const credential=await signInWithEmailAndPassword(auth,name,password.value);const token=await credential.user.getIdTokenResult();if(token.claims.hoppersPlayer){await signOut(auth);throw Error('Not an admin account');}if(!needsDatabaseLogin)await sharedLogin({firebaseToken:await credential.user.getIdToken()});}
   else {throw Error('Use your Firebase admin email for this tool.');}
   sessionStorage.setItem('chamber-admin-session',name);password.value='';
   location.replace(['/admin/subathon-wheel/','/admin/subathon-counter/'].includes(next)?next:'/admin/');
