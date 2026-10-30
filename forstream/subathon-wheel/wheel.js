@@ -5,22 +5,13 @@ import {FIREBASE} from '/shared/config.js';
 const app=getApps().find(a=>a.name==='caption')||initializeApp(FIREBASE,'caption'),db=getDatabase(app),auth=getAuth(app);
 let ready=false,connected=false,adminUser=null,serverOffset=0,lastEventAt=0,animationId=0;
 const spinDuration=5500;
-let nextEggPending=true;
 const $=id=>document.getElementById(id),rotor=$('rotor'),spin=$('spin'),result=$('result');
 const key='chamberwood-food-wheel-v1';let foods=['Ahlgrens Candy', 'Larvets', 'Clam Juice', 'Thick Water with Sausages Broth', 'Snails', '1000 Year Old Egg', 'Octopus', 'Safe', 'Drink or Shot', 'TikTok Dance Challenge', 'Shocktato Part 2'],last='',rotation=0,busy=false,used=new Set();
 const svgNS='http://www.w3.org/2000/svg';
 function point(angle,r=280){const t=angle*Math.PI/180;return [300+r*Math.cos(t),300+r*Math.sin(t)];}
 function svg(tag,attrs){const el=document.createElementNS(svgNS,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);return el;}
 function draw(){rotor.replaceChildren();rotor.removeAttribute('transform');const list=foods.length?foods:Array(12).fill('');const step=360/list.length;list.forEach((name,i)=>{const angle=-90+i*step,p=point(angle-step/2),q=point(angle+step/2);const g=svg('g',{class:'slice'+(name!=='Safe'&&used.has(i)?' used':''),'data-index':i});const colors=['#a72027','#c1a050','#262522','#eee0b7'];if(list.length===1)g.append(svg('circle',{cx:300,cy:300,r:280,fill:colors[0]}));else g.append(svg('path',{d:'M300 300L'+p.join(' ')+'A280 280 0 '+(step>180?1:0)+' 1 '+q.join(' ')+'Z',fill:colors[i%4],stroke:'#353026','stroke-width':1.6}));const pos=point(angle,190),anchor=svg('g',{transform:'translate('+pos.join(' ')+')'}),label=svg('text',{'text-anchor':'middle',class:'upright-label',fill:i%4===1||i%4===3?'#272521':'#fff4d9'});if(!name){label.textContent='✦';}else{const words=name.split(/\s+/),lines=[''];for(const w of words){if((lines.at(-1)+' '+w).trim().length>15&&lines.at(-1))lines.push(w);else lines[lines.length-1]=(lines.at(-1)+' '+w).trim();}lines.forEach((l,j)=>{const t=svg('tspan',{x:0,y:(j-(lines.length-1)/2)*16+5});t.textContent=l;label.append(t);});}anchor.append(label);g.append(anchor);rotor.append(g);});positionWheel(rotation);updateControls();}
-function available(){
- const remaining=foods.map((_,i)=>i).filter(i=>foods[i]!=='Safe'&&!used.has(i));
- const egg=remaining.find(i=>foods[i]==='1000 Year Old Egg');
- if(nextEggPending&&egg!==undefined)return [egg];
- const regular=remaining.filter(i=>!['TikTok Dance Challenge','Ahlgrens Candy'].includes(foods[i]));
- if(regular.length)return regular;
- const dance=remaining.find(i=>foods[i]==='TikTok Dance Challenge');
- return dance===undefined?remaining:[dance];
-}
+function available(){return foods.map((_,i)=>i).filter(i=>foods[i]!=='Safe'&&!used.has(i));}
 function updateControls(){spin.disabled=busy||!ready||!connected||!available().length;spin.textContent=busy?'SPINNING…':'SPIN';renderRestoreControls();}
 // Animation and unbiased random selection adapted from the existing main wheel.
 function positionWheel(angle){rotor.setAttribute('transform','rotate('+angle+' 300 300)');rotor.querySelectorAll('.upright-label').forEach(label=>label.setAttribute('transform','rotate('+(-angle)+')'));}
@@ -69,7 +60,6 @@ onValue(ref(db,'.info/connected'),snapshot=>{connected=snapshot.val()===true;upd
 onValue(ref(db,'.info/serverTimeOffset'),snapshot=>{serverOffset=snapshot.val()||0;});
 onValue(ref(db,'subathonWheel/tiles'),snapshot=>{
  const tiles=snapshot.val()||{},wasReady=ready;
- nextEggPending=Number(tiles[5]?.pickedAt||0)<=1793332657711;
  used=new Set(foods.map((_,i)=>tiles[i]?.used?i:-1).filter(i=>i>=0));ready=true;
  const events=Object.entries(tiles).filter(([i,t])=>Number.isInteger(Number(i))&&Number(i)>=0&&Number(i)<foods.length&&t.used&&Number.isFinite(t.pickedAt));
  events.sort((a,b)=>b[1].pickedAt-a[1].pickedAt);
