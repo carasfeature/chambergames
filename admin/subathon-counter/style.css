@@ -4,6 +4,10 @@ main{text-align:center}#schedule{font-variant-numeric:tabular-nums}#schedule spa
 
 main .card{align-items:center}main .card>p{width:100%;flex:none;text-align:center}main .actions{width:100%;justify-content:center}main .actions button{width:auto;margin-top:0}#schedule{font-size:20px;font-weight:700;line-height:1.7;color:var(--text)}
 
-.sub-feed{width:100%;max-width:700px;border-top:1px solid var(--line,#ded8ca);border-bottom:1px solid var(--line,#ded8ca);padding:18px 0;margin:16px 0;text-align:center}.sub-feed h2{font-size:15px;margin:0 0 12px;font-weight:700}#feed{max-height:330px;overflow:auto;scrollbar-gutter:stable}.feed-row{display:grid;grid-template-columns:1fr auto;gap:8px 16px;padding:10px 14px;border-top:1px solid #ded8ca66;text-align:left;align-items:center}.feed-row p{margin:0!important;flex:initial!important;font-size:14px;line-height:1.5}.feed-row time{display:block;font-size:11px;color:var(--muted,#796f62)}.feed-row strong{font-size:20px}.feed-empty{font-size:14px;color:var(--muted,#796f62)}.setup-link{font-size:14px}.actions [hidden]{display:none!important}
 
-#next-milestone{font-size:18px;font-weight:700;line-height:1.5;margin:0 0 20px;max-width:650px}.milestones{margin-top:24px;gap:12px}.milestones h2{margin:0;font-size:24px}.milestones table{width:100%;border-collapse:collapse;font-size:14px}.milestones th,.milestones td{padding:12px 10px;border-bottom:1px solid #ded8ca;text-align:center}.milestones th{font-size:12px;color:#716b61}.milestones td:first-child{width:57%}.milestone-unlocked{background:#e7eee1;color:#345133}.milestone-next{background:#f4ead3;font-weight:700}.milestones .notice{margin:0 0 8px}@media(max-width:560px){.milestones th,.milestones td{padding:10px 5px;font-size:12px}#next-milestone{font-size:16px}}
+.setup-link{font-size:14px}.actions [hidden]{display:none!important}
+#schedule{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;width:100%;margin:24px 0 32px;padding:24px 0;border-top:1px solid var(--line,#ded8ca);border-bottom:1px solid var(--line,#ded8ca)}
+.clock{display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0}
+.clock-location{font-size:13px;font-weight:700;letter-spacing:2px;line-height:1.4;color:var(--muted,#796f62)}
+.clock time{font-size:clamp(20px,2.8vw,28px);font-weight:800;line-height:1.3;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:600px){#schedule{grid-template-columns:1fr;gap:26px}.clock time{font-size:30px}.card{padding:28px 20px}}
