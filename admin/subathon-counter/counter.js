@@ -6,7 +6,7 @@ let token='',userId='',broadcaster='',socket=null,stopped=true,subscribed=false,
 let pending=[];try{pending=JSON.parse(sessionStorage.getItem(PENDING)||'[]');if(!Array.isArray(pending))pending=[];}catch{}
 const collectorId=sessionStorage.getItem('subathon-collector')||crypto.randomUUID();sessionStorage.setItem('subathon-collector',collectorId);
 const now=()=>Date.now()+offset;
-function phase(){if(serverActive){$('shared-status').textContent=dbConnected?'Server counting connected — continues when all pages are closed.':'Counter display offline — the server keeps counting.';return;}const before=now()<START;const active=Object.values(collectors).some(c=>c.connected&&now()-c.at<45000);$('shared-status').textContent=!dbConnected?'Shared counter offline — reconnecting…':active?'Production listener connected.':before?'Connect Twitch on the production computer before the start.':'No active production listener — new announcements may be missed.';}
+function phase(){if(countingStopped){$('shared-status').textContent='Counting stopped — saved in PAST STREAMS.';return;}if(serverActive){$('shared-status').textContent=dbConnected?'Server counting connected — continues when all pages are closed.':'Counter display offline — the server keeps counting.';return;}const before=now()<START;const active=Object.values(collectors).some(c=>c.connected&&now()-c.at<45000);$('shared-status').textContent=!dbConnected?'Shared counter offline — reconnecting…':active?'Production listener connected.':before?'Connect Twitch on the production computer before the start.':'No active production listener — new announcements may be missed.';}
 function savePending(){try{sessionStorage.setItem(PENDING,JSON.stringify(pending));}catch{$('error').textContent='Local backup is unavailable. Keep this page open.';}}
 async function shared(data){
  const adminToken=sessionStorage.getItem('chamber-admin-token');
@@ -15,8 +15,8 @@ async function shared(data){
  if(response.status===401){sessionStorage.removeItem('chamber-admin-token');location.replace('/admin/login.html?next=/admin/subathon-counter/');throw Error('Admin login expired.');}
  if(!response.ok)throw Error('Shared counter connection interrupted.');return response.json();
 }
-let serverActive=false,polling=false;
-async function refresh(){if(polling)return;polling=true;try{const state=await shared();dbConnected=true;offset=state.now-Date.now();collectors=state.collectors||{};serverActive=state.server?.status==='enabled';$('server-setup').hidden=serverActive;$('listener-note').textContent=serverActive?'Counting runs on the server. You can close this page.':'Keep one production computer connected until server counting is enabled.';if(serverActive){if(!stopped)stop();$('connect').hidden=true;$('disconnect').hidden=true;$('connection').textContent='Connected to Christina & Amber’s Twitch announcements.';}else if(stopped){$('connect').hidden=false;}$('total').textContent=state.total.toLocaleString('en-US');if(!adminReady){adminReady=true;$('connect').disabled=false;if(token&&!serverActive)start();}flush();}catch{dbConnected=false;}finally{polling=false;phase();}}
+let serverActive=false,countingStopped=false,polling=false;
+async function refresh(){if(polling)return;polling=true;try{const state=await shared();dbConnected=true;offset=state.now-Date.now();collectors=state.collectors||{};serverActive=state.server?.status==='enabled';countingStopped=!!state.countingStopped;renderPastStreams(state.pastStreams||[]);$('server-setup').hidden=serverActive;$('listener-note').textContent=serverActive?'Counting runs on the server. You can close this page.':'Keep one production computer connected until server counting is enabled.';if(serverActive){if(!stopped)stop();$('connect').hidden=true;$('disconnect').hidden=true;$('connection').textContent='Connected to Christina & Amber’s Twitch announcements.';}else if(stopped){$('connect').hidden=false;}$('total').textContent=state.total.toLocaleString('en-US');if(countingStopped){$('connect').hidden=true;$('disconnect').hidden=true;$('server-setup').hidden=true;$('connection').textContent='';$('listener-note').textContent='The saved total will not change.';}if(!adminReady){adminReady=true;$('connect').disabled=false;if(token&&!serverActive)start();}flush();}catch{dbConnected=false;}finally{polling=false;phase();}}
 async function flush(){if(writing||!adminReady||!dbConnected)return;writing=true;try{while(pending.length){const batch=pending.slice(0,100);await shared({action:'events',events:batch});pending.splice(0,batch.length);savePending();}if($('error').textContent.startsWith('Saving interrupted.'))$('error').textContent='';}catch{$('error').textContent='Saving interrupted. Received announcements are queued on this computer.';}finally{writing=false;}}
 async function heartbeat(){if(!adminReady)return;try{await shared({action:'heartbeat',id:collectorId,connected:subscribed&&!stopped});refresh();}catch{}}
 async function api(path,options={}){const response=await fetch('https://api.twitch.tv/helix/'+path,{...options,headers:{'Client-Id':CLIENT,'Authorization':'Bearer '+token,'Content-Type':'application/json',...(options.headers||{})}});if(response.status===401){sessionStorage.removeItem(TOKEN);throw Error('Twitch sign-in expired. Click Connect Twitch again.');}if(!response.ok)throw Error('Twitch connection failed ('+response.status+'). Try connecting again.');return response.json();}
@@ -65,3 +65,18 @@ setInterval(async()=>{if(!stopped&&token)try{await validate();}catch(error){$('e
 const clocks=[['clock-la','America/Los_Angeles'],['clock-uae','Asia/Dubai'],['clock-pl','Europe/Warsaw']].map(([id,timeZone])=>({id,format:new Intl.DateTimeFormat('en-US',{timeZone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true})}));
 function updateClocks(){const date=new Date(now());for(const clock of clocks)$(clock.id).textContent=clock.format.formatToParts(date).filter(part=>part.type!=='literal'||part.value===':').map(part=>part.value).join('');}
 updateClocks();setInterval(updateClocks,1000);
+
+let pastSignature='';
+function renderPastStreams(streams){
+ const signature=JSON.stringify(streams);if(signature===pastSignature)return;pastSignature=signature;
+ const root=$('past-streams-list');root.replaceChildren();
+ if(!streams.length){const p=document.createElement('p');p.textContent='No past streams saved yet.';root.append(p);return;}
+ for(const stream of streams){
+  const row=document.createElement('article');row.className='past-stream';
+  const date=document.createElement('p'),total=document.createElement('strong'),duration=document.createElement('p');
+  date.textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'America/Los_Angeles',day:'numeric',month:'long',year:'numeric'}).format(new Date(stream.startedAt))+' · LA';
+  total.textContent=Number(stream.total).toLocaleString('en-US')+' subs';
+  const seconds=Math.floor(stream.durationMs/1000);duration.textContent='Stream length: '+Math.floor(seconds/3600)+'h '+Math.floor(seconds%3600/60)+'m '+seconds%60+'s';
+  row.append(date,total,duration);root.append(row);
+ }
+}
