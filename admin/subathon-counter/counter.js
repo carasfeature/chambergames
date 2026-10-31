@@ -80,3 +80,21 @@ function renderPastStreams(streams){
   row.append(date,total,duration);root.append(row);
  }
 }
+
+let activeSubsLoading=false;
+async function refreshActiveSubs(){
+ if(activeSubsLoading)return;activeSubsLoading=true;
+ try{
+  const state=await shared({action:'active-subs-total'});
+  $('active-total').textContent=Number.isSafeInteger(state.total)?state.total.toLocaleString('en-US'):'—';
+  $('connect-active-subs').hidden=!['not_connected','needs_authorization'].includes(state.status);
+  const updated=state.updatedAt?new Date(state.updatedAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}):'';
+  $('active-status').textContent=state.status==='connected'?'Updated '+updated+' · refreshes every 30 seconds':state.status==='not_connected'?'Requires authorization from christinaandamber.':state.status==='needs_authorization'?'Reconnect christinaandamber to refresh this total.':state.status==='updating'?'Updating from Twitch…':state.total!==null?'Last updated '+updated+' · refresh delayed.':'Twitch total is temporarily unavailable.';
+ }catch{$('active-status').textContent='Unable to refresh channel total.';}finally{activeSubsLoading=false;}
+}
+$('connect-active-subs').onclick=async()=>{
+ const button=$('connect-active-subs');button.disabled=true;
+ try{const response=await shared({action:'active-subs-begin'});sessionStorage.setItem('active-subs-oauth',JSON.stringify({state:response.state,at:Date.now()}));location.assign(response.url);}
+ catch(error){$('active-status').textContent=error.message;button.disabled=false;}
+};
+refreshActiveSubs();setInterval(refreshActiveSubs,30000);
