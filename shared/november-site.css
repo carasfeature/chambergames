@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+/* Presentation only: existing dimensions, grid structure, navigation and game logic stay intact. */
+:root{--bg:#401b18;--card:#eddbb8;--ink:#392218;--ink-soft:#70513c;--border:#97734f;--border-soft:#b0946c;--red:#943c31;--blue:#697451;--red-tint:#943c3117;--blue-tint:#69745118}
+html{background:#401b18}body[data-theme="november"]{background:#401b18 url('/assets/autumn/botanical-border.webp') center top/cover fixed!important;color:#eddbb8!important;font-family:'DM Sans',sans-serif!important}
+body[data-theme] *,body[data-theme]{cursor:auto!important}body[data-theme] :is(a,button,[role=button]){cursor:pointer!important}
+body[data-theme] :is(h1,h2,h3,h4,p,span,a,button,div){text-shadow:none!important}
+body[data-theme] :is(button,a,p,span,input,select,textarea,div){font-family:'DM Sans',sans-serif!important}
+body[data-theme] :is(h1,h2,h3,.section-title){font-family:'Cormorant Garamond',Georgia,serif!important}
+body[data-theme]::before,body[data-theme]::after,.ambient-orbs,.scanlines,.hero-scene,.hero-grunge,.halloween-ground,[class^="poster-"],.ticker{display:none!important}
+body[data-theme] .nav{background:#39171350!important;backdrop-filter:none!important;border-color:#8b5a3d66!important;box-shadow:none!important}
+body[data-theme] .brand{color:#dbb58a!important;font:500 12px 'DM Sans',sans-serif!important;letter-spacing:.24em!important}
+body[data-theme] .nav-icon-btn{background:transparent!important;color:#ecd9b6!important;box-shadow:none!important;border-color:#9e755355!important}
+body[data-theme] .hero{background:#efddba url('/assets/autumn/hero-panel.webp') center/100% 100% no-repeat!important;box-shadow:none!important;border:1px solid #96704b!important;animation:none!important}
+body[data-theme] .hero::before,body[data-theme] .hero::after,body[data-theme] .hero-center::after{display:none!important}
+body[data-theme] .eyebrow-line{font:500 24px/1.2 'Cormorant Garamond',Georgia,serif!important;color:#5e3524!important;letter-spacing:.06em!important;text-transform:none!important}
+body[data-theme] h1.title{font-family:'Cormorant Garamond',Georgia,serif!important;font-weight:700!important;line-height:.95!important;color:#431c13!important;letter-spacing:-.045em!important;filter:none!important}
+body[data-theme] .game-wordmark,body[data-theme] .game-wordmark span{font-family:'Cormorant Garamond',Georgia,serif!important;color:#5b3421!important;letter-spacing:.22em!important}
+body[data-theme] :is(.login-panel,.menu-featured,.tab-menu,.games-tab-menu,.game-card,.tournament-option,.panel,.round-card,.placeholder-panel,.snap-card,.merch-featured,.merch-card,.social-btn,.faq-item,.prize-tier,.discord-link-panel,.countdown-panel,.words-guesser-panel,.nametag-panel){background:#efddba url('/assets/autumn/paper.svg')!important;color:#392218!important;border:1px solid #a07a51!important;border-radius:8px!important;box-shadow:inset 0 0 0 3px #efddba,inset 0 0 0 4px #bca07b!important;animation:none!important}
+body[data-theme] :is(.menu-featured,.tab-menu,.games-tab-menu,.game-card,.words-guesser-panel,.merch-featured)::before,body[data-theme] :is(.menu-featured,.tab-menu,.games-tab-menu,.game-card,.words-guesser-panel,.merch-featured)::after{display:none!important}
+body[data-theme] :is(.login-panel p,.featured-title,.featured-sub,.tab-headline,.tab-desc,.countdown-label,.countdown-stream-name,.countdown-value,.discord-link-title,.game-card-title,.game-card-desc,.merch-title,.tournament-option-title,.tournament-option-status){color:#392218!important;text-shadow:none!important}
+body[data-theme] :is(.twitch-btn,.back-btn,.tab-link,.game-card-badge,.social-btn:hover){background:#943c31!important;color:#fff0d2!important;border:1px solid #b6654e!important;border-radius:5px!important;box-shadow:inset 0 1px #d78b6633!important;font-family:'DM Sans',sans-serif!important;text-shadow:none!important}
+body[data-theme] :is(.featured-badge,.tab-tag,.tab-highlights span){background:#ded0ac!important;color:#51402b!important;border-color:#b99a70!important}
+body[data-theme] .featured-badge{font-size:13px!important}
+body[data-theme] .featured-title{font-family:'Cormorant Garamond',Georgia,serif!important;font-weight:700!important}
+body[data-theme] .featured-arrow{color:#943c31!important}
+body[data-theme] .tab-bar,body[data-theme] .games-tab-bar{background:#e2cca4!important;border-color:#af8e64!important}
+body[data-theme] .tab-btn,body[data-theme] .games-tab-btn{background:transparent!important;color:#513623!important;border-radius:4px!important}
+body[data-theme] .tab-btn.active,body[data-theme] .games-tab-btn.active{background:#943c31!important;color:#fff0d2!important;box-shadow:none!important}
+body[data-theme] :is(.section-title,.menu-header p,.menu-header b,footer){color:#e3c7a2!important}
+body[data-theme] .game-card-title{font:700 28px/1.2 'Cormorant Garamond',Georgia,serif!important}
+body[data-theme] .game-new-label{color:#943c31!important;font:700 16px 'DM Sans',sans-serif!important;text-shadow:none!important}
+body[data-theme] .countdown-value{font-family:monospace!important}
+body[data-theme] :is(button,a):focus-visible{outline:3px solid #78805a;outline-offset:4px}
+/* Printed illustrations sit within existing cards without changing their geometry. */
+body[data-theme] .menu-featured{background-image:url('/assets/autumn/controller.svg'),url('/assets/autumn/paper.svg')!important;background-repeat:no-repeat,repeat!important;background-position:94% center,0 0!important;background-size:170px,250px!important}
+body[data-theme] .menu-featured .featured-sub{max-width:65%}
+body[data-theme] .discord-link-panel{background-image:url('/assets/autumn/chat.svg'),url('/assets/autumn/paper.svg')!important;background-repeat:no-repeat,repeat!important;background-position:12px center,0 0!important;background-size:50px,250px!important}
+body[data-theme] .words-guesser-panel{background-image:url('/assets/autumn/letters.svg'),url('/assets/autumn/paper.svg')!important;background-repeat:no-repeat,repeat!important;background-position:10px center,0 0!important;background-size:48px,250px!important}
+body[data-theme] .discord-link-panel,body[data-theme] .words-guesser-panel{padding-left:65px!important}
+@media(max-width:600px){body[data-theme="november"]{background-size:auto 100vh!important;background-attachment:scroll!important}body[data-theme] .hero{background-size:auto 100%!important}body[data-theme] h1.title{font-size:clamp(45px,11vw,68px)!important}body[data-theme] .eyebrow-line{font-size:20px!important}body[data-theme] .brand{font-size:9px!important;letter-spacing:.1em!important}body[data-theme] .menu-featured{background-size:100px,250px!important}body[data-theme] .menu-featured .featured-sub{max-width:65%}}
+@media(prefers-reduced-motion:reduce){body[data-theme] *{animation:none!important;transition:none!important}}
+
+@media(max-width:600px){body[data-theme] .hero{background-size:100% 100%!important}}
+/* Public game-page chrome only; canvas, controls, tile feedback and timing stay game-owned. */
+body[data-game-shell] :is(.head h1,.game-heading h1){color:#efd9b6!important;font-family:'Cormorant Garamond',Georgia,serif!important}
+body[data-game-shell] :is(.copyright,.site-copyright,.note){color:#dcc09b!important}
+body[data-game-shell] :is(section.board,.boards>.board,.leaderboard,.grid>.tile){background:#efddba url('/assets/autumn/paper.svg')!important;color:#392218!important;border-color:#a07a51!important;box-shadow:inset 0 0 0 3px #efddba,inset 0 0 0 4px #bca07b!important}
+body[data-game-shell] :is(.leaderboard,section.board,.boards>.board,.grid>.tile) :is(h2,h3,p,li){color:#392218!important}
+body[data-game-shell] :is(.back,.back-games,#instructions-open){background:#943c31!important;color:#fff0d2!important;border-color:#b6654e!important;box-shadow:none!important}
+body[data-theme] .hero-center,body[data-theme] .hero-center>*{opacity:1!important;filter:none!important}
+body[data-theme] .tab-link{padding:10px 18px!important;display:inline-flex!important;width:auto!important}
+body[data-theme] .tab-btn.active{outline:0!important}
+body[data-theme] .tab-btn:focus-visible{outline:2px solid #697451!important;outline-offset:2px}

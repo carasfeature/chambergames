@@ -3,7 +3,7 @@
 <head><script src="/admin/access.js"></script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<title>For Stream · Christina and Amber</title>
+<title>Autumn Luck · Christina and Amber</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @font-face{font-family:MONSTER;src:url('../fonts/MONSTER.woff2') format('woff2');font-display:swap}
@@ -52,12 +52,13 @@ dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-s
 #additions ul{padding-left:24px;line-height:1.6;font-size:18px}
 #additions li+li{margin-top:10px}
 @media(max-width:900px){.stage{grid-template-columns:1fr}.wheel-wrap{max-width:720px}}
-</style><style>#back-menu{display:none}.notice{font:12px 'Space Grotesk',sans-serif;color:#d9aaa0;margin-top:18px}</style></head>
+</style><style>#back-menu{display:none}.notice{font:12px 'Space Grotesk',sans-serif;color:#d9aaa0;margin-top:18px}</style><link rel="stylesheet" href="/shared/autumn-luck.css?v=1">
+</head>
 <body>
-<main id="stream-menu" class="stream-menu"><header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>For Stream</h1></header><nav class="stream-links" aria-label="Stream activities"><button class="stream-link" id="open-wheel">Wheel Of Fortune</button><a class="stream-link" href="celebration/">Celebration Wheel</a><p class="coming-label">FOR NEXT SUBATHON 👀</p><button class="stream-link" type="button" disabled>NSFW Words Guesser</button></nav></main>
+<main id="stream-menu" class="stream-menu"><header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>For Stream</h1></header><nav class="stream-links" aria-label="Stream activities"><button class="stream-link" id="open-wheel">Autumn Luck</button><a class="stream-link" href="celebration/">Celebration Wheel</a><p class="coming-label">FOR NEXT SUBATHON 👀</p><button class="stream-link" type="button" disabled>NSFW Words Guesser</button></nav></main>
 <main id="wheel-page" hidden><button class="menu-back" id="back-menu">← For Stream menu</button>
-<header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>Blessing <em>Or</em> Curse</h1><p class="notice">Fixed outcome: TikTok Challenge · existing setting preserved</p></header>
-<section class="stage" aria-label="Halloween wheel">
+<header><p class="eyebrow">CHRISTINA AND AMBER</p><h1>Autumn Luck</h1><p class="notice">Fixed outcome: TikTok Challenge · existing setting preserved</p></header>
+<section class="stage" aria-label="Autumn Luck wheel">
 <div class="wheel-wrap"><div class="pointer" aria-hidden="true"></div>
 <svg class="wheel" viewBox="0 0 600 600" role="group" aria-label="Challenge wheel. Focus or tap a segment to read its description.">
 <circle cx="300" cy="300" r="296" fill="#242820" stroke="#be9360" stroke-width="2"/>
@@ -65,8 +66,10 @@ dialog::backdrop{background:#100204cc;backdrop-filter:blur(4px)}dialog h2{font-s
 <g id="rotor"></g>
 <circle cx="300" cy="300" r="50" fill="#171a17" stroke="#dfcaa5" stroke-width="2"/>
 <circle cx="300" cy="300" r="43" fill="none" stroke="#786c52"/>
-<path d="M306 263C271 269 270 321 307 334C280 341 256 321 261 294C265 274 285 259 306 263Z" fill="#e8d5b4"/>
-<path d="M324 280L328 291L339 295L328 299L324 310L320 299L309 295L320 291Z" fill="#b96837"/>
+<g class="autumn-centre-leaf" aria-hidden="true">
+<path d="M300 267L306 281L314 276L312 290L328 284L324 297L334 301L312 316L316 323L302 321L300 333L297 333L298 321L283 323L287 316L266 301L276 297L272 284L288 290L286 276L294 281Z" fill="#943c31" stroke="#593426" stroke-width="1.4" stroke-linejoin="round"/>
+<path d="M300 277L300 325M300 302L289 290M300 308L279 300M300 302L311 290M300 308L321 300" fill="none" stroke="#d4a074" stroke-width="1.2" stroke-linecap="round"/>
+</g>
 </svg></div>
 <div class="panel"><h2>Spin for Your Fate.</h2><p id="wheel-status" role="status">Luck decides if you get a nice treat or a punishment.</p><p>Good Luck.</p><button class="spin" id="spin" type="button" aria-describedby="wheel-status">SPIN THE WHEEL</button>
 <div id="hint" aria-live="polite"><strong id="hint-title">Explore your fate</strong><p id="hint-description">Hover over a slice, or tap it, to read the challenge.</p></div>

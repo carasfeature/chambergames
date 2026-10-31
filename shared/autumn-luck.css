@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{color-scheme:light;--paper:#efddba;--ink:#392218;--muted:#70513c;--main-card:#efddba;--main-border:#a07a51;--main-border-soft:#bca07b;--orange:#943c31}
+body,body[data-theme="november"]{background:#401b18 url('/assets/autumn/botanical-border.webp') center top/cover fixed!important;color:#392218!important;font-family:'DM Sans',sans-serif!important}
+body:before{display:none!important}
+main{background:#efddba url('/assets/autumn/paper.svg');border:1px solid #a07a51;border-radius:10px;box-shadow:inset 0 0 0 4px #efddba,inset 0 0 0 5px #bca07b,0 12px 30px #16090844}
+header{background:url('/assets/autumn/hero-panel.webp') center/100% 100%;border:0;padding:38px 16px 42px;border-radius:5px}
+h1,body[data-theme] h1{font:700 clamp(46px,7vw,86px)/1.05 'Cormorant Garamond',Georgia,serif!important;text-transform:none;color:#431c13;text-shadow:none;letter-spacing:-.035em}
+.eyebrow{font:600 12px 'DM Sans',sans-serif!important;color:#70513c;letter-spacing:.2em}
+h2,body[data-theme] h2{font:700 30px/1.15 'Cormorant Garamond',Georgia,serif!important;color:#431c13;letter-spacing:0;text-transform:none}
+.panel,body[data-theme] .panel{background:#efddba url('/assets/autumn/paper.svg')!important;border:1px solid #bca07b!important;box-shadow:inset 0 0 0 4px #efddba,inset 0 0 0 5px #c9af88!important;border-radius:8px}
+.panel p,dialog p{font:400 15px/1.65 'DM Sans',sans-serif;color:#70513c}
+.spin,.coin-button{background:#943c31;border:1px solid #b6654e;color:#fff0d2;border-radius:5px;box-shadow:inset 0 1px #d78b6644;font-family:'DM Sans',sans-serif}
+.spin:hover:not(:disabled),.coin-button:hover{background:#803127}
+.menu-back{border-color:#a07a51;color:#5c3b29;border-radius:4px;font-family:'DM Sans',sans-serif}
+#hint{border-color:#bca07b}#hint strong{font:700 20px/1.3 'DM Sans',sans-serif;color:#77382c;letter-spacing:0;text-transform:none}
+.wheel{filter:drop-shadow(0 8px 0 #4d2c2033)}
+.wheel>circle:first-of-type{fill:#4b2c24;stroke:#bca07b}.wheel>circle:nth-of-type(2){stroke:#e2cba3}.wheel>circle:nth-of-type(3){fill:#efddba;stroke:#6b4730}.wheel>circle:nth-of-type(4){stroke:#a07a51}.wheel>path{fill:#943c31}.wheel>path:last-of-type{fill:#76805a}
+.slice:nth-child(odd)>path{fill:#8e4038;stroke:#dbc49c}.slice:nth-child(even)>path{fill:#66704e;stroke:#dbc49c}
+.slice text{fill:#fff1d3;stroke:none;font:700 16px 'DM Sans',sans-serif}.slice:hover path,.slice:focus path{filter:brightness(1.12);stroke:#fff1d3}
+.pointer{background:#431c13}
+dialog{background:#efddba url('/assets/autumn/paper.svg');color:#392218;border:1px solid #a07a51;border-radius:10px;box-shadow:inset 0 0 0 4px #efddba,inset 0 0 0 5px #bca07b,0 15px 60px #14080677}
+dialog::backdrop{background:#29110dd9}.small{font:600 12px 'DM Sans',sans-serif;color:#70513c}
+.coin{background:radial-gradient(circle at 30% 25%,#e6d6b6,#b69c73);border-color:#876640;color:#4c3021;box-shadow:inset 0 0 0 4px #d7c09a,inset 0 0 0 6px #9d7b52,0 5px 0 #7c5b3c}
+.stream-link{background:#efddba url('/assets/autumn/paper.svg');color:#392218;border-color:#a07a51;border-radius:6px}.stream-link:hover{background:#e0cba6;border-color:#85633f}
+:focus-visible{outline:3px solid #66704e;outline-offset:4px}
+@media(max-width:700px){header{padding:28px 10px 32px}.eyebrow{font-size:10px}main{margin:12px}.slice text{font-size:16px}.stage{gap:20px}body,body[data-theme="november"]{background-attachment:scroll!important}}
+.pointer{position:absolute;z-index:2;top:-4px;left:50%;width:24px;height:30px;transform:translateX(-50%);clip-path:polygon(0 0,100% 0,50% 100%);background:#431c13;filter:drop-shadow(0 2px 1px #0003);pointer-events:none}
+.notice{color:#70513c;font:400 12px/1.5 'DM Sans',sans-serif}
+/* Softer, deeper warm parchment for Autumn Luck only. */
+:root{--paper:#c6ac88;--main-card:#c6ac88}
+main,.panel,body[data-theme] .panel,dialog,.stream-link{background-color:#c6ac88!important;background-image:linear-gradient(#98724942,#98724942),url('/assets/autumn/paper.svg')!important;box-shadow:inset 0 0 0 4px #c6ac88,inset 0 0 0 5px #9b7955!important;border-color:#91704e!important}
+header{background-image:linear-gradient(#98724942,#98724942),url('/assets/autumn/hero-panel.webp')!important}
+.panel p,dialog p,.eyebrow,.small,.notice{color:#553b2a!important}
+.wheel>circle:nth-of-type(3){fill:#c6ac88}

@@ -3,190 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#211524">
+<meta name="theme-color" content="#381e26">
 <title>Words Guesser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../shared/ui.css">
-<style>
-:root{
-  --ink:#241820; --paper:#fff6df; --pumpkin:#ff9b3d; --gold:#ffd77b;
-  --hit:#6e9d60; --near:#d9a047; --miss:#5c5362; --empty:#2d2331; --edge:#786477;
-}
-body{
-  background:radial-gradient(circle at 50% 15%,#673c42 0,#342334 38%,#211524 75%);
-  color:var(--paper);
-}
-.back{background:var(--pumpkin); color:#261924; border-color:#261924}
-.game{
-  position:relative; width:100%; max-width:560px; overflow:hidden;
-  border:2px solid #b86939; border-radius:24px;
-  background:linear-gradient(180deg,#3f2934 0,#251c2c 48%,#1e1825 100%);
-  box-shadow:0 0 38px #e5733430,0 20px 0 -7px #160e1b;
-}
-.game::before{
-  content:""; position:absolute; inset:0 0 auto; height:245px; pointer-events:none;
-  background:radial-gradient(circle at 50% -28%,#f0a64b42,transparent 72%);
-}
-.autumn-scene{height:96px; position:relative; overflow:hidden; pointer-events:none}
-.moon{
-  position:absolute; width:62px; height:62px; left:calc(50% - 31px); top:19px;
-  border-radius:50%; background:#ffe0a0; box-shadow:0 0 24px #ffc266a8,0 0 62px #ff8a3566;
-}
-.moon::after{content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:#d99d68aa; left:17px; top:18px}
-.pumpkin{
-  position:absolute; top:26px; font-size:58px; line-height:1;
-  filter:drop-shadow(0 0 9px #ffb34c) drop-shadow(0 0 23px #f56626);
-  animation:pumpkin-glow 3.5s ease-in-out infinite alternate;
-}
-.pumpkin.left{left:35px; transform:rotate(-11deg)}
-.pumpkin.right{right:35px; transform:rotate(10deg); animation-delay:1.2s}
-.leaf{position:absolute; top:16px; font-size:21px; opacity:.8; animation:drift 5s ease-in-out infinite alternate}
-.leaf.one{left:29%; transform:rotate(-24deg)}
-.leaf.two{right:26%; top:56px; animation-delay:1.7s}
-@keyframes pumpkin-glow{from{filter:drop-shadow(0 0 5px #ffb34c) drop-shadow(0 0 14px #f56626)}to{filter:drop-shadow(0 0 13px #ffce68) drop-shadow(0 0 32px #f56626)}}
-@keyframes drift{to{translate:8px 9px; rotate:24deg}}
-.title{
-  position:relative; margin:0; padding:2px 16px 0; text-align:center;
-  font-family:Bungee,cursive; font-size:clamp(27px,7.5vw,42px);
-  font-weight:400; line-height:1.15; letter-spacing:.015em; color:var(--gold);
-  text-shadow:0 3px #6b302f,0 0 20px #ff8a4570;
-}
-.season-copy{
-  position:relative; max-width:440px; margin:5px auto 0; padding:0 16px;
-  text-align:center; color:#f5d8b3; font-size:13px; font-weight:900; line-height:1.5;
-}
-.status-bar{
-  display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap;
-  padding:14px 15px 0; color:#e7c7ac; font-size:13px; font-weight:900;
-}
-.status-bar span{border:1px solid #b36c4a88; background:#2b202d; border-radius:999px; padding:6px 12px}
-.status-bar b{font-family:Bungee,cursive; font-weight:400; color:var(--gold); padding-left:6px}
-.board{display:grid; gap:7px; padding:18px 0 12px; justify-content:center}
-.row{display:grid; grid-template-columns:repeat(5,1fr); gap:7px}
-.tile{
-  width:clamp(48px,13vw,62px); aspect-ratio:1; display:grid; place-items:center; padding:0;
-  border:3px solid var(--edge); border-radius:9px; background:var(--empty);
-  box-shadow:inset 0 2px 0 #ffffff10; color:var(--paper);
-  font-family:Bungee,cursive; font-size:clamp(23px,6vw,31px); text-transform:uppercase;
-}
-.tile.filled{border-color:#e6ad67}
-.tile.hit{background:var(--hit); border-color:#b5d19a}
-.tile.near{background:var(--near); border-color:#ffe0a0; color:var(--ink)}
-.tile.miss{background:var(--miss); border-color:#817484}
-.board .tile:hover{transform:none; box-shadow:inset 0 2px 0 #ffffff10}
-.tile.flip{animation:flip .38s ease-in-out both}
-@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
-.row.shake{animation:shake .3s}
-@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
-.toast{min-height:27px; text-align:center; font-weight:900; font-size:14px; color:var(--gold); padding:0 16px}
-.keys{display:grid; gap:7px; padding:7px 9px 20px}
-.krow{display:flex; justify-content:center; gap:5px}
-.key{
-  flex:1; max-width:44px; height:51px; border:0; border-radius:7px; cursor:pointer;
-  background:#776073; color:var(--paper); font:900 15px Nunito,sans-serif; text-transform:uppercase;
-  box-shadow:0 3px 0 #160f1a;
-}
-.key.wide{max-width:70px; font-size:12px}
-.key.hit{background:var(--hit)} .key.near{background:var(--near); color:var(--ink)}
-.key.miss{background:#3b3340; color:#b0a3ad}
-.key:focus-visible,.btn:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
-.key:disabled{cursor:default; opacity:.55}
-.veil{
-  position:absolute; inset:0; display:none; place-items:center; padding:24px;
-  background:#1b1423ed; text-align:center; z-index:5;
-}
-.veil.on{display:grid}
-.card{max-width:420px}
-.card h2{font-family:Bungee,cursive; font-weight:400; font-size:28px; margin:0 0 12px; color:var(--gold)}
-.answer{font-family:Bungee,cursive; font-size:44px; letter-spacing:.08em; margin:4px 0 7px; text-transform:uppercase}
-.answer.win{color:#a9d093} .answer.lose{color:#ffaf7a}
-.sub{font-size:15px; line-height:1.55; opacity:.9; margin:0 0 20px}
-.btn{
-  font-family:Bungee,cursive; font-size:15px; background:var(--pumpkin); color:var(--ink);
-  border:3px solid var(--ink); border-radius:12px; padding:11px 24px; cursor:pointer;
-  box-shadow:0 5px 0 #100c13;
-}
-.btn:hover{transform:translateY(2px); box-shadow:0 3px 0 #100c13}
-.note{max-width:560px; text-align:center; color:#e5c7ae; line-height:1.5}
-@media(max-width:430px){
-  .pumpkin{font-size:48px}.pumpkin.left{left:14px}.pumpkin.right{right:14px}
-  .moon{width:52px;height:52px;left:calc(50% - 26px)}
-  .board,.row{gap:5px}.keys{gap:5px;padding-inline:5px}.krow{gap:3px}
-  .key{height:46px}
-}
-@media(prefers-reduced-motion:reduce){.pumpkin,.leaf,.tile.flip,.row.shake{animation:none}}
-</style>
 
-<style id="carolyke-halloween">
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
-@font-face{font-family:MONSTER;src:url('../../fonts/MONSTER.woff2') format('woff2');font-display:swap}
-@font-face{font-family:LONEWARC;src:url('../../fonts/LONEWARC.woff2') format('woff2');font-display:swap}
-body.carolyke-halloween{background:radial-gradient(ellipse at 50% 0,#490a10 0,transparent 55%),#210205}
-.carolyke-halloween>.topbar .back{font-family:'Space Grotesk',Arial,sans-serif;font-weight:700;background:#ff7417;color:#210205;border:1px solid #ff9b42;border-radius:999px;box-shadow:0 4px 14px #0004}
-.carolyke-halloween>.head{color:#fff3df;font-family:'Space Grotesk',Arial,sans-serif;border-bottom:1px solid #6b111b;padding-bottom:20px}
-.carolyke-halloween>.head h1{font:400 clamp(32px,5.4vw,52px)/1.1 MONSTER,Arial,sans-serif;color:#fff3df;letter-spacing:.015em;margin:0 0 10px}
-.carolyke-halloween>.head p{color:#d9aaa0;opacity:1;font-size:14px;line-height:1.6;margin:0}
-.carolyke-halloween>.head .season-label{font:400 12px LONEWARC,Arial,sans-serif;color:#ff9b42;letter-spacing:.18em;margin-bottom:12px}
-.carolyke-halloween>.grid>.tile{background:#160507;border:2px solid #6b111b;border-radius:12px;box-shadow:0 12px 30px #0004;color:#fff3df}
-.carolyke-halloween>.grid>.tile:hover{border-color:#ff7417}
-.carolyke-halloween>.grid>.tile h2{font:400 28px/1.15 MONSTER,Arial,sans-serif}
-.carolyke-halloween>.grid>.tile p{font:500 14px/1.6 'Space Grotesk',Arial,sans-serif;color:#d9aaa0;opacity:1}
-.carolyke-halloween>.grid>.tile .badge{align-self:center;margin-top:auto;padding:10px 22px;background:#ff7417;color:#210205;font:700 14px 'Space Grotesk',Arial,sans-serif}
-.carolyke-halloween>section.board,.carolyke-halloween>.boards>.board{background:#160507;border:2px solid #6b111b;border-radius:12px;box-shadow:0 10px 28px #0004;padding:20px;color:#fff3df;font-family:'Space Grotesk',Arial,sans-serif}
-.carolyke-halloween>section.board h2,.carolyke-halloween>.boards>.board h2{font:400 clamp(22px,3vw,28px)/1.2 MONSTER,Arial,sans-serif;color:#ff9b42;margin:0 0 18px}
-.carolyke-halloween>section.board li,.carolyke-halloween>.boards>.board li{background:#28090d;border:1px solid #400a10;border-radius:6px;color:#fff3df}
-.carolyke-halloween>section.board li.me,.carolyke-halloween>.boards>.board li.me{background:#ff6a1620;box-shadow:inset 0 0 0 1px #ff7417}
-.carolyke-halloween>section.board .rank,.carolyke-halloween>.boards .rank,.carolyke-halloween>section.board .ms,.carolyke-halloween>.boards .wpm{font-family:'Space Grotesk',Arial,sans-serif;font-weight:700;color:#ffad43}
-.carolyke-halloween>section.board .your-rank,.carolyke-halloween>.boards .your-rank{border-color:#6b111b}
-.carolyke-halloween>section.board .your-rank-label,.carolyke-halloween>.boards .your-rank-label{font-family:LONEWARC,Arial,sans-serif;color:#ffad43}
-.carolyke-halloween>section.board .your-rank-row,.carolyke-halloween>.boards .your-rank-row{background:#ff6a161a;box-shadow:inset 0 0 0 1px #ff7417;color:#fff3df}
-.carolyke-halloween>.boards>.board.current{border-color:#ff7417}
-.carolyke-halloween>section.board .note,.carolyke-halloween>.note{color:#d9aaa0;opacity:1;font-family:'Space Grotesk',Arial,sans-serif}
-.carolyke-halloween>.site-copyright{display:block;position:static;width:100%;max-width:1000px;margin:0 auto;padding:18px 12px;border-top:1px solid #6b111b;color:#d9aaa0;text-align:center;font:500 12px/1.6 'Space Grotesk',Arial,sans-serif;letter-spacing:.03em}
-@media(max-width:480px){.carolyke-halloween>section.board,.carolyke-halloween>.boards>.board{padding:14px}}
-</style>
-<style id="words-halloween">
-body.carolyke-words{--ink:#220205;--paper:#fff3df;--pumpkin:#ff7417;--gold:#ffad43;--hit:#527746;--near:#b96a22;--miss:#433741;--empty:#22080f;--edge:#6b2931;font-family:'Space Grotesk',Arial,sans-serif}
-.carolyke-words>.game{background:linear-gradient(180deg,#300a10,#160507 60%);border:2px solid #6b111b;border-radius:12px;box-shadow:0 16px 38px #0005}
-.carolyke-words .game::before{background:radial-gradient(ellipse at 50% 0,#ff6a1626,transparent 70%)}
-.carolyke-words .title{font-family:MONSTER,Arial,sans-serif;color:#fff3df;text-shadow:2px 3px 0 #6b111b;font-size:clamp(32px,8vw,46px)}
-.carolyke-words .season-copy{color:#d9aaa0;font-weight:500}
-.carolyke-words .status-bar span{background:#160507;border:1px solid #6b111b;color:#fff3df;border-radius:6px}
-.carolyke-words .status-bar b{font-family:'Space Grotesk',Arial,sans-serif;font-weight:700}
-.carolyke-words .board .tile{font-family:'Space Grotesk',Arial,sans-serif;font-weight:700;border-radius:6px;box-shadow:inset 0 1px 0 #fff1}
-.carolyke-words .tile.filled{border-color:#ff9b42}
-.carolyke-words .tile.hit{border-color:#99bd75}
-.carolyke-words .tile.near{border-color:#ffad43;color:#fff3df}
-.carolyke-words .tile.miss{border-color:#66515d}
-.carolyke-words .key{min-width:0;padding-inline:0;font-family:'Space Grotesk',Arial,sans-serif;background:#51222c;color:#fff3df;border:1px solid #7b3840;box-shadow:0 3px 0 #100203;border-radius:5px}
-.carolyke-words .key.wide{flex:1.65}
-.carolyke-words .key.hit{background:var(--hit);border-color:#99bd75}
-.carolyke-words .key.near{background:var(--near);border-color:#ffad43;color:#fff3df}
-.carolyke-words .key.miss{background:#281b23;border-color:#433741;color:#b9a5ad}
-.carolyke-words .veil{background:#160507f5}
-.carolyke-words .card h2{font-family:MONSTER,Arial,sans-serif;color:#ffad43}
-.carolyke-words .answer{font-family:'Space Grotesk',Arial,sans-serif;font-weight:700}
-.carolyke-words .btn{font-family:'Space Grotesk',Arial,sans-serif;font-weight:700;border:1px solid #ffad43;border-radius:999px;background:#ff7417;color:#210205}
-.carolyke-words .pumpkin{filter:drop-shadow(0 0 10px #ff741766);animation:none}
-.carolyke-words .moon{background:#fff3df;box-shadow:0 0 24px #ffad4366,0 0 50px #ff741722}
-</style>
+
+
+
+<link rel="stylesheet" href="november.css?v=ink-texture">
 </head>
-<body class="carolyke-halloween carolyke-words">
+<body>
 <nav class="topbar"><a class="back" href="../../index.html#section=krispysgames"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 L3 7 L9 12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</a></nav>
 
 <main class="game" id="game">
-  <div class="autumn-scene" aria-hidden="true">
-    <span class="pumpkin left">🎃</span><span class="moon"></span><span class="pumpkin right">🎃</span>
-    <span class="leaf one">🍁</span><span class="leaf two">🍂</span>
-  </div>
-  <h1 class="title">Words Guesser</h1>
-  <p class="season-copy">Autumn and Halloween theme, new word each day 12AM EST 🍁🎃</p>
-  <div class="status-bar"><span>Streak <b id="stStreak">0</b> 🔥</span></div>
+
+  <div class="title-row"><h1 class="title">Words Guesser</h1><img class="title-botanical" src="assets/oak-acorn.svg" alt="" aria-hidden="true"></div>
+  <p class="season-copy">A new word every day</p>
+  <div class="status-bar"><span>Streak <b id="stStreak">0</b></span></div>
   <div class="board" id="board" aria-label="Six guesses of five letters"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="keys" id="keys" aria-label="Letter keyboard"></div>
+  <div class="botanical-footer" aria-hidden="true"><img src="assets/twig.svg" alt=""><span></span><img src="assets/twig.svg" alt=""></div>
 
   <div class="veil" id="veilEnd" role="dialog" aria-modal="true" aria-labelledby="endTitle">
     <div class="card">
@@ -208,8 +48,10 @@ const TRIES = CFG.guesses;
 const DAYS = CFG.dailyWords;
 const DATES = Object.keys(DAYS).sort();
 const FIRST = DATES[0], LAST = DATES[DATES.length - 1];
-const STATS_KEY = "wordsGuesser:autumn2026:stats";
-const PROGRESS_KEY = day => `wordsGuesser:autumn2026:${day}`;
+const previewDate = ["localhost", "127.0.0.1"].includes(location.hostname) ? new URLSearchParams(location.search).get("previewDate") : null;
+const previewDay = /^2026-11-(0[1-9]|[12][0-9]|30)$/.test(previewDate || "") ? previewDate : null;
+const STATS_KEY = (previewDay ? "wordsGuesser:november-preview:stats" : "wordsGuesser:autumn2026:stats");
+const PROGRESS_KEY = day => `${previewDay ? "wordsGuesser:november-preview" : "wordsGuesser:autumn2026"}:${day}`;
 const $ = id => document.getElementById(id);
 const board = $("board"), keysEl = $("keys"), toast = $("toast"), veilEnd = $("veilEnd");
 const layout = ["qwertyuiop", "asdfghjkl", "*zxcvbnm<"];
@@ -222,10 +64,11 @@ const nyDate = new Intl.DateTimeFormat("en-US", {
   timeZone:"America/New_York", year:"numeric", month:"2-digit", day:"2-digit"
 });
 function dateKey(){
+  if(previewDay) return previewDay;
   const parts = Object.fromEntries(nyDate.formatToParts(new Date()).map(p => [p.type, p.value]));
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
-// Maple is playable immediately, even before New York reaches September 28.
+// Existing dates remain available; the next puzzle starts at New York midnight.
 function effectiveDay(){ const day = dateKey(); return day < FIRST ? FIRST : day; }
 function yesterday(day){ return new Date(Date.parse(`${day}T00:00:00Z`) - 86400000).toISOString().slice(0,10); }
 function read(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch{ return fallback; } }
