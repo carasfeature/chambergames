@@ -9,7 +9,7 @@ import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics
 import {batchStaticBoxes} from './scenery-batch.js';
 import {loadCharacter} from './character.js?v=mobile-save-hotfix-20261027';
 import {setupPowers} from './powers.js?v=mobile-save-hotfix-20261027';
-import {decorateTunnel} from './tunnel-halloween.js?v=mobile-save-hotfix-20261027';
+import {decorateTunnel,drawNovemberMural} from './tunnel-november.js?v=november-4';
 import {Run} from './physics.mjs?v=mobile-save-hotfix-20261027';
 import {SAND_HEIGHT,SAND_RINGS,SAND_POSITIONS,SAND_UVS,SAND_INDICES} from './sand-shape.mjs?v=mobile-save-hotfix-20261027';
 const run=new Run();
@@ -50,8 +50,8 @@ const wallmat=new T.MeshStandardMaterial({map:tiles,roughness:.94});
 const plaster=texture((c,w,h)=>{c.fillStyle='#aa9278';c.fillRect(0,0,w,h);for(let i=0;i<14000;i++){c.fillStyle=i%2?'#5c48300b':'#e0c7a210';c.fillRect(Math.random()*w,Math.random()*h,1+Math.random()*3,1+Math.random()*3);}c.strokeStyle='#65513d38';c.lineWidth=2;for(let y=0;y<h;y+=128){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}});
 plaster.wrapS=plaster.wrapT=T.RepeatWrapping;plaster.repeat.set(3,2);ceilingMat.bumpMap=plaster;ceilingMat.bumpScale=.025;
 function curvedRoof(){const positions=[],uv=[],indices=[],segments=64;for(let z=0;z<2;z++)for(let i=0;i<=segments;i++){const a=i/segments*Math.PI;positions.push(-6.52*Math.cos(a),7+4.4*Math.sin(a),z? -24.04:0);uv.push(i/segments,z);}for(let i=0;i<segments;i++){const a=i,b=i+segments+1;indices.push(a,b,a+1,a+1,b,b+1);}const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();return new T.Mesh(geometry,ceilingMat);}
-function graffiti(index){return texture((c,w,h)=>{c.clearRect(0,0,w,h);c.save();c.translate(w/2,h/2);c.rotate(-.07);c.textAlign='center';c.font='italic 900 116px Arial';c.lineWidth=18;c.strokeStyle='#202e31';c.strokeText(['BOO!','NIGHT SHIFT','NO SLEEP','TRICK / TREAT'][index],0,20);c.fillStyle=index%2?'#b7ce83':'#e9984f';c.fillText(['BOO!','NIGHT SHIFT','NO SLEEP','TRICK / TREAT'][index],0,20);c.font='bold 28px Arial';c.fillStyle='#e7d6aa';c.fillText('CHAMBER • NYC • 31 OCT',0,80);for(let i=0;i<11;i++){c.fillStyle='#e9984f';c.fillRect(-360+i*69,95+(i%3)*8,3,14+(i%4)*10);}c.restore();c.fillStyle='#eadfc5';c.beginPath();c.arc(880,118,47,Math.PI,0);c.lineTo(927,180);c.lineTo(900,162);c.lineTo(880,183);c.lineTo(858,162);c.lineTo(833,180);c.closePath();c.fill();c.fillStyle='#273837';c.fillRect(852,112,12,19);c.fillRect(885,112,12,19);});}
-const graffitiMats=[0,1,2,3].map(i=>new T.MeshBasicMaterial({map:graffiti(i),transparent:true,depthWrite:false,side:T.DoubleSide}));
+function graffiti(index){let map;map=texture((c,w,h)=>drawNovemberMural(c,w,h,index,()=>{if(map)map.needsUpdate=true;}));return map;}
+const graffitiMats=[0,1,2,3,4,5].map(i=>new T.MeshBasicMaterial({map:graffiti(i),transparent:true,depthWrite:false,side:T.DoubleSide}));
 const signtex=texture((c,w,h)=>{c.fillStyle='#15272a';c.fillRect(0,0,w,h);c.fillStyle='#e7e2d2';c.font='bold 115px Arial';c.fillText('CANAL ST',55,195);c.font='44px Arial';c.fillText('DOWNTOWN & BROOKLYN',60,280);c.fillStyle='#e18c38';c.beginPath();c.arc(875,190,75,0,Math.PI*2);c.fill();c.fillStyle='#202a2a';c.font='bold 90px Arial';c.fillText('C',842,221);});
 const signmat=new T.MeshBasicMaterial({map:signtex,side:T.DoubleSide});
 const glow=new T.MeshBasicMaterial({color:'#ffe8b2'});
@@ -64,7 +64,7 @@ for(let i=0;i<count;i++){
   box(g,.35,7.2,24,side*6.7,3.4,-12,wallmat);box(g,1,.35,24,side*6.2,.06,-12,concrete);
   box(g,.12,.12,24,side*6.4,5.8,-12,steel);
   for(const z of [-1,-13]){box(g,.24,6.8,.3,side*6.35,3.4,z,steel);box(g,.55,.12,3.3,side*5.7,6.85,z,glow);}
-  const art=new T.Mesh(new T.PlaneGeometry(9,4.5),graffitiMats[(i+(side>0?1:0))%4]);art.position.set(side*6.49,3.2,-12);art.rotation.y=side>0?-Math.PI/2:Math.PI/2;g.add(art);
+  const art=new T.Mesh(new T.PlaneGeometry(9,4.5),graffitiMats[(i*2+(side>0?1:0))%graffitiMats.length]);art.position.set(side*6.49,3.2,-12);art.rotation.y=side>0?-Math.PI/2:Math.PI/2;g.add(art);
  }
  g.add(curvedRoof());
  // Thin plaster expansion joints follow the real vault curvature.
