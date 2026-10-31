@@ -69,7 +69,9 @@ export async function createCloudWallet({sdk,storage=localStorage,endpoint=ENDPO
  }
  async function flushFrames(){
   if(pending)await sendPending();
-  while(active?.frames.length){const frames=active.frames.slice(0,300);await mutate('checkpoint',{runId:active.runId,seq:active.seq+1,frames});}
+  // Drain only frames already queued. New frames wait for the next scheduled batch.
+  let remaining=active?.frames.length||0;
+  while(active?.frames.length&&remaining>0){const frames=active.frames.slice(0,Math.min(300,remaining));await mutate('checkpoint',{runId:active.runId,seq:active.seq+1,frames});remaining-=frames.length;}
   return true;
  }
  await login();
@@ -90,7 +92,7 @@ export async function createCloudWallet({sdk,storage=localStorage,endpoint=ENDPO
   award(){return false;},
   recordAction(action){if(active)actions.push(action);},
   recordFrame(dt,status){if(!active)return;active.frames.push({dt,actions:actions.splice(0)});
-   if(Date.now()-lastFlush>2000||status==='over'){lastFlush=Date.now();save();if(!busy)serial(flushFrames);}
+   if(Date.now()-lastFlush>2000||status==='over'){save();if(!busy){lastFlush=Date.now();serial(flushFrames);}}
   },
   flush:()=>serial(flushFrames),
   retry:()=>serial(async()=>{await flushFrames();await request({action:'wallet'});return true;})
