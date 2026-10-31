@@ -89,8 +89,9 @@ async function refreshActiveSubs(){
   $('active-total-label').textContent=state.status==='estimated'?'ESTIMATED ACTIVE CHANNEL SUBS':'TOTAL ACTIVE CHANNEL SUBS';
   $('active-total').textContent=Number.isSafeInteger(state.total)?state.total.toLocaleString('en-US'):'—';
   $('connect-active-subs').hidden=!['not_connected','needs_authorization'].includes(state.status);
+  renderDrops(state.drops);
   const updated=state.updatedAt?new Date(state.updatedAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}):'';
-  $('active-status').textContent=state.status==='estimated'?'Started at '+state.baseline.toLocaleString('en-US')+' · adds new subs and gifts; expirations not tracked.':state.status==='connected'?'Updated '+updated+' · refreshes every 30 seconds':state.status==='not_connected'?'Requires authorization from christinaandamber.':state.status==='needs_authorization'?'Reconnect christinaandamber to refresh this total.':state.status==='updating'?'Updating from Twitch…':state.total!==null?'Last updated '+updated+' · refresh delayed.':'Twitch total is temporarily unavailable.';
+  $('active-status').textContent=state.status==='estimated'?'Started at '+state.baseline.toLocaleString('en-US')+' · adds new subs and gifts; scheduled drops deducted.':state.status==='connected'?'Updated '+updated+' · refreshes every 30 seconds':state.status==='not_connected'?'Requires authorization from christinaandamber.':state.status==='needs_authorization'?'Reconnect christinaandamber to refresh this total.':state.status==='updating'?'Updating from Twitch…':state.total!==null?'Last updated '+updated+' · refresh delayed.':'Twitch total is temporarily unavailable.';
  }catch{$('active-status').textContent='Unable to refresh channel total.';}finally{activeSubsLoading=false;}
 }
 $('connect-active-subs').onclick=async()=>{
@@ -99,3 +100,26 @@ $('connect-active-subs').onclick=async()=>{
  catch(error){$('active-status').textContent=error.message;button.disabled=false;}
 };
 refreshActiveSubs();setInterval(refreshActiveSubs,5000);
+
+let dropSignature='';
+const estDate=value=>new Intl.DateTimeFormat('en-US',{timeZone:'Etc/GMT+5',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value));
+function renderDrops(drops){
+ $('drops-panel').hidden=!drops;if(!drops)return;
+ $('drop-summary').textContent='Deducted since starting total: '+drops.applied.toLocaleString('en-US')+' · Remaining today: '+drops.remainingToday.toLocaleString('en-US')+' · '+(drops.next?'Next / ongoing: '+estDate(drops.next.start)+' EST ('+drops.next.amount.toLocaleString('en-US')+' subs)':'No automatic drops remaining.');
+ const signature=JSON.stringify(drops.rows.map(({deducted,status,...d})=>d));
+ if(signature===dropSignature){for(const d of drops.rows){const el=$('status-'+d.id);if(el)el.textContent=d.status+' · '+d.deducted+'/'+d.amount;}return;}
+ if($('drop-rows').contains(document.activeElement))return;dropSignature=signature;$('drop-rows').replaceChildren();
+ for(const d of drops.rows){
+  const form=document.createElement('form');form.className='drop-row';
+  const title=document.createElement('strong');title.textContent=d.date+' EST';form.append(title);
+  const field=(text,type,value)=>{const label=document.createElement('label'),input=document.createElement('input');label.textContent=text+' ';input.type=type;input.value=value;input.required=true;label.append(input);form.append(label);return input;};
+  const amount=field('Drop','number',d.amount);amount.min=0;amount.max=100000000;
+  let start,end;if(d.start){start=field('Start (EST)','datetime-local',d.start.slice(0,16));end=field('End (EST)','datetime-local',d.end.slice(0,16));}
+  const status=document.createElement('span');status.id='status-'+d.id;status.textContent=d.status+' · '+d.deducted+'/'+d.amount;form.append(status);
+  const save=document.createElement('button');save.textContent='Save';form.append(save);
+  form.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{await shared({action:'drop-update',id:d.id,amount:Number(amount.value),...(start?{start:start.value+':00-05:00',end:end.value+':00-05:00'}:{})});$('drop-feedback').textContent='Drop saved.';dropSignature='';await refreshActiveSubs();}catch{$('drop-feedback').textContent='Could not save. Check the amount and time window.';}finally{save.disabled=false;}};
+  if(!d.start){const apply=document.createElement('button');apply.type='button';apply.textContent=d.appliedAt?'Applied':'Apply offline drop';apply.disabled=!!d.appliedAt;apply.onclick=async()=>{apply.disabled=true;try{await shared({action:'drop-apply',id:d.id});dropSignature='';await refreshActiveSubs();}catch{$('drop-feedback').textContent='Could not apply drop.';apply.disabled=false;}};form.append(apply);}
+  $('drop-rows').append(form);
+ }
+}
+$('rebase-form').onsubmit=async e=>{e.preventDefault();const button=e.currentTarget.querySelector('button');button.disabled=true;try{await shared({action:'active-subs-baseline',total:Number($('confirmed-total').value),startedAt:now()});$('drop-feedback').textContent='Current total saved. Only future gains and drops will change it.';await refreshActiveSubs();}catch{$('drop-feedback').textContent='Could not save current total.';}finally{button.disabled=false;}};
