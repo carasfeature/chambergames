@@ -1,10 +1,8 @@
 import {SKINS,skinById} from './skins.mjs?v=free-skins-1';
 import {createSkinPreview} from './skin-preview.js?v=mobile-save-hotfix-20261027';
 import {shopIcon} from './shop-icons.js?v=mobile-save-hotfix-20261027';
-const KEY='chamber.hoppers.free-skin.v1';
 export function createFreeStore(run,{resume,onEquip}){
  let equipped='christina',revived=false,selecting=false;
- try{const saved=localStorage.getItem(KEY);if(skinById(saved))equipped=saved;}catch{}
  const preview=createSkinPreview();document.documentElement.classList.add('store-ui');
  const open=document.createElement('button');open.className='store-open';open.type='button';open.textContent='Skins Store';document.querySelector('.game-controls').before(open);
  const dialog=document.createElement('dialog');dialog.className='gem-store';dialog.setAttribute('aria-labelledby','shop-title');
@@ -12,7 +10,7 @@ export function createFreeStore(run,{resume,onEquip}){
  dialog.querySelector('.store-announcement').textContent='THINGS HAPPEN, AND I CANNOT LONGER HAVE THE STORE UP. ALL THE SKINS ADDED FROM NOW ON WILL BE FREE FOR ALL.\nSORRY TO EVERYONE <3';
  document.body.append(dialog);dialog.querySelector('.shop-done').onclick=()=>dialog.close();
  const content=dialog.querySelector('.shop-content'),notice=dialog.querySelector('.shop-notice');
- async function equip(id){if(selecting||run.status==='running'||run.status==='paused'||!skinById(id))return false;selecting=true;try{await onEquip(id);equipped=id;try{localStorage.setItem(KEY,id);}catch{}render();return true;}finally{selecting=false;}}
+ async function equip(id){if(selecting||run.status==='running'||run.status==='paused'||!skinById(id))return false;selecting=true;try{await onEquip(id);equipped=id;render();return true;}finally{selecting=false;}}
  function render(){
   content.replaceChildren();for(const item of SKINS){
    const card=document.createElement('article');card.className='shop-card skin-card';
