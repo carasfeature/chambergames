@@ -1,10 +1,10 @@
-import {skinById} from './skins.mjs?v=mobile-save-hotfix-20261027';
+import {skinById} from './skins.mjs?v=free-skins-1';
 import * as T from './vendor/three.module.js';
 import {createAmbience} from './ambience.js?v=mobile-save-hotfix-20261027';
 import {bindSwipes} from './touch.mjs?v=mobile-save-hotfix-20261027';
 import {createMobilePlay} from './mobile-play.mjs?v=mobile-save-hotfix-20261027';
 const {currentPlayer,submitRun}=await import(['localhost','127.0.0.1','[::1]'].includes(location.hostname)?'./preview-scores.mjs':'./leaderboard.mjs?v=leaderboard-live-20261027');
-import {createGems} from './gems.js?v=sync-cost-1';
+import {createFreeStore} from './free-store.js?v=free-skins-1';
 import {createGraphics,mobileGraphicsMode,createGraphicsToggle} from './graphics.js?v=mobile-save-hotfix-20261027';
 import {batchStaticBoxes} from './scenery-batch.js';
 import {loadCharacter} from './character.js?v=mobile-save-hotfix-20261027';
@@ -32,7 +32,7 @@ canvas.setAttribute('aria-label','Swipe left or right to change lanes; swipe up 
 try{renderer=new T.WebGLRenderer({canvas,antialias:graphicsMode!=='performance',powerPreference:'high-performance'});}catch(error){document.querySelector('#error').hidden=false;throw error;}
 renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.35;
 const scene=new T.Scene();scene.background=new T.Color('#26383b');scene.fog=new T.Fog('#26383b',26,112);
-const gems=await createGems(scene,run,{resume:()=>{scoreSubmitted=false;begin();},onEquip:id=>selectCharacter(id),onError:error=>{if(run.status==='running')run.status='paused';showPanel();message.textContent=error;}}).catch(error=>{const el=document.querySelector('#error');el.hidden=false;el.textContent=error.message+' Reload to retry.';throw error;});
+const store=createFreeStore(run,{resume:()=>{scoreSubmitted=false;begin();},onEquip:id=>selectCharacter(id)});
 const camera=new T.PerspectiveCamera(64,1,.1,160);camera.position.set(0,5.5,8.5);camera.lookAt(0,1,-18);
 const graphics=createGraphics(renderer,canvas,camera,graphicsMode);
 scene.add(new T.HemisphereLight('#f3e4c9','#4b403a',2.4));const sun=new T.DirectionalLight('#ffe2b4',2.1);sun.position.set(-4,9,5);scene.add(sun);
@@ -184,7 +184,7 @@ function showPanel(){ambience.setRunning(run.status==='running');ambience.setScr
 function sync(){for(const g of obstacles)g.visible=false;for(const o of run.obstacles){const g=obstacles.find(g=>!g.visible&&g.userData.type===o.type);if(!g)throw new Error('Obstacle pool exhausted');g.visible=true;g.position.set(o.x,0,o.z);animateRoo(g,run.time);}}
 const previewStart=['localhost','127.0.0.1','[::1]'].includes(location.hostname)?Math.min(50000,Math.max(0,Number(new URLSearchParams(location.search).get('start'))||0)):0;
 let starting=false;
-async function begin(){if(!character||starting)return;starting=true;start.disabled=true;start.textContent='Starting…';try{if(gems.wallet.cloud&&gems.wallet.error&&!await gems.wallet.retry()){message.textContent=gems.wallet.error;return;}if(run.status!=='paused'||gems.wallet.needsRestart){runPlayer=currentPlayer();scoreSubmitted=false;run.mode=selectedMode;run.reset();if(previewStart){run.distance=previewStart;run.rows=[];run.obstacles=[];run.pickups=[];run.recentSand=[];run.nextRow=previewStart+50;run.fillTrack();}if(!await gems.reset()){showPanel();message.textContent=gems.wallet.error||'Could not start a saved run. Try again.';return;}sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';mobilePlay.enter();ambience.start();last=0;showPanel();sync();canvas.focus({preventScroll:true});}catch(error){showPanel();message.textContent=error.message||'Could not start. Please try again.';}finally{starting=false;start.disabled=loadingCharacter||!character;start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}}
+async function begin(){if(!character||starting)return;starting=true;start.disabled=true;start.textContent='Starting…';try{if(run.status!=='paused'){runPlayer=currentPlayer();scoreSubmitted=false;run.mode=selectedMode;run.reset();if(previewStart){run.distance=previewStart;run.rows=[];run.obstacles=[];run.pickups=[];run.recentSand=[];run.nextRow=previewStart+50;run.fillTrack();}store.reset();sections.forEach((g,i)=>g.position.z=12-i*length);}run.status='running';mobilePlay.enter();ambience.start();last=0;showPanel();sync();canvas.focus({preventScroll:true});}catch(error){showPanel();message.textContent=error.message||'Could not start. Please try again.';}finally{starting=false;start.disabled=loadingCharacter||!character;start.textContent=run.status==='paused'?'Resume run':run.status==='over'?'Try again':'Start';}}
 function togglePause(){if(run.status==='running'){run.status='paused';showPanel();}else if(run.status==='paused')begin();}
 start.onclick=()=>{if(mobile||run.status==='paused'||run.status==='over')begin();else openInstructions();};
 const instructions=document.querySelector('#instructions');
@@ -193,22 +193,22 @@ document.querySelector('#instructions-open').onclick=openInstructions;
 document.querySelector('#instructions-start').onclick=()=>{instructions.close();begin();};
 document.querySelector('#instructions-close').onclick=()=>instructions.close();
 instructions.addEventListener('close',()=>ambience.setScreen(run.status));
-document.addEventListener('keydown',e=>{if(instructions.open||gems.dialog.open)return;if(e.target instanceof HTMLSelectElement||e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW','ArrowDown','KeyS'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();if(['ArrowDown','KeyS'].includes(e.code))run.fastDescend();});
+document.addEventListener('keydown',e=>{if(instructions.open||store.dialog.open)return;if(e.target instanceof HTMLSelectElement||e.target instanceof HTMLInputElement||e.target instanceof HTMLButtonElement&&['Space','Enter'].includes(e.code))return;if(['ArrowLeft','ArrowRight','ArrowUp','Space','Escape','KeyA','KeyD','KeyW','ArrowDown','KeyS'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'){togglePause();return;}if(['ArrowLeft','KeyA'].includes(e.code))run.move(-1);if(['ArrowRight','KeyD'].includes(e.code))run.move(1);if(['Space','ArrowUp','KeyW'].includes(e.code))run.jump();if(['ArrowDown','KeyS'].includes(e.code))run.fastDescend();});
 const resetSwipe=bindSwipes(canvas,action=>action==='jump'?run.jump():action==='down'?run.fastDescend():run.move(action==='left'?-1:1),()=>run.status==='running');
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(run.status==='running'){run.status='paused';showPanel();}document.querySelector('#error').hidden=false;document.querySelector('#error').textContent='Graphics interrupted. Reload the page to restart the game.';});
 document.addEventListener('visibilitychange',()=>{last=0;if(document.hidden&&run.status==='running'){run.status='paused';showPanel();}});
 function characterLabel(name){return skinById(name)?.name||name;}
 const chooser=document.createElement('div');chooser.className='character-choice';chooser.setAttribute('role','group');chooser.setAttribute('aria-label','Choose your runner');
-for(const name of ['christina','amber']){const button=document.createElement('button');button.type='button';button.dataset.character=name;button.textContent=characterLabel(name);button.addEventListener('click',async()=>{if(await gems.wallet.equipSkin(name))selectCharacter(name);});chooser.append(button);}
+for(const name of ['christina','amber']){const button=document.createElement('button');button.type='button';button.dataset.character=name;button.textContent=characterLabel(name);button.addEventListener('click',async()=>{await store.equip(name);});chooser.append(button);}
 (document.querySelector('.run-loadout')||start).before(chooser);
 const modeChooser=document.createElement('div');modeChooser.className='mode-choice';modeChooser.setAttribute('role','group');modeChooser.setAttribute('aria-label','Game mode');
 const modeNote=document.createElement('p');modeNote.className='mode-note';modeNote.id='mode-note';
 for(const [mode,label] of [['standard','Standard Mode'],['fast','Fast Mode']]){const button=document.createElement('button');button.type='button';button.dataset.mode=mode;button.textContent=label;button.setAttribute('aria-describedby','mode-note');button.onclick=()=>{if(run.status==='running'||run.status==='paused')return;selectedMode=mode;showPanel();};modeChooser.append(button);}
 chooser.before(modeChooser,modeNote);
 const baseShowPanel=showPanel;
-const originalShowPanel=()=>{mobilePlay.sync(run.status);gems.sync();baseShowPanel();if(run.status==='over')message.textContent+=' Tooth gems collected: '+gems.earned+'.';};
+const originalShowPanel=()=>{mobilePlay.sync(run.status);store.sync();baseShowPanel();};
 showPanel=function(){graphicsToggle.sync(run.status);originalShowPanel();for(const button of modeChooser.children){button.setAttribute('aria-pressed',String(button.dataset.mode===(run.status==='paused'||run.status==='running'?run.mode:selectedMode)));button.disabled=run.status==='paused'||run.status==='running';}if(run.status!=='running')resetSwipe();modeNote.textContent=(run.status==='paused'||run.status==='running'?run.mode:selectedMode)==='fast'?'Fast Mode - game 35% faster; for those who want to get further, quicker':'Standard Mode - Original Game, same speed progression';canvas.parentElement.dataset.status=run.status;document.documentElement.dataset.runStatus=run.status;start.disabled=starting||loadingCharacter||!character;if(starting)start.textContent='Starting…';else if(loadingCharacter)start.textContent='Loading '+characterLabel(selectedCharacter)+'…';const portrait=document.querySelector('#runner-portrait');portrait.src='assets/'+skinById(selectedCharacter).file+'.png';portrait.alt=characterLabel(selectedCharacter)+' skin preview';document.querySelector('#runner-name').textContent=characterLabel(selectedCharacter);for(const button of chooser.children){button.setAttribute('aria-pressed',String(button.dataset.character===selectedCharacter));button.disabled=loadingCharacter||run.status==='paused';}};
-showPanel();sync();selectCharacter(gems.wallet.state.equipped);
+showPanel();sync();selectCharacter(store.equipped);
 let lastFrame=0;
 const distanceLabel=document.querySelector('#distance');let displayedDistance=-1;
 renderer.setAnimationLoop(now=>{
@@ -221,7 +221,7 @@ renderer.setAnimationLoop(now=>{
  if(run.status==='paused'){renderer.render(scene,camera);return;}
  if(run.status==='running'){
   const distance=run.distance,wasGrounded=run.grounded,previousLevel=run.level;run.update(dt);const step=run.distance-distance;
-  gems.update(dt);
+  store.sync();
   if(run.status==='over')ambience.gameOver();
   else if(run.level>previousLevel)ambience.difficulty();
   if(!wasGrounded&&run.grounded&&run.status==='running')ambience.movement('land',0,run.surface>.05);

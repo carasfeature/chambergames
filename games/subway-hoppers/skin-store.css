@@ -55,3 +55,5 @@
  .viewport:is([data-status="ready"],[data-status="paused"],[data-status="over"]) .run-loadout{margin:0}
  .viewport:is([data-status="ready"],[data-status="paused"],[data-status="over"]) .overlay,.viewport:is([data-status="ready"],[data-status="paused"],[data-status="over"]) .gem-hud{display:none}
 }
+
+.store-announcement{margin:0 0 18px;padding:16px;border:1px solid #93434b;border-radius:10px;background:#392829;color:#f0ddc5;font:700 14px/1.6 Arial,sans-serif;white-space:pre-line;}
