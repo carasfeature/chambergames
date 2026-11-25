@@ -1,9 +1,44 @@
-const names={stream:'For Stream',games:'Games',tournaments:'Tournaments',settings:'Website Settings'};
-function route(){const key=location.hash.slice(1)||'stream',active=names[key]?key:'stream';for(const id of [...Object.keys(names),'wheel-detail'])document.getElementById(id).hidden=id!==active;document.querySelectorAll('[data-section]').forEach(a=>{if(a.dataset.section===active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});document.getElementById('page-title').textContent=names[active]}
-addEventListener('hashchange',route);route();
-document.querySelectorAll('[data-section]').forEach(a=>a.addEventListener('click',()=>{if(location.hash===a.getAttribute('href'))route()}));
-document.querySelectorAll('[data-wheel]').forEach(b=>b.onclick=()=>{document.getElementById('stream').hidden=true;document.getElementById('wheel-detail').hidden=false;const fortune=b.dataset.wheel==='fortune',subathon=b.dataset.wheel==='subathon',hasWheel=fortune||subathon;const frame=document.getElementById('wheel-frame');if(hasWheel){frame.src=subathon?'subathon-wheel/index.html?v=spin-copy-20261027':'wheel.html';frame.title=subathon?'Subathon Wheel':'Autumn Luck';}document.getElementById('wheel-frame').hidden=!hasWheel;document.getElementById('empty-wheel').hidden=hasWheel;const title=fortune?'Autumn Luck':b.dataset.wheel==='subathon'?'Subathon Wheel':'Giveaway Wheel';document.getElementById('page-title').textContent=title;document.getElementById('empty-title').textContent=title});
-document.getElementById('wheel-back').onclick=route;
+const routes = {
+  home: ['Production Team'], content: ['Content Team','home'], technical: ['Technical Production','home'],
+  stream: ['For Stream','home'], controls: ['Controls Panel','home'], games: ['Games','controls'],
+  tournaments: ['Tournaments','controls'], settings: ['Website Settings','controls'],
+  wheel: ['Autumn Luck','stream'], caption: ['Caption This v2','games']
+};
+function route() {
+  const hash = location.hash.slice(1);
+  const key = Object.hasOwn(routes, hash) ? hash : 'home';
+  for (const section of document.querySelectorAll('main > section')) section.hidden = section.id !== key;
+  const [title,parent] = routes[key];
+  document.querySelector('#heading').textContent = title;
+  document.querySelector('#backbar').hidden = !parent;
+  document.querySelector('#back').href = '#' + (parent || 'home');
+  const frame = document.getElementById(key).querySelector('iframe');
+  if (frame && !frame.hasAttribute('src')) frame.src = frame.dataset.src;
+  window.scrollTo(0,0);
+}
+addEventListener('hashchange',route);
+route();
+function theme(mode) {
+  document.documentElement.classList.toggle('light',mode === 'light');
+  document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed',String(b.dataset.mode === mode)));
+}
+theme(localStorage.getItem('production-theme') || 'dark');
+document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => {
+  theme(b.dataset.mode);
+  localStorage.setItem('production-theme',b.dataset.mode);
+});
+const clocks = [...document.querySelectorAll('[data-zone]')].map(clock => ({
+    clock,
+    format: new Intl.DateTimeFormat('en-GB', {
+      timeZone: clock.dataset.zone, hour: '2-digit', minute: '2-digit'
+    })
+  }));
+  function updateTimes() {
+    const now = new Date();
+    clocks.forEach(({clock, format}) => { clock.textContent = format.format(now); });
+  }
+  updateTimes();
+  setInterval(updateTimes, 1000);
 const date=document.getElementById('release-date'),tba=document.getElementById('release-tba'),zone=Intl.DateTimeFormat().resolvedOptions().timeZone;
 document.getElementById('timezone').textContent='Timezone: '+zone+'. The release represents the same moment for all viewers.';
 const saved=JSON.parse(localStorage.getItem('chamber-admin-local-db')||'{}').tournament?.gameRelease;

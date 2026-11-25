@@ -4,7 +4,7 @@
  let user;try{user=sessionStorage.getItem(key)}catch{}
  if(!user){location.replace('/admin/login.html');return}
  addEventListener('DOMContentLoaded',()=>{
-  const sidebar=document.querySelector('.sidebar');if(!sidebar)return;
+  const sidebar=document.querySelector('[data-session], .sidebar');if(!sidebar)return;
   const box=document.createElement('div'),label=document.createElement('p'),button=document.createElement('button');
   label.textContent='Signed in as '+user;label.className='notice';button.textContent='Log out';
   button.onclick=()=>{sessionStorage.removeItem(key);sessionStorage.removeItem('chamber-admin-token');sessionStorage.removeItem('chamber-jar-control-key');location.replace('/admin/login.html?logout=1')};
